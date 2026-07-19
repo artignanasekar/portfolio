@@ -1,0 +1,307 @@
+@font-face {
+  font-family: 'CommitMono';
+  src: url('fonts/CommitMono-VF.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Inter';
+  src: url('fonts/Inter-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Lora';
+  src: url('fonts/Lora-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'IBM Plex Sans';
+  src: url('fonts/IBMPlexSans-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  cursor: none;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  background: #fcfcfc;
+  overflow: hidden;
+}
+
+/* Reference design canvas: 1152 x 748 (Figma "about page" frame).
+   Structural regions (columns/panels) scale with the window as %.
+   Spacing within a region (gaps, padding, offsets) stays fixed px
+   so it never looks stretched or squeezed. */
+
+.page {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  background: #fcfcfc;
+  overflow: hidden;
+  display: flex;
+}
+
+/* left side panel: a fixed 393px, matching the Figma frame exactly.
+   Kept fixed (not a % of viewport) so the 40px margins around the photo
+   and text always match Figma 1:1, on any window size, instead of
+   stretching the content wider than it was designed for. The image area
+   still fills the rest of the window edge-to-edge. */
+.side-panel {
+  position: relative;
+  flex: 0 0 393px;
+  height: 100%;
+  background: #f3f3f3;
+  overflow: hidden;
+}
+
+.profile-photo {
+  position: absolute;
+  left: 40px;
+  top: 70px;
+  width: 313px;
+  height: 234px;
+  border-radius: 5px;
+  object-fit: cover;
+}
+
+.bio-block {
+  position: absolute;
+  left: 42px;
+  top: 324px;
+  width: 309px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.bio-heading {
+  font-family: 'Lora', serif;
+  font-weight: 400;
+  font-size: 20px;
+  color: #5e5e5e;
+}
+
+.bio-text {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.bio-text p,
+.misc-text {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 1.1;
+  color: #787878;
+}
+
+.section-heading {
+  font-family: 'Lora', serif;
+  font-weight: 400;
+  font-size: 20px;
+  color: #5e5e5e;
+}
+
+.experience-block {
+  position: absolute;
+  left: 42px;
+  top: 468px;
+  width: 309px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.experience-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.experience-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 1.1;
+  color: #787878;
+  white-space: nowrap;
+}
+
+.experience-org {
+  color: #5e5e5e;
+}
+
+.experience-date {
+  flex-shrink: 0;
+  margin-left: 16px;
+}
+
+.misc-block {
+  position: absolute;
+  left: 42px;
+  top: 550px;
+  width: 310px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+/* main area: remaining space to the right of the side panel.
+   Holds the pannable, zoomed-in collage — nothing is ever cropped out of
+   existence, the image is just rendered larger than the viewport and you
+   drag/scroll to explore it. */
+.main-area {
+  position: relative;
+  flex: 1 1 auto;
+  height: 100%;
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+}
+
+.collage-wrap {
+  position: absolute;
+  top: 0;
+  left: 0;
+  will-change: transform;
+}
+
+.collage-img {
+  display: block;
+  pointer-events: none;
+}
+
+/* tag row: centered, wraps onto multiple centered rows as the window narrows */
+.tag-row {
+  position: absolute;
+  left: 41px;
+  right: 41px;
+  bottom: 31px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+}
+
+.tag {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 10px;
+  border-radius: 5px;
+  background: #ff6328;
+  font-family: 'CommitMono', monospace;
+  font-weight: 400;
+  font-size: 12px;
+  color: #fcfcfc;
+  white-space: nowrap;
+}
+
+/* nav bar: spans full window width, fixed 45px height, fixed 30px right padding, fixed 20px gaps */
+.nav-bar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 45px;
+  background: #f3f3f3;
+  border-bottom: 1px solid rgba(148, 148, 148, 0.25);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 30px;
+  z-index: 10;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'CommitMono', monospace;
+  font-weight: 400;
+  font-size: 10px;
+  color: #7b7b7b;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+/* custom cursor: an orange dot everywhere on the site, which morphs into
+   the "BLUB BLUB BLUB!" badge (Figma "Frame 61") while over the goldfish
+   in the collage. Positioned via JS on every mousemove. */
+#custom-cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+.cursor-dot {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 21px;
+  height: 21px;
+  transform: translate(-50%, -50%) scale(1);
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.15s ease;
+  opacity: 1;
+}
+
+.cursor-badge {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 10px;
+  border-radius: 50px;
+  background: #ff7800;
+  color: #fcfcfc;
+  font-family: 'CommitMono', monospace;
+  font-weight: 400;
+  font-size: 10px;
+  white-space: nowrap;
+  transform: translate(-50%, -50%) scale(0);
+  opacity: 0;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.15s ease;
+}
+
+#custom-cursor.on-fish .cursor-dot {
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.3);
+}
+
+#custom-cursor.on-fish .cursor-badge {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
