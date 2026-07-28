@@ -10,51 +10,184 @@
   <div class="page" data-name="about page">
 
     <aside class="side-panel" data-name="blank page">
-      <img class="profile-photo" src="assets/profile.jpg" alt="Arti standing on a boardwalk with a Ferris wheel in the background" />
+      <div class="side-panel-content">
+        <img class="profile-photo" src="assets/profile.jpg" alt="Arti standing on a boardwalk with a Ferris wheel in the background" />
 
-      <div class="bio-block">
-        <p class="bio-heading">Hi, I&rsquo;m Arti!</p>
-        <div class="bio-text">
-          <p>I am currently working at IBM as a design intern on the UXR team.</p>
-          <p>I&rsquo;m currently designing at IBM. I&rsquo;m a product designer driven by curiosity and empathy, creating human-centered experiences that balance thoughtful interaction, visual craft, and purposeful design.</p>
-        </div>
-      </div>
-
-      <div class="experience-block">
-        <p class="section-heading">Experience</p>
-        <div class="experience-list">
-          <div class="experience-row">
-            <p><span class="experience-org">IBM</span> / Design &amp; Research Intern</p>
-            <p class="experience-date">Summer 2026</p>
-          </div>
-          <div class="experience-row">
-            <p><span class="experience-org">UCSC ITS</span> / Undergraduate UX Assistant</p>
-            <p class="experience-date">2025 - 2026</p>
+        <div class="bio-block">
+          <p class="bio-heading">Hi, I&rsquo;m Arti!</p>
+          <div class="bio-text">
+            <p>I am currently working at IBM as a design intern on the UXR team.</p>
+            <p>I&rsquo;m currently designing at IBM. I&rsquo;m a product designer driven by curiosity and empathy, creating human-centered experiences that balance thoughtful interaction, visual craft, and purposeful design.</p>
           </div>
         </div>
-      </div>
 
-      <div class="misc-block">
-        <p class="section-heading">Miscellaneous</p>
-        <p class="misc-text">When I&rsquo;m not designing, you&rsquo;ll probably find me dancing, painting with gouache, or exploring the latest food spots with friends and family. Every great meal is followed by a mandatory digestion walk, and, of course, a sweet treat to finish it off.</p>
+        <div class="experience-block">
+          <p class="section-heading">Experience</p>
+          <div class="experience-list">
+            <div class="experience-row">
+              <p class="experience-role"><span class="experience-org">IBM</span> / Design &amp; Research Intern</p>
+              <p class="experience-date">Summer 2026</p>
+            </div>
+            <div class="experience-row">
+              <p class="experience-role"><span class="experience-org">UCSC ITS</span> / Undergrad UX Assistant</p>
+              <p class="experience-date">2025 - 2026</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="misc-block">
+          <p class="section-heading">Miscellaneous</p>
+          <p class="misc-text">When I&rsquo;m not designing, you&rsquo;ll probably find me dancing, painting with gouache, or exploring the latest food spots with friends and family. Every great meal is followed by a mandatory digestion walk, and, of course, a sweet treat to finish it off.</p>
+        </div>
       </div>
     </aside>
 
     <div class="main-area">
       <div class="collage-wrap" data-name="Adobe Express - file 1">
         <canvas class="collage-img" id="collage-canvas" role="img" aria-label="Collage of personal photos and objects: photobooth strip, toy crab, tube of cream, orange fish toy, smiski figure, puzzle piece, gold elephant, drumming figure, perfume, joycon lanyard"></canvas>
+
+        <div class="spy-hotspot" id="item-lipbalm-hotspot" style="left:40.9319%; top:27.2467%; width:20.8602%; height:23.9962%;" data-name="lip balm" aria-hidden="true">
+          <img src="assets/lipbalm.png" alt="" />
+        </div>
+        <div class="spy-hotspot" id="item-tube-hotspot" style="left:45.1613%; top:71.3193%; width:14.9104%; height:23.0402%;" data-name="tube" aria-hidden="true">
+          <img src="assets/tube.png" alt="" />
+        </div>
+        <div class="spy-hotspot" id="item-puzzle-hotspot" style="left:81.0036%; top:67.9732%; width:14.2652%; height:13.9579%;" data-name="puzzle" aria-hidden="true">
+          <img src="assets/puzzle.png" alt="" />
+        </div>
+        <div class="spy-hotspot" id="item-smiski-hotspot" style="left:64.5161%; top:16.8260%; width:7.5269%; height:17.1128%;" data-name="smiski" aria-hidden="true">
+          <img src="assets/smiski.png" alt="" />
+        </div>
+        <div class="spy-hotspot" id="item-photo-hotspot" style="left:31.7563%; top:6.7878%; width:31.6129%; height:25.0478%;" data-name="photo" aria-hidden="true">
+          <img src="assets/photo.png" alt="" />
+        </div>
+        <div class="spy-hotspot" id="item-lego-hotspot" style="left:16.9892%; top:21.2237%; width:20.7885%; height:19.9809%;" data-name="lego crab" aria-hidden="true">
+          <img src="assets/lego.png" alt="" />
+        </div>
+        <div class="spy-hotspot" id="item-perfume-hotspot" style="left:16.9892%; top:0.0000%; width:8.7455%; height:27.2467%;" data-name="perfume" aria-hidden="true">
+          <img src="assets/perfume.png" alt="" />
+        </div>
+        <div class="spy-hotspot" id="item-joycon-hotspot" style="left:88.6022%; top:79.4455%; width:11.3978%; height:17.1128%;" data-name="joycon" aria-hidden="true">
+          <img src="assets/joycon.png" alt="" />
+        </div>
+        <div class="spy-hotspot" id="item-dice-hotspot" style="left:78.7097%; top:4.5889%; width:9.0361%; height:12.2661%;" data-name="dice" aria-hidden="true">
+          <img src="assets/dice.png" alt="" />
+        </div>
+
+        <!-- each item pops a handful of small stars in one at a time around it
+             when clicked, instead of one big star cycling behind it. -->
+        <div class="spy-sparkles" id="item-dice-sparkles" aria-hidden="true">
+          <div class="spy-sparkle" style="left:76.6300%; top:2.7750%; width:5.02%; height:6.69%;"><img src="assets/star4-b.png" alt="" /></div>
+          <div class="spy-sparkle" style="left:81.6500%; top:15.8750%; width:5.02%; height:6.69%;"><img src="assets/star2-a.png" alt="" /></div>
+          <div class="spy-sparkle" style="left:84.8700%; top:1.6250%; width:5.02%; height:6.69%;"><img src="assets/star5-a.png" alt="" /></div>
+          <div class="spy-sparkle" style="left:87.2400%; top:7.3650%; width:5.02%; height:6.69%;"><img src="assets/star2-c.png" alt="" /></div>
+          <div class="spy-sparkle" style="left:77.2000%; top:13.4850%; width:5.02%; height:6.69%;"><img src="assets/star5-c.png" alt="" /></div>
+        </div>
+        <div class="spy-sparkles" id="item-lego-sparkles" aria-hidden="true">
+          <div class="spy-sparkle" style="left:37.2700%; top:34.7050%; width:5.02%; height:6.69%;"><img src="assets/star2-b.png" alt="" /></div>
+          <div class="spy-sparkle" style="left:20.4300%; top:41.8750%; width:5.02%; height:6.69%;"><img src="assets/star1-a.png" alt="" /></div>
+          <div class="spy-sparkle" style="left:36.6300%; top:16.5450%; width:5.02%; height:6.69%;"><img src="assets/star2-c.png" alt="" /></div>
+          <div class="spy-sparkle" style="left:32.2600%; top:41.3950%; width:5.02%; height:6.69%;"><img src="assets/star5-b.png" alt="" /></div>
+          <div class="spy-sparkle" style="left:27.3800%; top:39.9650%; width:5.02%; height:6.69%;"><img src="assets/star3-a.png" alt="" /></div>
+          <div class="spy-sparkle" style="left:39.1400%; top:28.0150%; width:5.02%; height:6.69%;"><img src="assets/star4-b.png" alt="" /></div>
+          <div class="spy-sparkle" style="left:13.6900%; top:25.7150%; width:5.02%; height:6.69%;"><img src="assets/star3-c.png" alt="" /></div>
+          <div class="spy-sparkle" style="left:21.6500%; top:26.0050%; width:5.02%; height:6.69%;"><img src="assets/star5-a.png" alt="" /></div>
+          <div class="spy-sparkle" style="left:16.9900%; top:36.8050%; width:5.02%; height:6.69%;"><img src="assets/star4-c.png" alt="" /></div>
+          <div class="spy-sparkle" style="left:34.2600%; top:28.7750%; width:5.02%; height:6.69%;"><img src="assets/star1-b.png" alt="" /></div>
+          <div class="spy-sparkle" style="left:24.1600%; top:19.8850%; width:5.02%; height:6.69%;"><img src="assets/star4-a.png" alt="" /></div>
+        </div>
+        <div class="spy-sparkles" id="item-puzzle-sparkles" aria-hidden="true">
+          <div class="spy-sparkle" style="left:95.2700%; top:66.4450%; width:5.02%; height:6.69%;"><img src="assets/star1-b.png" alt="" /></div>
+          <div class="spy-sparkle" style="left:75.7700%; top:73.1350%; width:5.02%; height:6.69%;"><img src="assets/star5-c.png" alt="" /></div>
+          <div class="spy-sparkle" style="left:91.8300%; top:61.2850%; width:5.02%; height:6.69%;"><img src="assets/star3-c.png" alt="" /></div>
+          <div class="spy-sparkle" style="left:78.2800%; top:66.4450%; width:5.02%; height:6.69%;"><img src="assets/star1-a.png" alt="" /></div>
+          <div class="spy-sparkle" style="left:87.6700%; top:76.2950%; width:5.02%; height:6.69%;"><img src="assets/star4-c.png" alt="" /></div>
+        </div>
+        <div class="spy-sparkles" id="item-smiski-sparkles" aria-hidden="true">
+          <div class="spy-sparkle" style="left:71.2500%; top:22.0850%; width:5.02%; height:6.69%;"><img src="assets/star1-a.png" alt="" /></div>
+          <div class="spy-sparkle" style="left:59.0700%; top:27.2450%; width:5.02%; height:6.69%;"><img src="assets/star5-a.png" alt="" /></div>
+          <div class="spy-sparkle" style="left:64.0800%; top:12.7150%; width:5.02%; height:6.69%;"><img src="assets/star1-b.png" alt="" /></div>
+          <div class="spy-sparkle" style="left:68.3100%; top:30.5950%; width:5.02%; height:6.69%;"><img src="assets/star2-b.png" alt="" /></div>
+          <div class="spy-sparkle" style="left:71.6100%; top:12.7150%; width:5.02%; height:6.69%;"><img src="assets/star5-c.png" alt="" /></div>
+          <div class="spy-sparkle" style="left:60.4300%; top:20.9350%; width:5.02%; height:6.69%;"><img src="assets/star3-b.png" alt="" /></div>
+          <div class="spy-sparkle" style="left:73.1200%; top:28.3950%; width:5.02%; height:6.69%;"><img src="assets/star2-a.png" alt="" /></div>
+        </div>
+        <div class="spy-sparkles" id="item-photo-sparkles" aria-hidden="true">
+          <div class="spy-sparkle" style="left:62.7900%; top:21.0350%; width:5.02%; height:6.69%;"><img src="assets/star1-a.png" alt="" /></div>
+          <div class="spy-sparkle" style="left:48.3900%; top:28.4950%; width:5.02%; height:6.69%;"><img src="assets/star5-c.png" alt="" /></div>
+          <div class="spy-sparkle" style="left:28.0300%; top:19.3150%; width:5.02%; height:6.69%;"><img src="assets/star1-b.png" alt="" /></div>
+          <div class="spy-sparkle" style="left:52.3300%; top:33.0750%; width:5.02%; height:6.69%;"><img src="assets/star3-a.png" alt="" /></div>
+          <div class="spy-sparkle" style="left:35.4800%; top:0.6750%; width:5.02%; height:6.69%;"><img src="assets/star1-c.png" alt="" /></div>
+          <div class="spy-sparkle" style="left:54.4100%; top:8.8950%; width:5.02%; height:6.69%;"><img src="assets/star5-b.png" alt="" /></div>
+          <div class="spy-sparkle" style="left:49.3900%; top:5.4550%; width:5.02%; height:6.69%;"><img src="assets/star3-b.png" alt="" /></div>
+          <div class="spy-sparkle" style="left:53.4800%; top:26.8650%; width:5.02%; height:6.69%;"><img src="assets/star3-c.png" alt="" /></div>
+          <div class="spy-sparkle" style="left:31.1800%; top:4.8750%; width:5.02%; height:6.69%;"><img src="assets/star2-a.png" alt="" /></div>
+        </div>
+        <div class="spy-sparkles" id="item-joycon-sparkles" aria-hidden="true">
+          <div class="spy-sparkle" style="left:95.8400%; top:72.1850%; width:5.02%; height:6.69%;"><img src="assets/star5-a.png" alt="" /></div>
+          <div class="spy-sparkle" style="left:92.3300%; top:96.5550%; width:5.02%; height:6.69%;"><img src="assets/star1-c.png" alt="" /></div>
+          <div class="spy-sparkle" style="left:86.0900%; top:87.3850%; width:5.02%; height:6.69%;"><img src="assets/star2-b.png" alt="" /></div>
+          <div class="spy-sparkle" style="left:91.8300%; top:76.1050%; width:5.02%; height:6.69%;"><img src="assets/star1-a.png" alt="" /></div>
+          <div class="spy-sparkle" style="left:95.3400%; top:91.5850%; width:5.02%; height:6.69%;"><img src="assets/star2-a.png" alt="" /></div>
+        </div>
+        <div class="spy-sparkles" id="item-perfume-sparkles" aria-hidden="true">
+          <div class="spy-sparkle" style="left:28.3900%; top:19.5050%; width:5.02%; height:6.69%;"><img src="assets/star3-b.png" alt="" /></div>
+          <div class="spy-sparkle" style="left:11.1100%; top:7.4550%; width:5.02%; height:6.69%;"><img src="assets/star1-c.png" alt="" /></div>
+          <div class="spy-sparkle" style="left:26.5900%; top:11.4750%; width:5.02%; height:6.69%;"><img src="assets/star3-c.png" alt="" /></div>
+          <div class="spy-sparkle" style="left:24.0100%; top:0.0050%; width:5.02%; height:6.69%;"><img src="assets/star4-b.png" alt="" /></div>
+          <div class="spy-sparkle" style="left:11.9700%; top:20.5550%; width:5.02%; height:6.69%;"><img src="assets/star5-c.png" alt="" /></div>
+          <div class="spy-sparkle" style="left:14.9100%; top:26.1950%; width:5.02%; height:6.69%;"><img src="assets/star5-a.png" alt="" /></div>
+          <div class="spy-sparkle" style="left:14.4800%; top:2.5850%; width:5.02%; height:6.69%;"><img src="assets/star1-a.png" alt="" /></div>
+          <div class="spy-sparkle" style="left:23.5100%; top:16.4450%; width:5.02%; height:6.69%;"><img src="assets/star2-c.png" alt="" /></div>
+        </div>
+        <div class="spy-sparkles" id="item-lipbalm-sparkles" aria-hidden="true">
+          <div class="spy-sparkle" style="left:36.4900%; top:35.9450%; width:5.02%; height:6.69%;"><img src="assets/star5-b.png" alt="" /></div>
+          <div class="spy-sparkle" style="left:44.0100%; top:21.4150%; width:5.02%; height:6.69%;"><img src="assets/star4-a.png" alt="" /></div>
+          <div class="spy-sparkle" style="left:54.0500%; top:51.2450%; width:5.02%; height:6.69%;"><img src="assets/star2-b.png" alt="" /></div>
+          <div class="spy-sparkle" style="left:59.7100%; top:31.5450%; width:5.02%; height:6.69%;"><img src="assets/star1-b.png" alt="" /></div>
+          <div class="spy-sparkle" style="left:39.5000%; top:19.5950%; width:5.02%; height:6.69%;"><img src="assets/star4-b.png" alt="" /></div>
+          <div class="spy-sparkle" style="left:62.2200%; top:45.6050%; width:5.02%; height:6.69%;"><img src="assets/star3-b.png" alt="" /></div>
+          <div class="spy-sparkle" style="left:53.9100%; top:35.3750%; width:5.02%; height:6.69%;"><img src="assets/star1-c.png" alt="" /></div>
+          <div class="spy-sparkle" style="left:41.5800%; top:35.3750%; width:5.02%; height:6.69%;"><img src="assets/star2-c.png" alt="" /></div>
+          <div class="spy-sparkle" style="left:51.4000%; top:29.9250%; width:5.02%; height:6.69%;"><img src="assets/star5-c.png" alt="" /></div>
+          <div class="spy-sparkle" style="left:50.4600%; top:46.5550%; width:5.02%; height:6.69%;"><img src="assets/star3-c.png" alt="" /></div>
+        </div>
+        <div class="spy-sparkles" id="item-tube-sparkles" aria-hidden="true">
+          <div class="spy-sparkle" style="left:53.4000%; top:94.9350%; width:5.02%; height:6.69%;"><img src="assets/star2-c.png" alt="" /></div>
+          <div class="spy-sparkle" style="left:40.1400%; top:67.7850%; width:5.02%; height:6.69%;"><img src="assets/star3-c.png" alt="" /></div>
+          <div class="spy-sparkle" style="left:47.6000%; top:62.9050%; width:5.02%; height:6.69%;"><img src="assets/star5-c.png" alt="" /></div>
+          <div class="spy-sparkle" style="left:60.3600%; top:80.2150%; width:5.02%; height:6.69%;"><img src="assets/star2-a.png" alt="" /></div>
+          <div class="spy-sparkle" style="left:58.4200%; top:86.2350%; width:5.02%; height:6.69%;"><img src="assets/star4-b.png" alt="" /></div>
+          <div class="spy-sparkle" style="left:52.6200%; top:72.9450%; width:5.02%; height:6.69%;"><img src="assets/star1-c.png" alt="" /></div>
+          <div class="spy-sparkle" style="left:43.5100%; top:80.6850%; width:5.02%; height:6.69%;"><img src="assets/star1-b.png" alt="" /></div>
+          <div class="spy-sparkle" style="left:48.5300%; top:82.7950%; width:5.02%; height:6.69%;"><img src="assets/star5-b.png" alt="" /></div>
+          <div class="spy-sparkle" style="left:44.8000%; top:87.3850%; width:5.02%; height:6.69%;"><img src="assets/star1-a.png" alt="" /></div>
+        </div>
+      </div>
+
+      <button class="info-button" id="info-button" type="button" aria-label="How this works" aria-expanded="false">i</button>
+      <div class="info-popup" id="info-popup" role="tooltip">
+        Scroll or drag around the photo to find the hidden objects. Click their names as you discover them to learn more!
+      </div>
+
+      <div class="info-card" id="info-card" aria-hidden="true">
+        <div class="info-card-body">
+          <p class="info-card-title" id="info-card-title"></p>
+          <p class="info-card-text" id="info-card-text"></p>
+        </div>
+        <div class="info-card-media" id="info-card-media"></div>
       </div>
 
       <div class="tag-row" data-name="Frame 33">
-        <span class="tag">SMISKI</span>
-        <span class="tag">PAINT TUBE</span>
-        <span class="tag">PHOTOBOOTH STRIP</span>
-        <span class="tag">CRAB</span>
-        <span class="tag">PUZZLE PIECE</span>
-        <span class="tag">PERFUME</span>
-        <span class="tag">EARRINGS</span>
-        <span class="tag">JOYCONS</span>
-        <span class="tag">LIPPIE</span>
+        <span class="tag" data-item="smiski">SMISKI</span>
+        <span class="tag" data-item="tube">PAINT TUBE</span>
+        <span class="tag" data-item="photo">PHOTOBOOTH STRIP</span>
+        <span class="tag" data-item="lego">LEGO CRAB</span>
+        <span class="tag" data-item="puzzle">PUZZLE PIECE</span>
+        <span class="tag" data-item="perfume">PERFUME</span>
+        <span class="tag" data-item="joycon">JOYCONS</span>
+        <span class="tag" data-item="lipbalm">LIPPIE</span>
+        <span class="tag" data-item="dice">DICE</span>
       </div>
     </div>
 
@@ -70,7 +203,6 @@
 
   <div id="custom-cursor">
     <img class="cursor-dot" src="assets/orange-cursor.svg" alt="" />
-    <div class="cursor-badge">BLUB BLUB BLUB!</div>
   </div>
 
   <script src="script.js"></script>
