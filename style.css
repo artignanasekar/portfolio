@@ -302,6 +302,58 @@ body {
   transform: translateX(0);
 }
 
+/* hint button + popup: stacked directly below the info button (same left
+   edge, 10px gap). Clicking a still-gray tag name turns the cursor into
+   the scanner and points it toward that item — this popup just explains
+   the mechanic, so its colors invert the info popup's (white bg, orange
+   text) to read as a distinct helper rather than a duplicate of it. */
+.hint-button {
+  position: absolute;
+  left: 30px;
+  top: 135px;
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: 50%;
+  padding: 0;
+  background: none;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  z-index: 20;
+}
+
+.hint-button img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.hint-popup {
+  position: absolute;
+  left: 68px;
+  top: 135px;
+  width: 274px;
+  padding: 8px 10px;
+  border-radius: 5px;
+  background: #fcfcfc;
+  color: #ff7800;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 1.4;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  z-index: 19;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-6px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.hint-popup.open {
+  opacity: 1;
+  transform: translateX(0);
+}
+
 /* info card: sits below the tag row in the DOM (so the tag row's default
    stacking keeps tags on top and clickable) and stays docked off-screen via
    translateY until an item is found + its tag clicked, then slides up to
@@ -566,4 +618,78 @@ body {
   transform: translate(-50%, -50%) scale(1);
   transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.15s ease;
   opacity: 1;
+}
+
+/* scanner cursor: replaces the dot while a hint is active. Rotated (via JS,
+   around its own center) to point from the cursor toward the item being
+   hinted at — its dot sits near-center with the radar cone fanning upward
+   by default, so rotate(0deg) means "up" and this stays accurate as the
+   mouse moves or the collage is panned underneath it. */
+.scanner-cursor {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 107px;
+  height: 107px;
+  transform: translate(-50%, -50%) rotate(0deg);
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+#custom-cursor.hinting .cursor-dot {
+  opacity: 0;
+}
+
+#custom-cursor.hinting .scanner-cursor {
+  opacity: 1;
+}
+
+/* scanner rings: pulse in one at a time, innermost to outermost, 0.5s
+   apart, then hold briefly together before the whole thing resets and
+   the sequence starts over — a continuous "signal searching" loop. */
+.scanner-ring {
+  opacity: 0;
+  animation-duration: 2s;
+  animation-timing-function: ease-out;
+  animation-iteration-count: infinite;
+}
+
+.scanner-ring-1 {
+  animation-name: scanner-pulse-1;
+}
+
+.scanner-ring-2 {
+  animation-name: scanner-pulse-2;
+}
+
+.scanner-ring-3 {
+  animation-name: scanner-pulse-3;
+}
+
+.scanner-ring-4 {
+  animation-name: scanner-pulse-4;
+}
+
+@keyframes scanner-pulse-1 {
+  0% { opacity: 0; }
+  5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+
+@keyframes scanner-pulse-2 {
+  0%, 20% { opacity: 0; }
+  25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+
+@keyframes scanner-pulse-3 {
+  0%, 45% { opacity: 0; }
+  50% { opacity: 1; }
+  100% { opacity: 1; }
+}
+
+@keyframes scanner-pulse-4 {
+  0%, 70% { opacity: 0; }
+  75% { opacity: 1; }
+  100% { opacity: 1; }
 }

@@ -163,11 +163,13 @@ function tick() {
   panY += (targetY - panY) * LERP_FACTOR;
   panLayer.style.transform = `translate3d(${panX}px, ${panY}px, 0)`;
 
+  updateHintDirection();
+
   requestAnimationFrame(tick);
 }
 
 viewport.addEventListener('pointerdown', (e) => {
-  if (e.target.closest('.tag, .info-card, .info-button, .info-popup')) return;
+  if (e.target.closest('.tag, .info-card, .info-button, .info-popup, .hint-button, .hint-popup')) return;
   isDragging = true;
   hasMomentum = false;
   velX = 0;
@@ -239,9 +241,14 @@ window.addEventListener('resize', () => {
 // --- Custom cursor: orange dot everywhere on the site. ---
 
 const customCursor = document.getElementById('custom-cursor');
+let lastMouseClientX = 0;
+let lastMouseClientY = 0;
 
 document.addEventListener('mousemove', (e) => {
   customCursor.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
+  lastMouseClientX = e.clientX;
+  lastMouseClientY = e.clientY;
+  updateHintDirection();
 });
 
 document.addEventListener('mouseleave', () => {
@@ -324,8 +331,62 @@ viewport.addEventListener('click', (e) => {
     hit.found = true;
     if (hit.tagEl) hit.tagEl.classList.add('found');
     burstSparkles(hit);
+    if (hintTargetId === hit.id) stopHint();
   }
 });
+
+// --- Hint scanner: clicking a still-gray tag turns the cursor into a
+// scanner that continuously points toward that item's current on-screen
+// position — accounting for both mouse movement and panning the collage —
+// and resets back to the normal cursor once that item is found. ---
+
+const scannerCursorEl = document.getElementById('scanner-cursor');
+let hintTargetId = null;
+
+function updateHintDirection() {
+  if (!hintTargetId || !sourceLoaded || canvas.width === 0) return;
+  const item = SPY_ITEMS.find((i) => i.id === hintTargetId);
+  if (!item) return;
+
+  const rect = viewport.getBoundingClientRect();
+  const { xMin, xMax, yMin, yMax } = item.bounds;
+  const targetCanvasX = ((xMin + xMax) / 2) * canvas.width;
+  const targetCanvasY = ((yMin + yMax) / 2) * canvas.height;
+  const targetX = rect.left + panX + targetCanvasX;
+  const targetY = rect.top + panY + targetCanvasY;
+
+  const dx = targetX - lastMouseClientX;
+  const dy = targetY - lastMouseClientY;
+  const angle = Math.atan2(dx, -dy) * (180 / Math.PI);
+
+  scannerCursorEl.style.transform = `translate(-50%, -50%) rotate(${angle}deg)`;
+}
+
+function restartScannerRings() {
+  // the ring-pulse CSS animation runs continuously in the background, so
+  // without this it could already be mid-cycle (or fully bloomed) the
+  // moment a hint starts — force each ring back to frame one so the
+  // signal always visibly builds up fresh from the center outward.
+  document.querySelectorAll('.scanner-ring').forEach((ring) => {
+    ring.style.animation = 'none';
+    // offsetWidth doesn't exist on SVG elements — getBoundingClientRect()
+    // is the equivalent forced-layout read that actually works here.
+    void ring.getBoundingClientRect();
+    ring.style.animation = '';
+  });
+}
+
+function startHint(id) {
+  hintTargetId = id;
+  customCursor.classList.add('hinting');
+  restartScannerRings();
+  updateHintDirection();
+}
+
+function stopHint() {
+  hintTargetId = null;
+  customCursor.classList.remove('hinting');
+}
 
 // --- Info cards: once an item's tag has turned orange (found), clicking it
 // slides its card up over the collage with the story behind that item.
@@ -578,7 +639,14 @@ SPY_ITEMS.forEach((item) => {
   if (!item.tagEl) return;
   item.tagEl.addEventListener('click', (e) => {
     e.stopPropagation();
-    if (!item.found) return;
+    if (!item.found) {
+      if (hintTargetId === item.id) {
+        stopHint();
+      } else {
+        startHint(item.id);
+      }
+      return;
+    }
     if (openItemId === item.id) {
       closeInfoCard();
     } else {
@@ -592,23 +660,51 @@ infoCard.addEventListener('click', (e) => {
   closeInfoCard();
 });
 
-// --- Info button: click the "i" to toggle the how-to-play popup. ---
+// --- Info + hint buttons: click to toggle their "how this works" popups.
+// Any popup opened by a click auto-closes after a few seconds so it
+// doesn't linger; the info popup additionally auto-shows once on page
+// load (on its own, shorter timer) so first-time visitors see the hint
+// without having to click for it. ---
+
+const POPUP_AUTO_CLOSE_MS = 5000;
+const INFO_POPUP_AUTO_SHOW_MS = 3000;
+
+function setupPopup(buttonEl, popupEl) {
+  let closeTimer = null;
+
+  function open(autoCloseMs) {
+    popupEl.classList.add('open');
+    buttonEl.setAttribute('aria-expanded', 'true');
+    clearTimeout(closeTimer);
+    if (autoCloseMs) closeTimer = setTimeout(close, autoCloseMs);
+  }
+
+  function close() {
+    clearTimeout(closeTimer);
+    popupEl.classList.remove('open');
+    buttonEl.setAttribute('aria-expanded', 'false');
+  }
+
+  buttonEl.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (popupEl.classList.contains('open')) {
+      close();
+    } else {
+      open(POPUP_AUTO_CLOSE_MS);
+    }
+  });
+
+  return { open, close };
+}
 
 const infoButton = document.getElementById('info-button');
 const infoPopup = document.getElementById('info-popup');
+const infoPopupControls = setupPopup(infoButton, infoPopup);
 
-infoButton.addEventListener('click', (e) => {
-  e.stopPropagation();
-  const isOpen = infoPopup.classList.toggle('open');
-  infoButton.setAttribute('aria-expanded', String(isOpen));
-});
+const hintButton = document.getElementById('hint-button');
+const hintPopup = document.getElementById('hint-popup');
+setupPopup(hintButton, hintPopup);
 
-// Auto-show the popup for a few seconds on page load, then tuck it away
-// behind the "i" so first-time visitors get the hint without it lingering.
-const INFO_POPUP_AUTO_SHOW_MS = 3000;
-infoPopup.classList.add('open');
-infoButton.setAttribute('aria-expanded', 'true');
-setTimeout(() => {
-  infoPopup.classList.remove('open');
-  infoButton.setAttribute('aria-expanded', 'false');
-}, INFO_POPUP_AUTO_SHOW_MS);
+// Auto-show the info popup for a few seconds on page load, then tuck it
+// away behind the "i" so first-time visitors get the hint without it lingering.
+infoPopupControls.open(INFO_POPUP_AUTO_SHOW_MS);
