@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SpeakEasy — Case Study</title>
+<link rel="stylesheet" href="shared.css" />
+<link rel="stylesheet" href="casestudy.css" />
+</head>
+<body>
+  <div class="page" data-name="speakeasy case study">
+
+    <nav class="nav-bar has-brand" data-name="nav bar">
+      <a href="home page.html" class="nav-brand">ARTI G.</a>
+      <div class="nav-links">
+        <a href="home page.html#work" class="nav-link">WORK</a>
+        <a href="about.html" class="nav-link">ABOUT</a>
+        <a href="#resume" class="nav-link">RESUME</a>
+      </div>
+    </nav>
+
+    <div class="case-shell">
+      <aside class="case-outline">
+        <a href="#context" class="outline-item">CONTEXT</a>
+        <a href="#challenge" class="outline-item">CHALLENGE</a>
+        <a href="#user-research" class="outline-item">USER RESEARCH</a>
+        <a href="#solution" class="outline-item">SOLUTION</a>
+        <a href="#iterations" class="outline-item">ITERATIONS</a>
+        <a href="#final-designs" class="outline-item">FINAL DESIGNS</a>
+        <a href="#individual-game-designs" class="outline-item">INDIVIDUAL GAME DESIGNS</a>
+        <a href="#reflections" class="outline-item">REFLECTIONS</a>
+      </aside>
+
+      <main class="case-content">
+        <div class="cs-cover-wrap plain-cover" style="aspect-ratio:1008/567;">
+          <img src="assets/speakeasy/cover-raw.png" alt="SpeakEasy app screens with the SpeakEasy microphone logo" />
+        </div>
+
+        <section class="cs-meta" style="justify-content:center;">
+          <div class="cs-meta-item">
+            <p class="cs-meta-label" style="color:#cd3736">Timeline</p>
+            <p class="cs-meta-value">48 Hours</p>
+          </div>
+          <div class="cs-meta-item">
+            <p class="cs-meta-label" style="color:#cd3736">Role</p>
+            <p class="cs-meta-value">Researcher<br />Product Designer</p>
+          </div>
+          <div class="cs-meta-item">
+            <p class="cs-meta-label" style="color:#cd3736">Team</p>
+            <p class="cs-meta-value">Jeffrey Antony<br />Shalini Raval<br />Sneha Kuppili</p>
+          </div>
+          <div class="cs-meta-item">
+            <p class="cs-meta-label" style="color:#cd3736">Tools</p>
+            <p class="cs-meta-value">Figma</p>
+          </div>
+        </section>
+
+        <section id="context" class="cs-block">
+          <p class="cs-label">Context</p>
+          <p class="cs-heading">Over 70 million people stutter globally, yet most speech technologies fail to serve them, because they&rsquo;re trained only on fluent speech.</p>
+          <p class="cs-body">Current speech technologies, such as automated phone menus or computer-generated captions, often fail to work well for people who stutter due to training on fluent speech. To make these speech technologies more responsive and accessible for people who stutter, it is important to collect more diverse stuttered speech data to improve these technologies.</p>
+        </section>
+
+        <section id="challenge" class="cs-block">
+          <p class="cs-label">Challenge</p>
+          <p class="cs-heading">Design a mobile app that empowers individuals who stutter to practice speaking confidently in a supportive and low-pressure environment. The app should also encourage voluntary data contribution for more inclusive AI speech technologies, with a focus on user consent, transparency, and clarity around dataset use. You may incorporate elements like gamification, progress tracking, or personalized goals to make the experience engaging and user-driven.</p>
+        </section>
+
+        <p class="cs-hmw" style="color:#cd3736">How can we empower individuals who stutter to practice speaking confidently in a supportive environment while contributing to more inclusive speech recognition technologies?</p>
+
+        <section id="user-research" class="cs-block">
+          <p class="cs-label">User Research</p>
+          <p class="cs-body">To set the stage for our work, we interviewed several students and individuals who stutter, refined our objectives based on their feedback, and distilled our findings into these three key insights.</p>
+        </section>
+
+        <section class="cs-adaptations">
+          <div class="cs-adaptation-card">
+            <p class="cs-adaptation-title" style="color:#cd3736">01.</p>
+            <div class="cs-adaptation-point"><p>People felt lost in their practice without personalized goals or progress checkpoints, so it was tough to stay on track.</p></div>
+          </div>
+          <div class="cs-adaptation-card">
+            <p class="cs-adaptation-title" style="color:#cd3736">02.</p>
+            <div class="cs-adaptation-point"><p>Standard ASR kept choking on disfluent or stuttered speech, effectively leaving those voices out of the AI dependent technology.</p></div>
+          </div>
+          <div class="cs-adaptation-card">
+            <p class="cs-adaptation-title" style="color:#cd3736">03.</p>
+            <div class="cs-adaptation-point"><p>Users struggle to find speech practice that&rsquo;s both engaging and motivating.</p></div>
+          </div>
+        </section>
+
+        <section id="solution" class="cs-block">
+          <p class="cs-label">Solution</p>
+          <p class="cs-body">With the insights in hand, we knew what to do, create a gamified mobile app that makes practice low-pressure and engaging for folks who stutter. Hello, SpeakEasy!</p>
+          <p class="cs-body">Based on our research, we defined a primary user persona that reflect our target users&rsquo; pain points, goals, and requirements.</p>
+        </section>
+
+        <div class="cs-persona">
+          <img class="cs-persona-bg" src="assets/speakeasy/persona-bg.png" alt="" />
+          <div class="cs-persona-card">
+            <div>
+              <p class="cs-persona-name">Aspiring Broadcaster Daniel</p>
+              <div class="cs-persona-tags">
+                <span class="cs-persona-tag">EXTROVERT</span>
+                <span class="cs-persona-tag">GOAL-ORIENTED</span>
+              </div>
+              <p class="cs-persona-desc">Daniel is a 19-year-old college student in Santa Cruz who loves public speaking and dreams of becoming a broadcast journalist. His stutter makes class and group speaking nerve-wracking, so he&rsquo;s looking for low-pressure, encouraging practice.</p>
+            </div>
+            <div class="cs-persona-cols">
+              <div class="cs-persona-col">
+                <span class="cs-persona-tag">NEEDS &amp; GOALS</span>
+                <ul class="cs-persona-list">
+                  <li>Build speaking confidence through daily, low-stakes practice.</li>
+                  <li>Set personal speaking goals and track progress over time.</li>
+                  <li>Join a community that supports speech diversity and AI fairness.</li>
+                </ul>
+              </div>
+              <div class="cs-persona-col">
+                <span class="cs-persona-tag">PAINPOINTS</span>
+                <ul class="cs-persona-list">
+                  <li>Automated phone systems rarely understand him, and don&rsquo;t offer convenient re-records or edits.</li>
+                  <li>Most speech apps don&rsquo;t offer personalized guidance, just generic suggestions.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <section id="iterations" class="cs-block">
+          <p class="cs-body">Once we aligned on the focus, we mapped a clear information architecture, defined the key design and logo elements, and moved straight into execution under a tight deadline.</p>
+        </section>
+
+        <img class="cs-sketch-img" src="assets/speakeasy/logo-design.png" alt="SpeakEasy logo design rationale" />
+
+        <section class="cs-block">
+          <p class="cs-label">Iteration</p>
+          <p class="cs-heading">Given the compressed timeline, we moved directly from whiteboard wireframes to mid and high-fidelity prototypes. We iterated a lot, retiring plenty of versions, and arrived at a robust UI for the final push, enhanced with engaging artwork and fluid animations.</p>
+        </section>
+
+        <div class="cs-iterations">
+          <div class="cs-iteration-col">
+            <p class="cs-screen-core-label" style="position:static; color:#5e5e5e;">HOME V1</p>
+            <div class="cs-iteration-frame">
+              <img src="assets/speakeasy/home-v1.png" alt="SpeakEasy home page, version 1" />
+            </div>
+          </div>
+          <div class="cs-iteration-col">
+            <p class="cs-screen-core-label" style="position:static; color:#5e5e5e;">HOME V2</p>
+            <div class="cs-iteration-frame">
+              <img src="assets/speakeasy/home-v2.png" alt="SpeakEasy home page, version 2" />
+            </div>
+          </div>
+          <div class="cs-iteration-col">
+            <p class="cs-screen-core-label" style="position:static; color:#5e5e5e;">HOME V3</p>
+            <div class="cs-iteration-frame">
+              <img src="assets/speakeasy/home-v3.png" alt="SpeakEasy home page, version 3" />
+            </div>
+          </div>
+          <div class="cs-iteration-col">
+            <p class="cs-screen-core-label" style="position:static; color:#5e5e5e;">FINAL HOME</p>
+            <div class="cs-iteration-frame">
+              <img src="assets/speakeasy/home-final.png" alt="SpeakEasy home page, final version" />
+            </div>
+          </div>
+        </div>
+
+        <section class="cs-block">
+          <p class="cs-body">The dashboard was one example of the several iterations we did throughout the design sprint. As the primary entry point, the dashboard received the most refinement to achieve the ideal balance of clarity and engagement.</p>
+        </section>
+
+        <section id="final-designs" class="cs-block">
+          <p class="cs-label">Final Designs</p>
+          <p class="cs-heading">Login Screen with Transparency</p>
+          <p class="cs-body">We ensured users knew precisely where their data was going and how their voice recordings would be used. Based on interviews, transparency emerged as the key expectation, so we treated it as a non-negotiable top priority.</p>
+        </section>
+        <div class="cs-screen-frame outline-frame">
+          <div class="cs-screen-phone">
+            <div class="cs-screen-video-slot"><video src="assets/speakeasy/login/login.mp4" autoplay loop muted playsinline></video></div>
+            <img class="cs-screen-bezel" src="assets/speakeasy/login/iphone-bezel.png" alt="" />
+          </div>
+          <p class="cs-screen-core-label" style="color:#cd3736;">CORE FRAMES</p>
+          <div class="cs-screen-core">
+            <img class="cs-screen-core-bg" src="assets/speakeasy/login/bg-gradient.png" alt="" />
+            <div class="cs-screen-mockups">
+              <div class="cs-mockup-frame"><img src="assets/speakeasy/login/mockup1.png" alt="SpeakEasy splash screen" /></div>
+              <div class="cs-mockup-frame"><img src="assets/speakeasy/login/mockup2.png" alt="SpeakEasy data consent screen" /></div>
+              <div class="cs-mockup-frame"><img src="assets/speakeasy/login/mockup3.png" alt="SpeakEasy sign up screen" /></div>
+              <div class="cs-mockup-frame"><img src="assets/speakeasy/login/mockup4.png" alt="SpeakEasy log in screen" /></div>
+            </div>
+          </div>
+        </div>
+
+        <section class="cs-block">
+          <p class="cs-body">During interviews, we asked participants about their go-to games, and these four came up again and again. We chose them because (1) they&rsquo;re universally familiar, so the learning curve is minimal, and (2) they&rsquo;re word-based without heavy chatter, so players can warm up without feeling overloaded.</p>
+        </section>
+
+        <section id="individual-game-designs" class="cs-block">
+          <p class="cs-label">Individual Game Designs</p>
+          <p class="cs-heading">Game 1: Wavelength</p>
+          <p class="cs-body">I love Wavelength, it&rsquo;s my go-to road-trip game, so getting to design it was a treat. I built the flow with smooth transitions between each guess and recording, and made the UI snap to edits in real time. I also prioritized SpeechPal at the end, our AI that gives players personalized pointers on what to watch for, so we can improve accessibility in our speech tech while supporting players&rsquo; speech goals.</p>
+        </section>
+        <div class="cs-screen-frame outline-frame">
+          <div class="cs-screen-phone">
+            <div class="cs-screen-video-slot">
+              <video src="assets/speakeasy/wavelength/wavelength.mp4" autoplay loop muted playsinline></video>
+            </div>
+            <img class="cs-screen-bezel" src="assets/speakeasy/wavelength/iphone-bezel.png" alt="" />
+          </div>
+          <p class="cs-screen-core-label" style="color:#cd3736;">CORE FRAMES</p>
+          <div class="cs-screen-core">
+            <img class="cs-screen-core-bg" src="assets/speakeasy/wavelength/bg-gradient.png" alt="" />
+            <div class="cs-screen-mockups">
+              <div class="cs-mockup-frame"><img src="assets/speakeasy/wavelength/mockup1.png" alt="Wavelength intro screen" /></div>
+              <div class="cs-mockup-frame"><img src="assets/speakeasy/wavelength/mockup2.png" alt="Wavelength spin screen" /></div>
+              <div class="cs-mockup-frame"><img src="assets/speakeasy/wavelength/mockup3.png" alt="Wavelength gameplay screen" /></div>
+              <div class="cs-mockup-frame"><img src="assets/speakeasy/wavelength/mockup4.png" alt="Wavelength result screen" /></div>
+            </div>
+          </div>
+        </div>
+
+        <section class="cs-block">
+          <p class="cs-heading">Game 2: Scattegories</p>
+          <p class="cs-body">Next up: Scattergories. We kept the UI deliberately minimal so players could lock in on the timer and their word list. After each round, SpeechPal delivers a quick debrief of a few things: what it noticed, where you nailed it, and a couple of easy wins for next time, if applicable.</p>
+        </section>
+        <div class="cs-screen-frame outline-frame">
+          <div class="cs-screen-phone">
+            <div class="cs-screen-video-slot">
+              <video src="assets/speakeasy/scattergories/scattergories.mp4" autoplay loop muted playsinline></video>
+            </div>
+            <img class="cs-screen-bezel" src="assets/speakeasy/scattergories/iphone-bezel.png" alt="" />
+          </div>
+          <p class="cs-screen-core-label" style="color:#cd3736;">CORE FRAMES</p>
+          <div class="cs-screen-core">
+            <img class="cs-screen-core-bg" src="assets/speakeasy/scattergories/bg-gradient.png" alt="" />
+            <div class="cs-screen-mockups">
+              <div class="cs-mockup-frame"><img src="assets/speakeasy/scattergories/mockup1.png" alt="Scattergories gameplay screen" /></div>
+              <div class="cs-mockup-frame"><img src="assets/speakeasy/scattergories/mockup2.png" alt="Scattergories results screen" /></div>
+              <div class="cs-mockup-frame"><img src="assets/speakeasy/scattergories/mockup3.png" alt="Scattergories congrats screen" /></div>
+              <div class="cs-mockup-frame"><img src="assets/speakeasy/scattergories/mockup4.png" alt="Scattergories record screen" /></div>
+            </div>
+          </div>
+        </div>
+
+        <section class="cs-block">
+          <p class="cs-heading">Game 3: Contact!</p>
+          <p class="cs-body">We built Contact for flow: a clean countdown, a mic cue, and instant transitions from guess to result. Sync on the same word to score, miss, and you can adjust and try again without breaking rhythm. Post-round, SpeechPal offers pointers, clarity, pacing, and filler usage, to keep progress steady and accessible.</p>
+        </section>
+        <div class="cs-screen-frame outline-frame">
+          <div class="cs-screen-phone">
+            <div class="cs-screen-video-slot">
+              <video src="assets/speakeasy/contact/contact.mp4" autoplay loop muted playsinline></video>
+            </div>
+            <img class="cs-screen-bezel" src="assets/speakeasy/contact/iphone-bezel.png" alt="" />
+          </div>
+          <p class="cs-screen-core-label" style="color:#cd3736;">CORE FRAMES</p>
+          <div class="cs-screen-core">
+            <img class="cs-screen-core-bg" src="assets/speakeasy/contact/bg-gradient.png" alt="" />
+            <div class="cs-screen-mockups">
+              <div class="cs-mockup-frame"><img src="assets/speakeasy/contact/mockup1.png" alt="Contact intro screen" /></div>
+              <div class="cs-mockup-frame"><img src="assets/speakeasy/contact/mockup2.png" alt="Contact listening screen" /></div>
+              <div class="cs-mockup-frame"><img src="assets/speakeasy/contact/mockup3.png" alt="Contact gameplay screen" /></div>
+              <div class="cs-mockup-frame"><img src="assets/speakeasy/contact/mockup4.png" alt="Contact result screen" /></div>
+            </div>
+          </div>
+        </div>
+
+        <section class="cs-block">
+          <p class="cs-heading">Game 4: Brainteaser</p>
+          <p class="cs-body">Brainteaser gives players a fun way to exercise both their brain and their speech through daily riddles. Players can solve each riddle by speaking into the mic, with the option to re-record their answer or flip the card for a hint when they&rsquo;re stuck. A new riddle unlocks each day, encouraging players to come back and keep practicing. SpeechPal also offers helpful tips and tricks along the way when applicable.</p>
+        </section>
+        <div class="cs-screen-frame outline-frame">
+          <div class="cs-screen-phone">
+            <div class="cs-screen-video-slot">
+              <video src="assets/speakeasy/brainteaser/brainteaser.mp4" autoplay loop muted playsinline></video>
+            </div>
+            <img class="cs-screen-bezel" src="assets/speakeasy/brainteaser/iphone-bezel.png" alt="" />
+          </div>
+          <p class="cs-screen-core-label" style="color:#cd3736;">CORE FRAMES</p>
+          <div class="cs-screen-core">
+            <img class="cs-screen-core-bg" src="assets/speakeasy/brainteaser/bg-gradient.png" alt="" />
+            <div class="cs-screen-mockups">
+              <div class="cs-mockup-frame"><img src="assets/speakeasy/brainteaser/mockup1.png" alt="Brainteaser riddle screen" /></div>
+              <div class="cs-mockup-frame"><img src="assets/speakeasy/brainteaser/mockup2.png" alt="Brainteaser answer screen" /></div>
+              <div class="cs-mockup-frame"><img src="assets/speakeasy/brainteaser/mockup3.png" alt="Brainteaser listening screen" /></div>
+              <div class="cs-mockup-frame"><img src="assets/speakeasy/brainteaser/mockup4.png" alt="Brainteaser result screen" /></div>
+            </div>
+          </div>
+        </div>
+
+        <section id="reflections" class="cs-block">
+          <p class="cs-label">Reflections</p>
+          <p class="cs-body">Winning second place was definitely a plus, but what really stuck with me from this experience was just how quickly our team clicked. It was the first time I&rsquo;d ever worked with this group, but from the jump, ideas were always flying around, every single person brought something brilliant to the table. I remember thinking, &ldquo;Yep, these are my people. I want to do every designathon with them from now on.&rdquo;</p>
+        </section>
+
+        <section class="cs-block">
+          <p class="cs-label">Key Takeaways</p>
+          <ul class="cs-list">
+            <li>Prioritize fuller speech samples (phrases and sentences, not just single words) to help the models learn faster. Add game modes that prompt longer responses (mini-stories, sentence chains, guided prompts).</li>
+            <li>Tune SpeechPal&rsquo;s feedback for longer utterances: pacing, prosody, and filler-word patterns.</li>
+            <li>Update scoring to reward clarity and complexity, not just speed or accuracy.</li>
+          </ul>
+        </section>
+
+        <div class="cs-iterations" style="padding:0; border:none; background:none;">
+          <img src="assets/speakeasy/reflection-1.png" alt="Presenting SpeakEasy at the designathon" style="width:63.4%; border:1px solid #d9d9d9; border-radius:20px;" />
+          <img src="assets/speakeasy/reflection-2.png" alt="Post-win celebration" style="width:35.65%; border:1px solid #d9d9d9; border-radius:20px;" />
+        </div>
+
+        <p class="cs-body">We pitched our designs to the judges, my first live presentation, and I actually loved it. Sharing the work was energizing, and the other teams&rsquo; spins were great to watch. Post-win treat: Salt &amp; Straw. &#x1F366;</p>
+      </main>
+    </div>
+
+  </div>
+
+  <div id="custom-cursor">
+    <img class="cursor-dot" src="assets/orange-cursor.svg" alt="" />
+  </div>
+
+  <script src="shared.js?v=7"></script>
+  <script src="casestudy.js"></script>
+</body>
+</html>

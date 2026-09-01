@@ -1,0 +1,816 @@
+/* Shared shell for case-study pages (Figma "pearl" / "speakeasy" frames).
+   Layout is fluid full-bleed (like the rest of the site — nav, about page's
+   side panel), NOT boxed into a centered fixed-width column: the outline
+   panel is fixed flush to the real left edge of the window, and the
+   content sits 30px after it, with a matching 30px gutter before the real
+   right edge of the window. */
+
+/* case-study pages scroll (unlike the fixed-viewport about page); shared.css
+   hides overflow globally, so this overrides it back on for these pages. */
+body {
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.case-shell {
+  position: relative;
+}
+
+.case-outline {
+  position: fixed;
+  left: 0;
+  top: 45px;
+  bottom: 0;
+  width: 260px;
+  background: #f3f3f3;
+  padding: 65px 0 0 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 5;
+}
+
+.outline-item {
+  font-family: 'CommitMono', monospace;
+  font-weight: 400;
+  font-size: 10px;
+  color: #7b7b7b;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 0.15s ease;
+}
+
+.outline-item:hover {
+  color: #5e5e5e;
+}
+
+.case-content {
+  margin-left: 320px;
+  padding-right: 60px;
+  padding-top: 45px;
+  padding-bottom: 120px;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+/* the cover image is intentionally wider than the 946px text column —
+   it bleeds flush against the outline gutter, same as the Figma frame.
+   Figma's own rendered export of this frame only comes back at 1006px
+   wide (too soft once stretched wider), but the *raw* source photo Figma
+   composited it from is 3947x1457 — so this replicates Figma's own crop
+   (h-full, left:-24.8%) directly on that raw asset instead, staying
+   crisp at any width. */
+.cs-cover-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1008 / 572;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-top: 45px;
+}
+
+.cs-cover-wrap img {
+  position: absolute;
+  top: 0;
+  left: -24.8%;
+  height: 100%;
+  width: auto;
+  max-width: none;
+}
+
+/* modifier for cover photos that don't need Pearl's crop offset — plain
+   centered cover fill, used when the raw source's own aspect ratio
+   already matches the display box (no manual crop necessary). */
+.cs-cover-wrap.plain-cover img {
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* IBM cover: same black + eye-bee-M composition as the home-page work
+   card (see .ibm-icons in shared.css), just at the wider case-study
+   cover proportions. */
+.cs-ibm-cover {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1008 / 572;
+  background: #000;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-top: 45px;
+}
+
+/* IBM blue accent for bold inline text (SIDE QUEST award name, testimonial
+   role labels) — distinct from the teal .accent used elsewhere. */
+.cs-ibm-accent {
+  color: #0f62fe;
+  font-weight: 700;
+}
+
+/* ---------- IBM project cards (bordered row: laptop mockup + text) ---------- */
+
+.cs-project-card {
+  position: relative;
+  width: 100%;
+  border: 1px solid #d9d9d9;
+  border-radius: 20px;
+  background: #fcfcfc;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 60px;
+  padding: 41px 58px;
+}
+
+.cs-project-shot {
+  position: relative;
+  width: 242px;
+  height: 160px;
+  flex-shrink: 0;
+}
+
+/* screenshot sits behind the macbook frame, blurred + given a light frost
+   wash for confidentiality — the frame art has a transparent cutout for
+   the screen (measured directly off its alpha channel, not just Figma's
+   declared child offset, since the two layers aren't pixel-registered),
+   so the frame's own notch/bezel renders on top of it untouched. */
+.cs-project-shot .cs-project-screen {
+  position: absolute;
+  left: 10.18%;
+  top: 13.18%;
+  width: 79.61%;
+  height: 75.84%;
+  object-fit: cover;
+  filter: blur(4px);
+}
+
+.cs-project-shot .cs-project-frost {
+  position: absolute;
+  left: 10.18%;
+  top: 13.18%;
+  width: 79.61%;
+  height: 75.84%;
+  background: rgba(252, 252, 252, 0.2);
+}
+
+.cs-project-shot .cs-project-macbook {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.cs-project-card .cs-body {
+  flex: 1;
+}
+
+/* ---------- IBM side quest card (award callout) ---------- */
+
+.cs-sidequest {
+  display: flex;
+  align-items: center;
+  gap: 60px;
+}
+
+.cs-sidequest img {
+  width: 376px;
+  height: 212px;
+  flex-shrink: 0;
+  border: 1px solid #d9d9d9;
+  border-radius: 20px;
+  object-fit: cover;
+}
+
+.cs-sidequest .cs-body {
+  flex: 1;
+}
+
+/* ---------- IBM testimonial cards ---------- */
+
+.cs-testimonial-card {
+  position: relative;
+  width: 100%;
+  border: 1px solid #d9d9d9;
+  border-radius: 20px;
+  box-sizing: border-box;
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.cs-testimonial-role {
+  font-family: 'CommitMono', monospace;
+  font-weight: 400;
+  font-size: 12px;
+  color: #0f62fe;
+  text-transform: uppercase;
+}
+
+/* ---------- typography ---------- */
+
+.cs-label {
+  font-family: 'CommitMono', monospace;
+  font-weight: 400;
+  font-size: 12px;
+  color: #5e5e5e;
+  text-transform: uppercase;
+}
+
+.cs-label-accent {
+  font-family: 'CommitMono', monospace;
+  font-weight: 400;
+  font-size: 12px;
+  text-transform: uppercase;
+  color: #219ebc;
+}
+
+.cs-heading {
+  font-family: 'Lora', serif;
+  font-weight: 600;
+  font-size: 25px;
+  line-height: normal;
+  color: #5e5e5e;
+}
+
+.cs-heading-accent {
+  color: #219ebc;
+}
+
+.cs-body {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-weight: 500;
+  font-size: 15px;
+  line-height: normal;
+  color: #7b7b7b;
+}
+
+.cs-body .accent {
+  color: #219ebc;
+}
+
+.cs-block {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ---------- header meta row (Timeline / Role / Team / Tools) ---------- */
+
+.cs-meta {
+  display: flex;
+  gap: 150px;
+}
+
+.cs-meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.cs-meta-label {
+  font-family: 'CommitMono', monospace;
+  font-weight: 400;
+  font-size: 12px;
+  color: #219ebc;
+  text-transform: uppercase;
+}
+
+.cs-meta-value {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-weight: 400;
+  font-size: 15px;
+  line-height: normal;
+  color: #5e5e5e;
+}
+
+/* IBM's meta labels are its brand blue instead of Pearl/SpeakEasy's teal */
+.cs-meta.ibm-meta .cs-meta-label {
+  color: #0f62fe;
+}
+
+/* ---------- HMW callout ---------- */
+
+.cs-hmw {
+  font-family: 'Lora', serif;
+  font-weight: 600;
+  font-size: 25px;
+  line-height: normal;
+  color: #219ebc;
+}
+
+/* ---------- ordered/unordered lists ---------- */
+
+.cs-list-accent {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-weight: 500;
+  font-size: 15px;
+  color: #219ebc;
+  padding-left: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cs-list {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-weight: 500;
+  font-size: 15px;
+  line-height: normal;
+  color: #7b7b7b;
+  padding-left: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ---------- comparison research boxes ---------- */
+
+.cs-app-icons {
+  border: 1px solid #d9d9d9;
+  border-radius: 10px;
+  display: flex;
+  gap: 60px;
+  align-items: center;
+  justify-content: center;
+  padding: 15px 60px;
+}
+
+.cs-app-icon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  width: 81px;
+}
+
+.cs-app-icon img {
+  width: 81px;
+  height: 81px;
+  border-radius: 25px;
+  border: 1px solid #d9d9d9;
+  object-fit: cover;
+}
+
+.cs-app-icon span {
+  font-family: 'CommitMono', monospace;
+  font-size: 12px;
+  color: #7b7b7b;
+  white-space: nowrap;
+}
+
+.cs-compare {
+  display: flex;
+  gap: 30px;
+  align-items: stretch;
+}
+
+.cs-compare-box {
+  flex: 1;
+  border: 1px solid #d9d9d9;
+  border-radius: 10px;
+  padding: 20px 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cs-compare-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: 'Lora', serif;
+  font-weight: 600;
+  font-size: 20px;
+  color: #219ebc;
+}
+
+.cs-compare-title img {
+  width: 26px;
+  height: 26px;
+}
+
+.cs-compare-arrow {
+  align-self: center;
+  width: 26px;
+  opacity: 0.6;
+}
+
+/* ---------- adaptation cards ---------- */
+
+.cs-adaptations {
+  display: flex;
+  gap: 30px;
+}
+
+.cs-adaptation-card {
+  flex: 1;
+  border: 1px solid #d9d9d9;
+  border-radius: 10px;
+  padding: 30px 22px 30px 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cs-adaptation-title {
+  font-family: 'Lora', serif;
+  font-weight: 600;
+  font-size: 20px;
+  color: #219ebc;
+}
+
+.cs-adaptation-point {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.cs-adaptation-point img {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.cs-adaptation-point p {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-weight: 400;
+  font-size: 15px;
+  line-height: normal;
+  color: #7b7b7b;
+}
+
+/* ---------- donut/ring research chart ---------- */
+
+.cs-donut-section {
+  display: flex;
+  gap: 60px;
+  align-items: center;
+}
+
+.cs-donut-wrap {
+  position: relative;
+  flex-shrink: 0;
+  width: 340px;
+  height: 340px;
+}
+
+.cs-donut-badge {
+  position: absolute;
+  background: #fcfcfc;
+  border: 1px solid #d9d9d9;
+  border-radius: 8px;
+  padding: 5px 8px;
+  font-family: 'DM Sans', 'IBM Plex Sans', sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  transform: translate(-50%, -50%);
+}
+
+.cs-insights {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.cs-insight-title {
+  font-family: 'Lora', serif;
+  font-weight: 600;
+  font-size: 20px;
+  line-height: normal;
+}
+
+.cs-insight-body {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-weight: 500;
+  font-size: 15px;
+  line-height: normal;
+  color: #7b7b7b;
+  max-width: 550px;
+}
+
+/* ---------- device/screen sections ---------- */
+
+/* the flattened frame export was soft (946px wide); the raw source image
+   behind it is 2348x946 — using that directly instead, same as the cover
+   photo fix. Capped at its native width and centered so the gap to the
+   outline matches the gap to the right edge. */
+.cs-sketch-img {
+  display: block;
+  width: 100%;
+  max-width: 2348px;
+  height: auto;
+  border-radius: 10px;
+  margin: 0 auto;
+}
+
+/* judge-feedback photo: background gradient (lossless at any size) with
+   the actual scorecard photo layered on top at its own raw resolution
+   (2944x2250 source vs the 564px it renders at — plenty sharp). */
+.cs-jumpstart {
+  position: relative;
+  width: 100%;
+  max-width: 2348px;
+  aspect-ratio: 945 / 532;
+  border-radius: 20px;
+  overflow: hidden;
+  margin: 0 auto;
+}
+
+.cs-jumpstart-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cs-jumpstart-scorecard {
+  position: absolute;
+  left: 20.21%;
+  top: 9.40%;
+  width: 59.68%;
+  height: 81.02%;
+  object-fit: cover;
+  border: 1px solid #d9d9d9;
+  border-radius: 10px;
+}
+
+/* "final designs" screen frame — real layout in code, built to the same
+   946x532 proportions as Figma so every position below is just that
+   node's Figma offset expressed as a percentage. Only genuinely
+   photographic pieces stay as images: the background gradient (lossless
+   at any size since it's smooth), the iPhone bezel art, and the 4 small
+   core-frame mockups. The big preview is a real screen recording in
+   Figma that can't be exported through the API — see .cs-screen-video-slot. */
+.cs-screen-frame {
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
+  aspect-ratio: 946 / 532;
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+/* modifier: no full-bleed gradient photo — just a transparent card with a
+   gray stroke (SpeakEasy's actual Figma structure, where the gradient
+   lives on the small core-frames card instead, see .cs-screen-core-bg) */
+.cs-screen-frame.outline-frame {
+  border: 1px solid #d9d9d9;
+}
+
+.cs-screen-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cs-screen-phone {
+  position: absolute;
+  left: 6.34%;
+  top: 13.16%;
+  width: 19.77%;
+  aspect-ratio: 187 / 392;
+}
+
+.cs-screen-video-slot {
+  position: absolute;
+  left: 4.28%;
+  top: 2.55%;
+  width: 91.4%;
+  height: 95.4%;
+  border-radius: 10%;
+  overflow: hidden;
+  background: #000;
+}
+
+.cs-screen-video-slot video,
+.cs-screen-video-slot img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cs-screen-bezel {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.cs-screen-core-label {
+  position: absolute;
+  left: 29.18%;
+  top: 18.42%;
+  font-family: 'CommitMono', monospace;
+  font-weight: 400;
+  font-size: 12px;
+  color: #fcfcfc;
+}
+
+/* 4 individually-cropped high-res source photos (not a flattened
+   screenshot, which is permanently capped at Figma's 946px frame export
+   and looks soft once enlarged) — each crop uses Figma's own exact manual
+   crop percentages, so the framing matches exactly. Fixed % widths that
+   sum to <100% (not flex:1) so the row always fits the card with no
+   overflow risk, and space-between keeps the 3 gaps perfectly uniform. */
+.cs-screen-core {
+  position: absolute;
+  left: 29.18%;
+  top: 23.68%;
+  width: 64.27%;
+  height: 57.89%;
+  border: 1px solid #fcfcfc;
+  border-radius: 20px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  padding: 0 3%;
+  box-sizing: border-box;
+}
+
+/* modifier: opaque white card instead of the transparent border that lets
+   the outer frame's gradient show through (Pearl's look) */
+.cs-screen-core.solid-bg {
+  background: #fcfcfc;
+  border-color: #d9d9d9;
+}
+
+/* SpeakEasy's gradient lives here instead of on the outer frame — see
+   .cs-screen-frame.outline-frame */
+.cs-screen-core-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+}
+
+.cs-screen-mockups {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  gap: 25px;
+}
+
+.cs-mockup-frame {
+  position: relative;
+  width: 19.77%;
+  aspect-ratio: 119 / 243;
+  overflow: hidden;
+  border-radius: 8%;
+}
+
+.cs-mockup-frame img {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cs-mockup-frame img.has-crop {
+  max-width: none;
+  max-height: none;
+  object-fit: fill;
+}
+
+/* ---------- persona card (SpeakEasy) ---------- */
+
+.cs-persona {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 946 / 497;
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.cs-persona-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cs-persona-card {
+  position: absolute;
+  left: 6.34%;
+  top: 12.07%;
+  width: 87.1%;
+  height: 75.86%;
+  border: 1px solid #fcfcfc;
+  border-radius: 10px;
+  padding: 3.17%;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  color: #fcfcfc;
+  box-sizing: border-box;
+}
+
+.cs-persona-name {
+  font-family: 'Lora', serif;
+  font-weight: 600;
+  font-size: 25px;
+}
+
+.cs-persona-tags {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  margin-top: 15px;
+}
+
+.cs-persona-tag {
+  border: 1px solid #fcfcfc;
+  border-radius: 5px;
+  padding: 5px 10px;
+  font-family: 'CommitMono', monospace;
+  font-size: 12px;
+}
+
+.cs-persona-desc {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-weight: 500;
+  font-size: 15px;
+  line-height: normal;
+  margin-top: 15px;
+  max-width: 765px;
+}
+
+.cs-persona-cols {
+  display: flex;
+  gap: 15px;
+}
+
+.cs-persona-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 15px;
+}
+
+.cs-persona-list {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-weight: 500;
+  font-size: 15px;
+  line-height: normal;
+  padding-left: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* ---------- home iterations gallery (SpeakEasy) ---------- */
+
+/* Figma clips all 4 columns to ONE shared card height (not a separate
+   crop per column) — the individual images are naturally different
+   lengths, and the card's own overflow:hidden just cuts them all off at
+   the same point. aspect-ratio here is measured directly off the Figma
+   reference (card width:height ≈ 930:470). */
+.cs-iterations {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 930 / 470;
+  overflow: hidden;
+  background: #fcfcfc;
+  border: 1px solid #d9d9d9;
+  border-radius: 20px;
+  padding: 30px;
+  display: flex;
+  align-items: flex-start;
+  gap: 30px;
+  box-sizing: border-box;
+}
+
+.cs-iteration-col {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.cs-iteration-frame {
+  width: 100%;
+  border: 1px solid #d9d9d9;
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.cs-iteration-frame img {
+  display: block;
+  width: 100%;
+  height: auto;
+}

@@ -1,0 +1,155 @@
+/* Reference: Figma "home page" frame, 1152 x 748. Same warm dithered
+   texture the about-page collage uses, but here it's a flat color (no
+   photo to run the real Bayer/warm-filter algorithm on), so a small
+   repeating dot pattern stands in for it. background-attachment:fixed
+   anchors the pattern to the viewport rather than each element's own box,
+   so the page background and the face-down cards line up pixel-for-pixel
+   — that's what makes the cards genuinely blend in until you hover them. */
+.home-page {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background-color: #ff7800;
+  background-image: radial-gradient(rgba(0, 0, 0, 0.16) 1px, transparent 1.3px);
+  background-size: 4px 4px;
+  background-attachment: fixed;
+}
+
+/* 4x4 grid, 128px cards, 15px gaps — matches the Figma grid exactly, so
+   its total size (557x557) is a known constant. --gap is the leftover
+   vertical space (below the 45px nav bar) split in half, clamped to 0 so
+   it never goes negative on a very short window; using that same value
+   for both the top offset (below the nav bar) and the right offset makes
+   all three margins — top, bottom, right — genuinely equal at any window
+   size, not just at one reference size, leaving the rest of the width
+   open on the left for a future intro/bio. */
+.match-grid {
+  --gap: max(0px, calc((100vh - 45px - 557px) / 2));
+  position: absolute;
+  top: calc(45px + var(--gap));
+  right: var(--gap);
+  display: grid;
+  grid-template-columns: repeat(4, 128px);
+  grid-template-rows: repeat(4, 128px);
+  gap: 15px;
+}
+
+/* each card is a small 3D flip: perspective on the container, the inner
+   face wrapper rotates, and the two faces (front = camouflaged/face-down,
+   back = photo/face-up) are opposite sides of that same rotated box so
+   only one is ever visible at a time. */
+.card {
+  position: relative;
+  width: 128px;
+  height: 128px;
+  perspective: 600px;
+}
+
+.card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  transform-style: preserve-3d;
+  transition: transform 0.5s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.card.flipped .card-inner {
+  transform: rotateY(180deg);
+}
+
+.card-face {
+  position: absolute;
+  inset: 0;
+  border-radius: 10px;
+  backface-visibility: hidden;
+}
+
+/* face-down: identical pattern/origin to the page background, so it
+   visually disappears into it. overflow:hidden clips the sheen pseudo-
+   element (below) to the card's own rounded shape. */
+.card-face-front {
+  overflow: hidden;
+  background-color: #ff7800;
+  background-image: radial-gradient(rgba(0, 0, 0, 0.16) 1px, transparent 1.3px);
+  background-size: 4px 4px;
+  background-attachment: fixed;
+  transition: box-shadow 0.2s ease;
+}
+
+/* hovering anywhere over the grid gives every still-face-down card a
+   faint golden edge, just enough to register that cards are there
+   without breaking the camouflage at rest. */
+.match-grid:hover .card:not(.flipped):not(.matched) .card-face-front {
+  box-shadow: inset 0 0 0 1px rgba(255, 199, 76, 0.35);
+}
+
+/* on-load sheen: a single #FFC74C halftone-dot band sweeps diagonally over
+   the whole grid, but each card only ever shows the slice of it that falls
+   within its own clipped square — so the grid stays visibly made of
+   distinct cards, while the gradient motion itself is one continuous
+   sweep rather than 16 independent replays. This works like the dot-
+   texture's background-attachment:fixed trick elsewhere on this page: a
+   single "world space" gradient, sampled locally by each card. --card-x/
+   --card-y (set once per card in JS, from its grid row/column) place that
+   card's sampling window in the shared canvas; --sweep-t (updated every
+   frame by one JS rAF loop, inherited from :root down to every card) is
+   the one shared clock that moves the whole canvas past all of them at
+   once. */
+.card-face-front::after {
+  content: '';
+  position: absolute;
+  inset: -30%;
+  background-image: radial-gradient(#ffc74c 1.4px, transparent 1.6px);
+  background-size: 4px 4px;
+  mix-blend-mode: screen;
+  pointer-events: none;
+  mask-repeat: no-repeat;
+  -webkit-mask-repeat: no-repeat;
+  mask-image: linear-gradient(135deg, transparent 35%, black 50%, transparent 65%);
+  -webkit-mask-image: linear-gradient(135deg, transparent 35%, black 50%, transparent 65%);
+  mask-size: 1400px 1400px;
+  -webkit-mask-size: 1400px 1400px;
+  mask-position:
+    calc(var(--sweep-t, -2000px) - var(--card-x, 0px))
+    calc(var(--sweep-t, -2000px) - var(--card-y, 0px));
+  -webkit-mask-position:
+    calc(var(--sweep-t, -2000px) - var(--card-x, 0px))
+    calc(var(--sweep-t, -2000px) - var(--card-y, 0px));
+}
+
+/* face-up: yellow card with the photo inset (8px padding, per Figma) —
+   same dot texture as the face-down side, just on the yellow base, so the
+   card itself stays consistent with the site's dithered look even once
+   flipped. The photo asset itself is separately pre-dithered (Bayer 16x16
+   + the same warm filter the about-page collage uses) rather than styled
+   here, so it reads as genuinely part of the same photo, not a filter
+   layered on top. */
+.card-face-back {
+  background-color: #ffc74c;
+  background-image: radial-gradient(rgba(0, 0, 0, 0.16) 1px, transparent 1.3px);
+  background-size: 4px 4px;
+  transform: rotateY(180deg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card-face-back img {
+  width: 112px;
+  height: 112px;
+  border-radius: 5px;
+  object-fit: cover;
+  display: block;
+  pointer-events: none;
+  /* keep the dither pattern crisp when scaled — smooth interpolation
+     (the default) can moiré the halftone dots into stray squiggly lines. */
+  image-rendering: pixelated;
+}
+
+/* a matched pair stops being interactive (no more cursor/hover feedback
+   needed once it's solved) but stays flipped face-up. */
+.card.matched .card-inner {
+  cursor: default;
+}

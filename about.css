@@ -1,0 +1,593 @@
+/* Reference design canvas: 1152 x 748 (Figma "about page" frame).
+   Structural regions (columns/panels) scale with the window as %.
+   Spacing within a region (gaps, padding, offsets) stays fixed px
+   so it never looks stretched or squeezed. */
+
+.page {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  background: #fcfcfc;
+  overflow: hidden;
+  display: flex;
+}
+
+/* left side panel: a fixed 350px. Kept fixed (not a % of viewport) so the
+   margins around the photo and text stay consistent on any window size,
+   instead of stretching the content wider than it was designed for. The
+   image area still fills the rest of the window edge-to-edge. */
+.side-panel {
+  position: relative;
+  flex: 0 0 350px;
+  height: 100%;
+  background: #F7F7F7;
+  border-right: 1px solid rgba(148, 148, 148, 0.25);
+  overflow: hidden;
+}
+
+/* Normal-flow stack instead of hand-tuned absolute offsets, so each block
+   sits exactly 20px from the next based on its own real content height —
+   no manual pixel math, and no risk of overlap or leftover gaps. */
+.side-panel-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 75px 30px 30px;
+}
+
+.profile-photo {
+  width: 100%;
+  height: 217px;
+  border-radius: 5px;
+  object-fit: cover;
+}
+
+.bio-block {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.bio-heading {
+  font-family: 'Lora', serif;
+  font-weight: 400;
+  font-size: 20px;
+  color: #5e5e5e;
+}
+
+.bio-text {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.bio-text p,
+.misc-text {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 1.1;
+  color: #787878;
+}
+
+.section-heading {
+  font-family: 'Lora', serif;
+  font-weight: 400;
+  font-size: 20px;
+  color: #5e5e5e;
+}
+
+.experience-block {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.experience-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.experience-row {
+  display: flex;
+  align-items: center;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 1.1;
+  color: #787878;
+  white-space: nowrap;
+}
+
+/* the role fills all remaining space (rather than sizing to its own text),
+   so the date after it always lands at the same right edge across rows
+   regardless of how long each role's text is. */
+.experience-role {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.experience-org {
+  color: #5e5e5e;
+}
+
+.experience-date {
+  flex-shrink: 0;
+  margin-left: 8px;
+  text-align: right;
+}
+
+.misc-block {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* main area: remaining space to the right of the side panel.
+   Holds the pannable, zoomed-in collage — nothing is ever cropped out of
+   existence, the image is just rendered larger than the viewport and you
+   drag/scroll to explore it. */
+.main-area {
+  position: relative;
+  flex: 1 1 auto;
+  height: 100%;
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+}
+
+.collage-wrap {
+  position: absolute;
+  top: 0;
+  left: 0;
+  will-change: transform;
+}
+
+.collage-img {
+  display: block;
+  pointer-events: none;
+}
+
+/* I-Spy hotspots: registered on top of the collage at the exact position of
+   their real-photo counterpart (per-item left/top/width/height set inline in
+   the markup, from each Figma item frame's position on the collage), sized
+   as % of .collage-wrap so they pan/zoom in lockstep with the photo
+   underneath instead of drifting off it. Purely visual/decorative — click
+   detection happens in JS against the same normalized box, matching how
+   the goldfish hover hit-test already works, so pointer-events stay off. */
+.spy-hotspot {
+  position: absolute;
+  pointer-events: none;
+}
+
+.spy-hotspot img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  /* keep the dither pattern crisp when the browser scales these small
+     cutout PNGs up to their on-canvas size — smooth interpolation
+     (the default) can moire the halftone dots into stray squiggly lines. */
+  image-rendering: pixelated;
+}
+
+/* item cutout: same warmth/dither treatment as the base photo, so at rest
+   it's seamless — you can't tell it's a separate layer. */
+
+/* sparkles that pop in one at a time around an item on click. Sit above
+   everything else (later in the DOM than the hotspot cutouts) so they read
+   as a burst coming off the item rather than a layer underneath it. */
+.spy-sparkle {
+  position: absolute;
+  pointer-events: none;
+  opacity: 0;
+  transform: scale(0.2) rotate(-15deg);
+  transform-origin: center;
+}
+
+.spy-sparkle img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+}
+
+.spy-sparkle.pop {
+  animation: sparkle-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.spy-sparkle.fade {
+  animation: sparkle-fade 0.35s ease-in forwards;
+}
+
+@keyframes sparkle-pop {
+  0% { opacity: 0; transform: scale(0.2) rotate(-15deg); }
+  60% { opacity: 1; transform: scale(1.15) rotate(4deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0deg); }
+}
+
+@keyframes sparkle-fade {
+  0% { opacity: 1; transform: scale(1) rotate(0deg); }
+  100% { opacity: 0; transform: scale(0.5) rotate(8deg); }
+}
+
+/* info button + popup: sits 30px from the collage viewport's top-left
+   corner (fixed to .main-area, not .collage-wrap, so it never pans/zooms
+   with the photo). Popup toggles open on click of the "i". */
+.info-button {
+  position: absolute;
+  left: 30px;
+  top: 75px;
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: 50%;
+  background: #ff7800;
+  color: #fcfcfc;
+  font-family: 'CommitMono', monospace;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 20;
+}
+
+.info-popup {
+  position: absolute;
+  left: 68px;
+  top: 75px;
+  width: 333px;
+  padding: 8px 10px;
+  border-radius: 5px;
+  background: #ff7800;
+  color: #fcfcfc;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 1.4;
+  z-index: 19;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-6px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.info-popup.open {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* hint button + popup: stacked directly below the info button (same left
+   edge, 10px gap). Clicking a still-gray tag name turns the cursor into
+   the scanner and points it toward that item — this popup just explains
+   the mechanic, so its colors invert the info popup's (white bg, orange
+   text) to read as a distinct helper rather than a duplicate of it. */
+.hint-button {
+  position: absolute;
+  left: 30px;
+  top: 135px;
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: 50%;
+  padding: 0;
+  background: none;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  z-index: 20;
+}
+
+.hint-button img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.hint-popup {
+  position: absolute;
+  left: 68px;
+  top: 135px;
+  width: 274px;
+  padding: 8px 10px;
+  border-radius: 5px;
+  background: #fcfcfc;
+  color: #ff7800;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 1.4;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  z-index: 19;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-6px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.hint-popup.open {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* info card: sits below the tag row in the DOM (so the tag row's default
+   stacking keeps tags on top and clickable) and stays docked off-screen via
+   translateY until an item is found + its tag clicked, then slides up to
+   overlay the lower portion of the collage — same idea as a bottom sheet. */
+.info-card {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #fcfcfc;
+  border-top: 1px solid rgba(148, 148, 148, 0.25);
+  padding: 20px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  transform: translateY(100%);
+  transition: transform 0.45s cubic-bezier(0.65, 0, 0.35, 1);
+  cursor: pointer;
+}
+
+.info-card.open {
+  transform: translateY(0);
+}
+
+.info-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1 1 auto;
+  min-width: 0;
+  align-self: flex-start;
+}
+
+.info-card-title {
+  font-family: 'Lora', serif;
+  font-weight: 400;
+  font-size: 20px;
+  color: #5e5e5e;
+}
+
+.info-card-text {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-weight: 400;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #787878;
+}
+
+/* media area: only some items have Figma reference photos, so this stays
+   empty/hidden (display:none) unless populated for the open item. */
+.info-card-media {
+  display: none;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+}
+
+.info-card-media.has-media {
+  display: flex;
+}
+
+.info-card-image {
+  display: block;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+/* row (smiski): two side-by-side reference photos instead of one */
+.info-card-media.row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* row image with a manual Figma crop instead of a plain object-fit */
+.info-card-row-crop {
+  position: relative;
+  overflow: hidden;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.info-card-row-crop img {
+  position: absolute;
+  max-width: none;
+  display: block;
+}
+
+/* fan (paint tube): a small stack of overlapping, rotated photos. Each
+   photo's outer box (unrotated) positions it in the fan; the inner box is
+   the card's true size, centered in the outer box and rotated — same
+   two-layer structure Figma uses, so rotated cards land exactly where
+   they should instead of drifting per their rotated bounding box. */
+.info-card-media.fan {
+  position: relative;
+}
+
+.info-card-fan-img {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.info-card-fan-inner {
+  position: relative;
+  overflow: hidden;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+}
+
+.info-card-fan-inner img {
+  display: block;
+  max-width: none;
+}
+
+/* frames without a custom Figma crop just fill the card normally */
+.info-card-fan-img-cover {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* frames with a custom crop use explicit inline %, positioned absolutely
+   so the percentages resolve against the card box, not the natural image */
+.info-card-fan-inner img:not(.info-card-fan-img-cover) {
+  position: absolute;
+}
+
+/* carousel (dice / board games): a filmstrip of the real Catan game photos (kept
+   in their original portrait crop, same as the Figma reference), drifting
+   left in a continuous, seamless loop rather than cutting between frames. */
+.info-card-media.carousel {
+  position: relative;
+  width: 280px;
+  height: 100px;
+  overflow: hidden;
+  border-radius: 10px;
+}
+
+.info-card-carousel-track {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  width: max-content;
+  gap: 6px;
+  animation: carousel-scroll 34s linear infinite;
+}
+
+.info-card:not(.open) .info-card-carousel-track {
+  animation-play-state: paused;
+}
+
+.info-card-carousel-img {
+  height: 100%;
+  width: auto;
+  aspect-ratio: 70 / 93;
+  object-fit: cover;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+@keyframes carousel-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* tag row: centered, wraps onto multiple centered rows as the window narrows */
+.tag-row {
+  position: absolute;
+  left: 41px;
+  right: 41px;
+  bottom: 31px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  transition: bottom 0.45s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+/* tags start as the "not found words" gray and switch to the "found words"
+   orange once their matching item has been clicked in the collage. */
+.tag {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 10px;
+  border-radius: 5px;
+  background: #5e5e5e;
+  font-family: 'CommitMono', monospace;
+  font-weight: 400;
+  font-size: 12px;
+  color: #fcfcfc;
+  white-space: nowrap;
+  transition: background 0.3s ease;
+}
+
+.tag.found {
+  background: #ff7800;
+}
+
+/* scanner cursor: replaces the dot while a hint is active. Rotated (via JS,
+   around its own center) to point from the cursor toward the item being
+   hinted at — its dot sits near-center with the radar cone fanning upward
+   by default, so rotate(0deg) means "up" and this stays accurate as the
+   mouse moves or the collage is panned underneath it. */
+.scanner-cursor {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 107px;
+  height: 107px;
+  transform: translate(-50%, -50%) rotate(0deg);
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+#custom-cursor.hinting .cursor-dot {
+  opacity: 0;
+}
+
+#custom-cursor.hinting .scanner-cursor {
+  opacity: 1;
+}
+
+/* scanner rings: pulse in one at a time, innermost to outermost, 0.5s
+   apart, then hold briefly together before the whole thing resets and
+   the sequence starts over — a continuous "signal searching" loop. */
+.scanner-ring {
+  opacity: 0;
+  animation-duration: 2s;
+  animation-timing-function: ease-out;
+  animation-iteration-count: infinite;
+}
+
+.scanner-ring-1 {
+  animation-name: scanner-pulse-1;
+}
+
+.scanner-ring-2 {
+  animation-name: scanner-pulse-2;
+}
+
+.scanner-ring-3 {
+  animation-name: scanner-pulse-3;
+}
+
+.scanner-ring-4 {
+  animation-name: scanner-pulse-4;
+}
+
+@keyframes scanner-pulse-1 {
+  0% { opacity: 0; }
+  5% { opacity: 1; }
+  100% { opacity: 1; }
+}
+
+@keyframes scanner-pulse-2 {
+  0%, 20% { opacity: 0; }
+  25% { opacity: 1; }
+  100% { opacity: 1; }
+}
+
+@keyframes scanner-pulse-3 {
+  0%, 45% { opacity: 0; }
+  50% { opacity: 1; }
+  100% { opacity: 1; }
+}
+
+@keyframes scanner-pulse-4 {
+  0%, 70% { opacity: 0; }
+  75% { opacity: 1; }
+  100% { opacity: 1; }
+}
