@@ -7,8 +7,8 @@
 // bar's "ARTI G." / "WORK" links, a case study's own nav — since that's
 // moving through the portfolio, not a first look at the home page.
 //
-// Dev convenience: visit "home page.html?replay=1" to force it to play
-// regardless of the above — handy while iterating on it directly.
+// Dev convenience: visit "/?replay=1" to force it to play regardless of
+// the above — handy while iterating on it directly.
 
 const CSS_DURATION_MS = 5800; // matches intro.css's 5.8s animation-duration
 
