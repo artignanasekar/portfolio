@@ -363,34 +363,27 @@ body {
    <=900px breakpoint as the outline-rail drop above.
    --------------------------------------------------------------------- */
 @media (max-width: 900px) {
-  /* meta row: the updated "adjustable phone" frames keep all four columns
-     on ONE row, as a centered group with a uniform column gap. Force a
-     single row (nowrap); min-width:0 lets the widest value (IBM's team
-     list) wrap internally so the row never pushes past the screen. */
+  /* meta row: originally a forced single row (all four columns, nowrap),
+     matching the "adjustable phone" frame at the width it was designed
+     against — but IBM's six-name team list needs more room than any
+     single-row layout has to give at real phone widths (373-430px it was
+     shrinking to a few px wide, or fully collapsing and overlapping the
+     Org column next to it). A 2x2 grid gives every column a fixed,
+     guaranteed share of the width instead of everyone fighting over one
+     row, so nothing can ever overlap regardless of content length. */
   .cs-meta {
-    flex-wrap: nowrap;
-    /* space-evenly puts equal space at the ends and between every
-       column, so the group stays centered and evenly spaced whether the
-       viewport is ~500px or right at the 900px breakpoint */
-    justify-content: space-evenly;
-    column-gap: clamp(12px, 3vw, 28px);
-    row-gap: 20px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: clamp(20px, 6vw, 56px);
+    row-gap: 24px;
   }
 
-  /* only the team column is allowed to shrink below its content width —
-     it already wraps its own text (see .cs-meta-team below). The other
-     three columns keep nowrap values, so shrinking them below their
-     content would silently clip text (e.g. "Product Designer") against
-     the body's overflow-x:hidden instead of wrapping or scrolling. */
-  .cs-meta-item:has(.cs-meta-team) {
+  /* grid items default to min-width:auto (their content's natural width),
+     which can force a column wider than its share of the grid to fit an
+     unbroken value — min-width:0 lets every value wrap within its own
+     cell instead. */
+  .cs-meta-item {
     min-width: 0;
-  }
-
-  /* keep the short values ("12 Weeks", "Automation & ILM", "Product
-     Designer") each on their own tidy line — only the team list wraps
-     (it opts back in below) */
-  .cs-meta-value {
-    white-space: nowrap;
   }
 
   /* app-icon strip: lose the wide side padding, let the four icons share
@@ -1212,11 +1205,10 @@ body {
     content: ", ";
   }
 
-  /* the team column is the one that wraps: cap its width so the comma
-     list stays a tidy few lines instead of hogging the row and starving
-     the other three columns */
+  /* no max-width needed here any more — the 2x2 grid (see .cs-meta above)
+     already caps this column at one grid cell's width; just let the comma
+     list wrap normally within it. */
   .cs-meta-team {
     white-space: normal;
-    max-width: clamp(190px, 32vw, 250px);
   }
 }

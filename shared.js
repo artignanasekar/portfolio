@@ -86,7 +86,11 @@ document.querySelectorAll('a.nav-link[href$="#work"]').forEach((link) => {
     } else {
       e.preventDefault();
       sessionStorage.setItem('scrollToWork', '1');
-      location.href = 'home page.html';
+      // strip the "#work" suffix from the link's own href rather than
+      // hardcoding the home page's filename here too — this is exactly
+      // the line that went stale (still pointing at the old "home
+      // page.html") when that file was renamed to index.html elsewhere.
+      location.href = link.getAttribute('href').replace(/#work$/, '');
     }
   });
 });

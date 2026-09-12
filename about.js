@@ -365,7 +365,13 @@ function updateHintDirection() {
   if (mobileScannerCursorEl) {
     const rect = viewport.getBoundingClientRect();
     const angleFromCenter = hintAngleFrom(rect.left + rect.width / 2, rect.top + rect.height / 2, item);
-    mobileScannerCursorEl.style.transform = `translate(-50%, -50%) rotate(${angleFromCenter}deg)`;
+    // no translate(-50%,-50%) here, unlike the desktop scanner above: that
+    // one recenters itself on a raw mouse point (#custom-cursor's own
+    // top:0/left:0 anchor), but this one is position:static inside
+    // .mobile-hint-scanner, which is already centered in .main-area via
+    // its own left/top/translate — adding the same correction again just
+    // shifts it a further half-icon-width up-left of center.
+    mobileScannerCursorEl.style.transform = `rotate(${angleFromCenter}deg)`;
   }
 }
 

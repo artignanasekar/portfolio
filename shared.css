@@ -170,6 +170,17 @@ body {
                  (its default 0,0 position) on every page load */
 }
 
+/* touch devices have no real mousemove, but iOS/Android browsers fire one
+   synthetic "ghost" mousemove at the tapped point right after a touchstart
+   — enough to trigger the opacity:0 → 1 reveal above, leaving the dot
+   stranded at whatever was last tapped since nothing ever moves it again.
+   There's no mouse pointer to represent here at all, so hide it outright. */
+@media (hover: none) and (pointer: coarse) {
+  #custom-cursor {
+    display: none;
+  }
+}
+
 /* IBM eye-bee-M rebus icons (Figma "ibm" frame) — percentage-based so the
    composition scales cleanly whether it's sitting in the small home-page
    work-card cover or the wider case-study cover. */

@@ -658,7 +658,11 @@
 .mobile-hint-scanner .scanner-cursor {
   position: static;
   opacity: 1;
-  transform: translate(-50%, -50%) rotate(0deg);
+  /* no translate(-50%,-50%): .mobile-hint-scanner (the parent) already
+     centers itself in .main-area, and this fills that box in normal flow
+     — the same correction the desktop .scanner-cursor needs (it's centered
+     on a raw point, not a pre-centered box) would just double up here. */
+  transform: rotate(0deg);
 }
 
 /* both mobile-only, styled/shown in the media query below — hidden here so
