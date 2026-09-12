@@ -4,10 +4,64 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Home — Portfolio</title>
-<link rel="stylesheet" href="shared.css" />
-<link rel="stylesheet" href="hero.css?v=4" />
+<link rel="stylesheet" href="shared.css?v=5" />
+<link rel="stylesheet" href="hero.css?v=14" />
+<link rel="stylesheet" href="intro.css?v=11" />
 </head>
 <body>
+  <div id="intro-overlay" class="intro-overlay" data-name="home page animation">
+    <div class="intro-stage">
+      <div class="intro-bar-top"></div>
+      <div class="intro-bar-bottom"></div>
+      <div class="intro-bar-left"></div>
+      <div class="intro-bar-right"></div>
+
+      <p class="intro-spy-text">I SPY</p>
+      <div class="intro-spy-card"><span>WITH MY LITTLE EYE</span></div>
+      <div class="intro-brow-small"><canvas id="intro-brow-small-canvas"></canvas></div>
+      <div class="intro-pupil"><img src="assets/intro/eye-pupil.svg" alt="" /></div>
+
+      <div class="intro-portrait"><canvas id="intro-portrait-canvas"></canvas></div>
+
+      <p id="intro-word-a" class="intro-word">A</p>
+      <p id="intro-word-ux" class="intro-word">UX</p>
+      <p id="intro-word-amp" class="intro-word">&amp;</p>
+      <p id="intro-word-product" class="intro-word">PRODUCT</p>
+      <p id="intro-word-designer" class="intro-word">DESIGNER</p>
+      <p id="intro-word-who" class="intro-word">WHO</p>
+      <p id="intro-word-turns" class="intro-word">TURNS</p>
+
+      <!-- the O, back to front: rectangular photo strip, then the white
+           corner-mask cutout, then the ring (inside .intro-lashes below) on
+           top of both — see the comment on .intro-eye-photo in intro.css -->
+      <div class="intro-eye-photo">
+        <div class="intro-filmstrip">
+          <canvas class="intro-strip-canvas" data-src="assets/intro/strip-1.jpg"></canvas>
+          <canvas class="intro-strip-canvas" data-src="assets/intro/strip-2.jpg"></canvas>
+          <canvas class="intro-strip-canvas" data-src="assets/intro/strip-3.jpg"></canvas>
+          <canvas class="intro-strip-canvas" data-src="assets/intro/strip-4.jpg"></canvas>
+          <canvas class="intro-strip-canvas" data-src="assets/intro/strip-5.jpg"></canvas>
+          <canvas class="intro-strip-canvas" data-src="assets/intro/strip-6.jpg"></canvas>
+          <canvas class="intro-strip-canvas" data-src="assets/intro/strip-7.jpg"></canvas>
+          <canvas class="intro-strip-canvas" data-src="assets/intro/strip-8.jpg"></canvas>
+        </div>
+      </div>
+      <div class="intro-corner-mask"><img src="assets/intro/corner-mask.svg" alt="" /></div>
+      <div class="intro-lashes">
+        <div class="intro-lash-left"><img src="assets/intro/lash-left.svg" alt="" /></div>
+        <div class="intro-lash-right"><img src="assets/intro/lash-right.svg" alt="" /></div>
+        <div class="intro-brow-large"><img src="assets/intro/brow-large.svg" alt="" /></div>
+      </div>
+      <div class="intro-divider"></div>
+
+      <p class="intro-into">INTO</p>
+
+      <p id="intro-cycle-thoughtful" class="intro-cycle-word">thoughtful</p>
+      <p id="intro-cycle-innovative" class="intro-cycle-word">innovative</p>
+      <p id="intro-cycle-experiences" class="intro-cycle-word">experiences</p>
+    </div>
+  </div>
+
   <div class="page" data-name="home page">
 
     <nav class="nav-bar has-brand" data-name="nav bar">
@@ -15,86 +69,13 @@
       <div class="nav-links">
         <a href="home page.html#work" class="nav-link">WORK</a>
         <a href="about.html" class="nav-link">ABOUT</a>
-        <a href="#resume" class="nav-link">RESUME</a>
+        <a href="https://drive.google.com/file/d/111vidwaICF3pyrerJC__ybmi6Y8UYV2D/view?usp=sharing" class="nav-link" target="_blank" rel="noopener noreferrer">RESUME</a>
       </div>
     </nav>
 
-    <div class="hero-wrap">
-      <div class="hero-stage" data-name="home page hero">
-        <div class="hero-grid" aria-hidden="true"></div>
-
-        <div class="hero-line hero-line--v" id="hero-line-1" aria-hidden="true"></div>
-        <div class="hero-line hero-line--v" id="hero-line-2" aria-hidden="true"></div>
-        <div class="hero-line hero-line--h" id="hero-line-3" aria-hidden="true"></div>
-        <div class="hero-line hero-line--h" id="hero-line-4" aria-hidden="true"></div>
-
-        <div class="hero-text-clip" id="hero-text-1-clip">
-          <p class="hero-text">I SPY WITH MY LITTLE EYE...</p>
-        </div>
-        <div class="hero-text-clip" id="hero-text-2-clip">
-          <p class="hero-text">UX DESIGNER TURNING CURIOSITY INTO THOUGHTFUL, INNOVATIVE EXPERIENCES, ONE SUBTLE PATTERN AT A TIME.</p>
-        </div>
-        <div class="hero-text-clip" id="hero-text-3-clip">
-          <p class="hero-text">CURRENTLY DABBLING IN DESIGN AND RESEARCH @ IBM</p>
-        </div>
-        <div class="hero-text-clip" id="hero-text-4-clip">
-          <p class="hero-text">HI! I&rsquo;M ARTI</p>
-        </div>
-
-        <div class="hero-photo-clip" id="hero-photo-1-clip">
-          <div class="hero-photo-inner" id="hero-photo-1-inner">
-            <img src="assets/hero/photo-arti.jpg" alt="Arti" />
-          </div>
-        </div>
-        <div class="hero-label-clip" id="hero-label-1-clip">
-          <div class="hero-label-inner" id="hero-label-1-inner">this is arti!</div>
-        </div>
-
-        <div class="hero-photo-clip" id="hero-photo-2-clip">
-          <div class="hero-photo-inner" id="hero-photo-2-inner">
-            <img src="assets/hero/photo-balloon.jpg" alt="Balloon bouquet" />
-          </div>
-        </div>
-        <div class="hero-label-clip" id="hero-label-2-clip">
-          <div class="hero-label-inner" id="hero-label-2-inner">balloon bouquet</div>
-        </div>
-
-        <div class="hero-photo-clip" id="hero-photo-3-clip">
-          <div class="hero-photo-inner" id="hero-photo-3-inner">
-            <img src="assets/hero/photo-home.jpg" alt="Home away from home" />
-          </div>
-        </div>
-        <div class="hero-label-clip" id="hero-label-3-clip">
-          <div class="hero-label-inner" id="hero-label-3-inner">home away from home</div>
-        </div>
-
-        <div class="hero-photo-clip" id="hero-photo-4-clip">
-          <div class="hero-photo-inner" id="hero-photo-4-inner">
-            <img src="assets/hero/photo-roomies.jpg" alt="Game nights with forever roomies" />
-          </div>
-        </div>
-        <div class="hero-label-clip" id="hero-label-4-clip">
-          <div class="hero-label-inner" id="hero-label-4-inner">game nights w/ forever roomies</div>
-        </div>
-
-        <div class="hero-photo-clip" id="hero-photo-5-clip">
-          <div class="hero-photo-inner" id="hero-photo-5-inner">
-            <img src="assets/hero/photo-mchenry.jpg" alt="Late nights at McHenry" />
-          </div>
-        </div>
-        <div class="hero-label-clip" id="hero-label-5-clip">
-          <div class="hero-label-inner" id="hero-label-5-inner">late nights @ mchenry</div>
-        </div>
-
-        <div class="hero-photo-clip" id="hero-photo-6-clip">
-          <div class="hero-photo-inner" id="hero-photo-6-inner">
-            <img src="assets/hero/photo-bayarea.jpg" alt="Bay area" />
-          </div>
-        </div>
-        <div class="hero-label-clip" id="hero-label-6-clip">
-          <div class="hero-label-inner" id="hero-label-6-inner">bay areaaaaaa</div>
-        </div>
-      </div>
+    <div class="home-hero" data-name="home page hero">
+      <h1 class="home-hero-title">hi! i&rsquo;m arti,<br />a designer who researches and builds</h1>
+      <p class="home-hero-subtitle">PREV TINKERING @ IBM</p>
     </div>
 
     <section class="work-section" id="work">
@@ -106,63 +87,37 @@
             <img class="ibm-icon-m" src="assets/work/ibm/m.svg" alt="" />
           </div>
         </div>
-        <p class="work-meta">IBM | UX Design &amp; Research Intern &ndash; Summer 2026</p>
-        <p class="work-title">Developed AI-powered research intelligence and workflow automation solutions.</p>
-        <p class="work-desc">Tools for research synthesis, insight discovery, and hypothesis validation.</p>
+        <div class="work-caption">
+          <p class="work-meta">Summer 2026</p>
+          <p class="work-title">IBM - UX Design &amp; Research Intern</p>
+          <p class="work-desc">Developed AI-powered research intelligence and workflow automation solutions for research synthesis, insight discovery, and hypothesis validation.</p>
+        </div>
       </a>
       <a class="work-card" href="pearl.html">
         <img src="assets/work/pearl.png" alt="Pearl app screens on a blue background, with the Pearl mascot fish" />
-        <p class="work-meta">Pearl | Grand Prize @ SB Creative&rsquo;s Lab Designathon 2025</p>
-        <p class="work-title">Helping students build healthier digital habits.</p>
-        <p class="work-desc">A digital wellbeing platform that replaces guilt with positive reinforcement.</p>
+        <div class="work-caption">
+          <p class="work-meta">Pearl | Grand Prize @ SB Creative&rsquo;s Lab Designathon 2025</p>
+          <p class="work-title">Helping students build healthier digital habits.</p>
+          <p class="work-desc">A digital wellbeing platform that replaces guilt with positive reinforcement.</p>
+        </div>
       </a>
       <a class="work-card" href="speakeasy.html">
         <img src="assets/work/speakeasy.png" alt="SpeakEasy app screens collage" />
-        <p class="work-meta">SpeakEasy | Second Place @ UCSC SVC Designathon &ndash; February 2025</p>
-        <p class="work-title">Designing for voices speech technology leaves behind.</p>
-        <p class="work-desc">A gamified speech-practice experience built around confidence, consent, and inclusive AI.</p>
+        <div class="work-caption">
+          <p class="work-meta">SpeakEasy | Second Place @ UCSC SVC Designathon &ndash; February 2025</p>
+          <p class="work-title">Designing for voices speech technology leaves behind.</p>
+          <p class="work-desc">A gamified speech-practice experience built around confidence, consent, and inclusive AI.</p>
+        </div>
       </a>
     </section>
 
     <footer class="site-footer">
-      <p class="footer-heading">made with lots of love &amp; filter coffee</p>
-      <div class="footer-nav">
-        <div class="footer-nav-col">
-          <a href="home page.html" class="footer-link">HOME</a>
-          <a href="about.html" class="footer-link">ABOUT</a>
-          <a href="#resume" class="footer-link">RESUME</a>
-        </div>
-        <div class="footer-nav-col">
-          <a href="#" class="footer-link">LINKEDIN</a>
-          <a href="mailto:arti.gnanam@gmail.com" class="footer-link">EMAIL</a>
-        </div>
-      </div>
-      <div class="footer-grid">
-        <div class="flip-tile"><div class="flip-tile-inner"><div class="flip-face flip-face-front"></div><div class="flip-face flip-face-back"><img src="assets/footer/r0c1-dither.png" alt="" /></div></div></div>
-        <div class="flip-tile"><div class="flip-tile-inner"><div class="flip-face flip-face-front"></div><div class="flip-face flip-face-back"><img src="assets/footer/r0c2-dither.png" alt="" /></div></div></div>
-        <div class="flip-tile"><div class="flip-tile-inner"><div class="flip-face flip-face-front"></div><div class="flip-face flip-face-back"><img src="assets/footer/r0c3-dither.png" alt="" /></div></div></div>
-        <div class="flip-tile"><div class="flip-tile-inner"><div class="flip-face flip-face-front"></div><div class="flip-face flip-face-back"><img src="assets/footer/r0c4-dither.png" alt="" /></div></div></div>
-        <div class="flip-tile"><div class="flip-tile-inner"><div class="flip-face flip-face-front"></div><div class="flip-face flip-face-back"><img src="assets/footer/r0c5-dither.png" alt="" /></div></div></div>
-        <div class="flip-tile"><div class="flip-tile-inner"><div class="flip-face flip-face-front"></div><div class="flip-face flip-face-back"><img src="assets/footer/r0c6-dither.png" alt="" /></div></div></div>
-        <div class="flip-tile"><div class="flip-tile-inner"><div class="flip-face flip-face-front"></div><div class="flip-face flip-face-back"><img src="assets/footer/r0c7-dither.png" alt="" /></div></div></div>
-        <div class="flip-tile"><div class="flip-tile-inner"><div class="flip-face flip-face-front"></div><div class="flip-face flip-face-back"><img src="assets/footer/r0c8-dither.png" alt="" /></div></div></div>
-        <div class="flip-tile"><div class="flip-tile-inner"><div class="flip-face flip-face-front"></div><div class="flip-face flip-face-back"><img src="assets/footer/r1c1-dither.png" alt="" /></div></div></div>
-        <div class="flip-tile"><div class="flip-tile-inner"><div class="flip-face flip-face-front"></div><div class="flip-face flip-face-back"><img src="assets/footer/r1c2-dither.png" alt="" /></div></div></div>
-        <div class="flip-tile"><div class="flip-tile-inner"><div class="flip-face flip-face-front"></div><div class="flip-face flip-face-back"><img src="assets/footer/r1c3-dither.png" alt="" /></div></div></div>
-        <div class="flip-tile"><div class="flip-tile-inner"><div class="flip-face flip-face-front"></div><div class="flip-face flip-face-back"><img src="assets/footer/r1c4-dither.png" alt="" /></div></div></div>
-        <div class="flip-tile"><div class="flip-tile-inner"><div class="flip-face flip-face-front"></div><div class="flip-face flip-face-back"><img src="assets/footer/r1c5-dither.png" alt="" /></div></div></div>
-        <div class="flip-tile"><div class="flip-tile-inner"><div class="flip-face flip-face-front"></div><div class="flip-face flip-face-back"><img src="assets/footer/r1c6-dither.png" alt="" /></div></div></div>
-        <div class="flip-tile"><div class="flip-tile-inner"><div class="flip-face flip-face-front"></div><div class="flip-face flip-face-back"><img src="assets/footer/r1c7-dither.png" alt="" /></div></div></div>
-        <div class="flip-tile"><div class="flip-tile-inner"><div class="flip-face flip-face-front"></div><div class="flip-face flip-face-back"><img src="assets/footer/r1c8-dither.png" alt="" /></div></div></div>
-        <div class="flip-tile"><div class="flip-tile-inner"><div class="flip-face flip-face-front"></div><div class="flip-face flip-face-back"><img src="assets/footer/r2c1-dither.png" alt="" /></div></div></div>
-        <div class="flip-tile"><div class="flip-tile-inner"><div class="flip-face flip-face-front"></div><div class="flip-face flip-face-back"><img src="assets/footer/r2c2-dither.png" alt="" /></div></div></div>
-        <div class="flip-tile"><div class="flip-tile-inner"><div class="flip-face flip-face-front"></div><div class="flip-face flip-face-back"><img src="assets/footer/r2c3-dither.png" alt="" /></div></div></div>
-        <div class="flip-tile"><div class="flip-tile-inner"><div class="flip-face flip-face-front"></div><div class="flip-face flip-face-back"><img src="assets/footer/r2c4-dither.png" alt="" /></div></div></div>
-        <div class="flip-tile"><div class="flip-tile-inner"><div class="flip-face flip-face-front"></div><div class="flip-face flip-face-back"><img src="assets/footer/r2c5-dither.png" alt="" /></div></div></div>
-        <div class="flip-tile"><div class="flip-tile-inner"><div class="flip-face flip-face-front"></div><div class="flip-face flip-face-back"><img src="assets/footer/r2c6-dither.png" alt="" /></div></div></div>
-        <div class="flip-tile"><div class="flip-tile-inner"><div class="flip-face flip-face-front"></div><div class="flip-face flip-face-back"><img src="assets/footer/r2c7-dither.png" alt="" /></div></div></div>
-        <div class="flip-tile"><div class="flip-tile-inner"><div class="flip-face flip-face-front"></div><div class="flip-face flip-face-back"><img src="assets/footer/r2c8-dither.png" alt="" /></div></div></div>
-      </div>
+      <p class="site-footer-note">MADE WITH LOTS OF &lt;3 AND FILTER COFFEE</p>
+      <nav class="site-footer-links" aria-label="Social links">
+        <a class="site-footer-link" href="https://www.linkedin.com/in/arti-gnanasekar/" target="_blank" rel="noopener noreferrer">LINKEDIN</a>
+        <a class="site-footer-link" href="https://x.com/artignanam" target="_blank" rel="noopener noreferrer">X</a>
+        <a class="site-footer-link" href="mailto:arti.gnanam@gmail.com">EMAIL</a>
+      </nav>
     </footer>
 
   </div>
@@ -172,6 +127,6 @@
   </div>
 
   <script src="shared.js?v=7"></script>
-  <script src="hero.js?v=3"></script>
+  <script src="intro.js?v=18"></script>
 </body>
 </html>

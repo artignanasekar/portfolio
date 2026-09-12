@@ -1,0 +1,449 @@
+/* Home page intro — from Figma "home page animation" (node 1546:215).
+   A one-shot, 5.8s kinetic sequence: an "I SPY" title card framed by
+   four orange bars sliding in > a dithered eye-closeup photo > the site's
+   eye mark assembling (lashes + brow + a photo masked into the lens) with
+   "A UX & PRODUCT DESIGNER WHO TURNS" typing on around it > a "thoughtful
+   & innovative" / "experiences" word-cycle that flies off-screen, handing
+   off to the real home page underneath.
+
+   Every keyframe % and easing curve below is transcribed directly from
+   Figma's own motion data (get_motion_context), just switched from its
+   native infinite loop to a single play-through (animation-iteration-
+   count: 1; fill-mode: forwards) — this is an intro, not a loop.
+
+   Two simplifications from the literal Figma layer tree, called out where
+   they apply:
+   1. The photo elements use the site's existing Bayer-dither + warm-filter
+      treatment (matching about.js/hero.js) instead of Figma's prototype-
+      only WebGPU shader effects, which don't run in a real browser.
+   2. Figma's 10-photo filmstrip (which scrolls entirely off-screen while
+      invisible, before the reveal) is simplified to the one photo that
+      ends up on screen, since the scroll itself is never seen. */
+
+.intro-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  overflow: hidden;
+  background: #fcfcfc;
+}
+
+/* Small windows only (intro.js adds .intro-contain): the stage is fitted
+   INSIDE the viewport with a 30px gutter rather than cropped to cover it,
+   so the strip of overlay around the stage is now visible. It has to read
+   as an extension of the stage's own edge — which is white at rest and
+   orange for the stretch when the four framing bars are home. This track
+   matches that: bars finish sliding in at ~21.8% of the 5.8s timeline
+   (intro-bar-*-y) and fade out at ~37.75% (intro-op-1), so the gutter
+   goes orange and back on the same beats. Added to document.getAnimations()
+   like every other track, so intro.js's hold-pause keeps it in lockstep. */
+.intro-overlay.intro-contain.is-playing {
+  animation: intro-overlay-bg 5.8s linear 1 forwards;
+}
+
+@keyframes intro-overlay-bg {
+  0% { background-color: #fcfcfc; }
+  19.735% { background-color: #fcfcfc; }
+  21.818% { background-color: #ff7800; }
+  37.742% { background-color: #ff7800; }
+  37.758% { background-color: #fcfcfc; }
+  100% { background-color: #fcfcfc; }
+}
+
+/* fixed 1512x982 canvas (Figma's own frame size), scaled via --intro-scale
+   (set in intro.js) to fully COVER the viewport at any window size —
+   cropping whichever axis has room to spare, edge-to-edge, no letterbox. */
+.intro-stage {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 1512px;
+  height: 982px;
+  overflow: hidden;
+  transform: translate(-50%, -50%) scale(var(--intro-scale, 1));
+  transform-origin: center;
+}
+
+.intro-stage * {
+  position: absolute;
+}
+
+/* ---------- phase A: the four orange bars framing "I SPY" ---------- */
+
+.intro-bar-top,
+.intro-bar-bottom {
+  left: 0;
+  width: 1512px;
+  background: #ff7800;
+}
+.intro-bar-top { top: 0; height: 334px; }
+.intro-bar-bottom { top: 647px; height: 336px; }
+
+.intro-bar-left,
+.intro-bar-right {
+  top: 0;
+  width: 295px;
+  height: 982px;
+  background: #ff7800;
+}
+.intro-bar-left { left: 0; }
+.intro-bar-right { left: 1217px; }
+
+.intro-spy-text {
+  left: 434px;
+  top: 373px;
+  font-family: 'PP Editorial Old', serif;
+  font-weight: 400;
+  font-size: 200px;
+  line-height: 1;
+  color: #ff7800;
+  white-space: nowrap;
+}
+
+.intro-spy-card {
+  left: 699px;
+  top: 573px;
+  height: 35px;
+  width: 1px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+}
+
+.intro-spy-card span {
+  position: static;
+  font-family: 'CommitMono', monospace;
+  font-weight: 400;
+  font-size: 35px;
+  line-height: 1;
+  color: #ff7800;
+  white-space: nowrap;
+}
+
+.intro-brow-small {
+  left: 888px;
+  top: 433px;
+  width: 160px;
+  height: 80px;
+}
+.intro-brow-small canvas { position: static; display: block; width: 100%; height: 100%; }
+
+.intro-pupil {
+  left: 937px;
+  top: 442px;
+  width: 61px;
+  height: 61px;
+}
+.intro-pupil img { position: static; display: block; width: 100%; height: 100%; }
+
+/* ---------- phase B: the dithered eye-closeup photo + typed tagline ---------- */
+
+.intro-portrait {
+  left: 295px;
+  top: 331px;
+  width: 924px;
+  height: 316px;
+  border-radius: 4px;
+  overflow: hidden;
+  opacity: 0;
+}
+.intro-portrait canvas { position: static; display: block; width: 100%; height: 100%; object-fit: cover; }
+
+.intro-word {
+  font-family: 'CommitMono', monospace;
+  font-weight: 400;
+  font-size: 45px;
+  line-height: 1;
+  color: #fcfcfc;
+  white-space: nowrap;
+  opacity: 0;
+}
+#intro-word-a { left: 237px; top: 366px; }
+#intro-word-ux { left: 550px; top: 267px; }
+#intro-word-product { left: 859px; top: 247px; }
+#intro-word-amp { left: 617px; top: 312px; }
+#intro-word-designer { left: 1119px; top: 389px; }
+#intro-word-who { left: 411px; top: 667px; }
+#intro-word-turns { left: 781px; top: 626px; }
+
+/* ---------- phase C: "CURIOSITY" assembling, its O filled with a photo ---------- */
+
+/* the word reads CURI + O + SITY: .intro-lashes' two children spell out
+   "CURI" and "SITY" as vector letterforms (despite the old placeholder
+   class names — they're not eyelashes). The O is the photo itself, clipped
+   directly to an ellipse inscribed in its own box (628,333, 283x316 — the
+   ring's FINAL grown width; the photo doesn't appear until the ring has
+   already finished growing, so no need to track its grow animation), with
+   .intro-lashes' own .intro-brow-large ring painted on top (it already
+   sits later in the DOM — see the markup order) as the decorative border.
+
+   This has been through three approaches:
+     1. corner-mask.svg as a CSS mask — backwards, hid the photo everywhere
+        BUT the corners.
+     2. A hand-derived pixel ellipse clip — visually close but slightly
+        off-center.
+     3. Painting corner-mask.svg on top in the page's own background white
+        (covering the four corners between the box and an inscribed oval,
+        Figma's own layer order) — correct-looking, but the mask and the
+        photo are two separately-rasterized elements sharing the same CSS
+        box, and at the stage's fractional scale their pixel grids didn't
+        always land on the same device pixels, leaving a hairline seam of
+        the rectangular photo peeking out along the mask's edge. Scaling
+        the mask up to close that seam over-corrected: the scale grows the
+        SVG's inner cutout curve right along with its outer edge, so the
+        oval window ends up bigger than the ring's own oval, bleeding
+        photo out past the ring on the other side.
+   The clip-path below (approach 4) sidesteps the whole problem: it's a
+   single element clipping itself, in percentages relative to its own box,
+   so there's no second element that needs to land on the same pixels, and
+   no hand-derived coordinates to drift off-center. 50%/50% radii centered
+   at 50%/50% is, by construction, the exact ellipse inscribed in this
+   box — which is what corner-mask.svg's own Bezier curves worked out to
+   anyway (its curves run from the box's edge-midpoints, e.g. (0,158) and
+   (140.818,0) on a 283x316 box). */
+.intro-eye-photo {
+  left: 628px;
+  top: 333px;
+  width: 283px;
+  height: 316px;
+  overflow: hidden;
+  clip-path: ellipse(50% 50% at 50% 50%);
+  opacity: 0;
+}
+
+/* superseded by the clip-path above — kept out of the DOM's visible flow
+   rather than removed outright, since .intro-eye-photo's opacity keyframe
+   (intro-op-7) is still shared with it below. */
+.intro-corner-mask {
+  display: none;
+}
+
+/* base position holds the strip so its LAST photo sits in the window at
+   rest (strip height 8*316 - window 316 = 2212px above rest); the
+   translate keyframe below scrolls it down through the other 7 photos as
+   the O reveals. */
+.intro-filmstrip {
+  left: 0;
+  top: -2212px;
+  width: 283px;
+  height: 2528px;
+}
+
+.intro-filmstrip canvas {
+  position: absolute;
+  left: 0;
+  display: block;
+  width: 100%;
+  height: 316px;
+  object-fit: cover;
+}
+.intro-filmstrip canvas:nth-child(1) { top: 0; }
+.intro-filmstrip canvas:nth-child(2) { top: 316px; }
+.intro-filmstrip canvas:nth-child(3) { top: 632px; }
+.intro-filmstrip canvas:nth-child(4) { top: 948px; }
+.intro-filmstrip canvas:nth-child(5) { top: 1264px; }
+.intro-filmstrip canvas:nth-child(6) { top: 1580px; }
+.intro-filmstrip canvas:nth-child(7) { top: 1896px; }
+.intro-filmstrip canvas:nth-child(8) { top: 2212px; }
+
+.intro-lashes {
+  left: 194px;
+  top: 333px;
+  width: 1124px;
+  height: 316px;
+  opacity: 0;
+}
+
+.intro-lash-left {
+  left: 4px;
+  top: 0;
+  width: 430px;
+  height: 316px;
+}
+.intro-lash-left img { position: static; display: block; width: 100%; height: 100%; }
+
+.intro-lash-right {
+  left: 721px;
+  top: 4px;
+  width: 378px;
+  height: 316px;
+}
+.intro-lash-right img { position: static; display: block; width: 100%; height: 100%; }
+
+/* positioned relative to .intro-lashes (its actual Figma parent group —
+   it shares that group's opacity reveal, so it can't sit outside it) */
+.intro-brow-large {
+  left: 434px;
+  top: 0;
+  width: 292px;
+  height: 316px;
+}
+.intro-brow-large img { position: static; display: block; width: 100%; height: 100%; }
+
+.intro-divider {
+  left: 0;
+  top: 322px;
+  width: 1514px;
+  height: 1px;
+  background: #fcfcfc;
+  opacity: 0;
+}
+
+.intro-into {
+  left: calc(50% - 54px);
+  top: calc(50% - 22px);
+  font-family: 'CommitMono', monospace;
+  font-weight: 400;
+  font-size: 45px;
+  line-height: 1;
+  color: #ff7800;
+  white-space: nowrap;
+  opacity: 0;
+}
+
+/* ---------- phase D: the word-cycle finale ---------- */
+
+/* Figma's own motion data only animates these three words' position, never
+   their opacity — taken literally that leaves all three sitting fully
+   opaque, nearly on top of each other, for the first ~68% of the timeline
+   (their "hold" period before each one's own move begins). Each gets its
+   own fade-in here, timed to when its move starts, so the sequence reads
+   as a clean staggered reveal — thoughtful, then innovative joining it,
+   then experiences — instead of an illegible overlapping jumble from the
+   very start. */
+.intro-cycle-word {
+  font-family: 'PP Editorial Old', serif;
+  font-weight: 400;
+  font-size: 200px;
+  line-height: 1;
+  color: #ff7800;
+  white-space: nowrap;
+  opacity: 0;
+}
+#intro-cycle-thoughtful { left: 309px; top: 976px; }
+#intro-cycle-innovative { left: 323px; top: 955px; }
+#intro-cycle-experiences { left: 284px; top: 963px; }
+
+/* ================= keyframes (verbatim from Figma, played once) ================= */
+
+.intro-stage.is-playing .intro-bar-top { animation: intro-op-1 5.8s linear 1 forwards, intro-bar-top-y 5.8s linear 1 forwards; }
+.intro-stage.is-playing .intro-bar-bottom { animation: intro-op-2 5.8s linear 1 forwards, intro-bar-bottom-y 5.8s linear 1 forwards; }
+.intro-stage.is-playing .intro-bar-right { animation: intro-op-1 5.8s linear 1 forwards, intro-bar-right-x 5.8s linear 1 forwards; }
+.intro-stage.is-playing .intro-bar-left { animation: intro-op-3 5.8s linear 1 forwards, intro-bar-left-x 5.8s linear 1 forwards; }
+.intro-stage.is-playing .intro-spy-card { animation: intro-op-4 5.8s linear 1 forwards, intro-card-width 5.8s linear 1 forwards; }
+.intro-stage.is-playing .intro-spy-text { animation: intro-op-5 5.8s linear 1 forwards; }
+.intro-stage.is-playing .intro-brow-small { animation: intro-op-5 5.8s linear 1 forwards; }
+.intro-stage.is-playing .intro-pupil { animation: intro-op-5 5.8s linear 1 forwards, intro-pupil-move 5.8s linear 1 forwards; }
+.intro-stage.is-playing .intro-portrait { animation: intro-portrait-op 5.8s linear 1 forwards; }
+.intro-stage.is-playing #intro-word-a { animation: intro-word-a-op 5.8s linear 1 forwards; }
+.intro-stage.is-playing #intro-word-ux { animation: intro-word-ux-op 5.8s linear 1 forwards; }
+.intro-stage.is-playing #intro-word-amp { animation: intro-word-amp-op 5.8s linear 1 forwards; }
+.intro-stage.is-playing #intro-word-product { animation: intro-word-product-op 5.8s linear 1 forwards; }
+.intro-stage.is-playing #intro-word-designer { animation: intro-word-designer-op 5.8s linear 1 forwards; }
+.intro-stage.is-playing #intro-word-who { animation: intro-word-who-op 5.8s linear 1 forwards; }
+.intro-stage.is-playing #intro-word-turns { animation: intro-word-turns-op 5.8s linear 1 forwards; }
+.intro-stage.is-playing .intro-lashes { animation: intro-op-6 5.8s linear 1 forwards; }
+.intro-stage.is-playing .intro-lash-left { animation: intro-lash-left-x 5.8s linear 1 forwards; }
+.intro-stage.is-playing .intro-lash-right { animation: intro-lash-right-x 5.8s linear 1 forwards; }
+.intro-stage.is-playing .intro-brow-large { animation: intro-brow-large-x 5.8s linear 1 forwards, intro-brow-large-w 5.8s linear 1 forwards; }
+.intro-stage.is-playing .intro-eye-photo { animation: intro-op-7 5.8s linear 1 forwards; }
+.intro-stage.is-playing .intro-corner-mask { animation: intro-op-7 5.8s linear 1 forwards; }
+.intro-stage.is-playing .intro-filmstrip { animation: intro-filmstrip-y 5.8s linear 1 forwards; }
+.intro-stage.is-playing .intro-divider { animation: intro-op-8 5.8s linear 1 forwards, intro-divider-h 5.8s linear 1 forwards; }
+.intro-stage.is-playing .intro-into { animation: intro-into-op 5.8s linear 1 forwards; }
+.intro-stage.is-playing #intro-cycle-thoughtful { animation: intro-cycle-thoughtful-y 5.8s linear 1 forwards, intro-cycle-thoughtful-op 5.8s linear 1 forwards; }
+.intro-stage.is-playing #intro-cycle-innovative { animation: intro-cycle-innovative-y 5.8s linear 1 forwards, intro-cycle-innovative-op 5.8s linear 1 forwards; }
+.intro-stage.is-playing #intro-cycle-experiences { animation: intro-cycle-experiences-y 5.8s linear 1 forwards, intro-cycle-experiences-op 5.8s linear 1 forwards; }
+
+@keyframes intro-op-1 { 0% { opacity: 1; } 37.742% { animation-timing-function: cubic-bezier(0.5, 0, 0.5, 1); opacity: 1; } 37.758% { opacity: 0; } 100% { opacity: 0; } }
+@keyframes intro-op-2 { 0% { opacity: 1; } 37.74% { animation-timing-function: cubic-bezier(0.5, 0, 0.5, 1); opacity: 1; } 37.755% { opacity: 0; } 100% { opacity: 0; } }
+@keyframes intro-op-3 { 0% { opacity: 1; } 37.74% { animation-timing-function: cubic-bezier(0.5, 0, 0.5, 1); opacity: 1; } 37.758% { opacity: 0; } 100% { opacity: 0; } }
+@keyframes intro-op-4 { 0% { opacity: 1; } 21.425% { animation-timing-function: cubic-bezier(0.5, 0, 0.5, 1); opacity: 1; } 21.541% { opacity: 0; } 100% { opacity: 0; } }
+@keyframes intro-op-5 { 0% { opacity: 1; } 21.534% { animation-timing-function: cubic-bezier(0.5, 0, 0.5, 1); opacity: 1; } 21.544% { opacity: 0; } 100% { opacity: 0; } }
+@keyframes intro-op-6 { 0% { opacity: 0; } 37.771% { animation-timing-function: cubic-bezier(0.5, 0, 0.5, 1); opacity: 0; } 37.785% { opacity: 1; } 100% { opacity: 1; } }
+@keyframes intro-op-7 { 0% { opacity: 0; } 40.808% { animation-timing-function: cubic-bezier(0.5, 0, 0.5, 1); opacity: 0; } 40.822% { opacity: 1; } 100% { opacity: 1; } }
+@keyframes intro-filmstrip-y { 0% { translate: 0px 2212px; } 40.849% { animation-timing-function: cubic-bezier(0.808, 0.011, 0, 0.987); translate: 0px 2212px; } 54.312% { translate: 0px 0px; } 100% { translate: 0px 0px; } }
+@keyframes intro-op-8 { 0% { opacity: 0; } 54.246% { animation-timing-function: cubic-bezier(0.5, 0, 0.5, 1); opacity: 0; } 54.254% { opacity: 1; } 100% { opacity: 1; } }
+
+@keyframes intro-bar-top-y { 0% { translate: 0px -334px; } 19.735% { animation-timing-function: cubic-bezier(0.83, 0, 0.39, 1); translate: 0px -334px; } 21.818% { translate: 0px 0px; } 21.821% { translate: 0px -3px; } 100% { translate: 0px -3px; } }
+@keyframes intro-bar-bottom-y { 0% { translate: 0px 335px; } 19.747% { animation-timing-function: cubic-bezier(0.83, 0, 0.39, 1); translate: 0px 335px; } 21.828% { translate: 0px 0px; } 100% { translate: 0px 0px; } }
+@keyframes intro-bar-right-x { 0% { translate: 295px 0px; } 19.747% { animation-timing-function: cubic-bezier(0.83, 0, 0.39, 1); translate: 295px 0px; } 21.828% { translate: 0px 0px; } 21.831% { translate: 2px 0px; } 100% { translate: 2px 0px; } }
+@keyframes intro-bar-left-x { 0% { translate: -295px 0px; } 19.692% { animation-timing-function: cubic-bezier(0.83, 0, 0.39, 1); translate: -295px 0px; } 21.834% { translate: 0px 0px; } 100% { translate: 0px 0px; } }
+
+@keyframes intro-card-width { 0% { width: 1px; } 0.426% { animation-timing-function: cubic-bezier(0.83, 0, 0.39, 1); width: 1px; } 17.069% { width: 383px; } 100% { width: 383px; } }
+
+@keyframes intro-pupil-move {
+  0% { animation-timing-function: cubic-bezier(0.83, 0, 0.391, 1.004); translate: -23px 5px; }
+  17.069% { animation-timing-function: linear(0, 0.0184, 0.0663, 0.1342, 0.2145, 0.301, 0.3891, 0.4753, 0.557, 0.6327, 0.7012, 0.762, 0.815, 0.8605, 0.8989, 0.9306, 0.9564, 0.9769, 0.9927, 1.0047, 1.0133, 1.0191, 1.0228, 1.0247, 1.0252, 1.0247, 1.0234, 1.0217, 1.0197, 1.0175, 1.0153, 1.0131, 1.0111, 1.0092, 1.0075, 1.0059, 1.0046, 1.0035, 1.0025, 1.0017, 1.0011, 1.0006, 1.0002, 0.9999, 0.9997, 0.9995, 0.9994, 0.9994, 0.9994, 0.9994, 0.9994); translate: 25px 3px; }
+  21.531% { translate: 0px 2px; }
+  100% { translate: 0px 2px; }
+}
+
+@keyframes intro-portrait-op { 0% { opacity: 0; } 21.541% { animation-timing-function: cubic-bezier(0.5, 0, 0.5, 1); opacity: 0; } 21.605% { opacity: 1; } 37.741% { animation-timing-function: cubic-bezier(0.5, 0, 0.5, 1); opacity: 1; } 37.757% { opacity: 0; } 100% { opacity: 0; } }
+
+@keyframes intro-word-a-op { 0% { opacity: 0; } 21.627% { opacity: 0; } 21.755% { animation-timing-function: step-end; opacity: 1; } 37.757% { opacity: 0; } 100% { opacity: 0; } }
+@keyframes intro-word-ux-op { 0% { opacity: 0; } 23.001% { opacity: 0; } 23.13% { animation-timing-function: step-end; opacity: 1; } 37.757% { opacity: 0; } 100% { opacity: 0; } }
+@keyframes intro-word-product-op { 0% { opacity: 0; } 25.749% { animation-timing-function: cubic-bezier(0.5, 0, 0.5, 1); opacity: 0; } 25.882% { animation-timing-function: step-end; opacity: 1; } 37.757% { opacity: 0; } 100% { opacity: 0; } }
+@keyframes intro-word-turns-op { 0% { opacity: 0; } 29.871% { animation-timing-function: cubic-bezier(0.5, 0, 0.5, 1); opacity: 0; } 30.065% { animation-timing-function: step-end; opacity: 1; } 37.785% { opacity: 0; } 100% { opacity: 0; } }
+@keyframes intro-word-designer-op { 0% { opacity: 0; } 27.123% { animation-timing-function: cubic-bezier(0.5, 0, 0.5, 1); opacity: 0; } 27.255% { animation-timing-function: step-end; opacity: 1; } 37.757% { opacity: 0; } 100% { opacity: 0; } }
+@keyframes intro-word-amp-op { 0% { opacity: 0; } 24.375% { opacity: 0; } 24.515% { opacity: 1; } 37.757% { animation-timing-function: cubic-bezier(0.5, 0, 0.5, 1); opacity: 1; } 37.771% { opacity: 0; } 100% { opacity: 0; } }
+@keyframes intro-word-who-op { 0% { opacity: 0; } 28.497% { animation-timing-function: cubic-bezier(0.5, 0, 0.5, 1); opacity: 0; } 28.663% { opacity: 1; } 37.771% { animation-timing-function: cubic-bezier(0.5, 0, 0.5, 1); opacity: 1; } 37.785% { opacity: 0; } 100% { opacity: 0; } }
+
+@keyframes intro-lash-left-x { 0% { translate: 53px 0px; } 37.785% { animation-timing-function: cubic-bezier(0.83, 0, 0.39, 1); translate: 53px 0px; } 40.816% { translate: -29px 0px; } 100% { translate: -29px 0px; } }
+@keyframes intro-lash-right-x { 0% { translate: -106px 0px; } 37.785% { animation-timing-function: cubic-bezier(0.83, 0, 0.39, 1); translate: -106px 0px; } 40.816% { translate: 25px 0px; } 100% { translate: 25px 0px; } }
+@keyframes intro-brow-large-x { 0% { translate: 53px 0px; } 37.785% { animation-timing-function: cubic-bezier(0.83, 0, 0.39, 1); translate: 53px 0px; } 40.822% { translate: 0px 0px; } 100% { translate: 0px 0px; } }
+@keyframes intro-brow-large-w { 0% { width: 119px; } 37.785% { animation-timing-function: cubic-bezier(0.83, 0, 0.39, 1); width: 119px; } 40.822% { width: 283.293px; } 100% { width: 283.293px; } }
+
+@keyframes intro-divider-h { 0% { height: 1px; } 54.277% { animation-timing-function: cubic-bezier(0.83, 0, 0.39, 1); height: 1px; } 60.076% { height: 337px; } 100% { height: 337px; } }
+
+@keyframes intro-into-op { 0% { opacity: 0; } 60.076% { animation-timing-function: cubic-bezier(0.5, 0, 0.5, 1); opacity: 0; } 60.267% { opacity: 1; } 67.731% { animation-timing-function: cubic-bezier(0.5, 0, 0.5, 1); opacity: 1; } 67.922% { opacity: 0; } 100% { opacity: 0; } }
+
+@keyframes intro-cycle-thoughtful-y {
+  0% { translate: 0px 0px; }
+  68.013% { animation-timing-function: linear(0, 0.021, 0.0755, 0.1526, 0.2433, 0.3404, 0.4384, 0.5331, 0.6217, 0.7021, 0.7733, 0.8349, 0.8869, 0.9298, 0.9643, 0.9912, 1.0113, 1.0258, 1.0354, 1.0411, 1.0436, 1.0438, 1.0421, 1.0393, 1.0356, 1.0314, 1.0271, 1.0228, 1.0188, 1.015, 1.0117, 1.0087, 1.0062, 1.0041, 1.0024, 1.001, 1, 0.9992, 0.9987, 0.9983, 0.9981, 0.9981, 0.9981, 0.9982, 0.9983, 0.9985, 0.9987, 0.9989, 0.9991, 0.9992, 0.9994); translate: 0px 0px; }
+  75.969% { translate: 0px -590px; }
+  76.577% { animation-timing-function: linear(0, 0.0207, 0.0746, 0.1508, 0.2405, 0.3366, 0.4337, 0.5276, 0.6155, 0.6955, 0.7665, 0.8281, 0.8804, 0.9236, 0.9585, 0.9859, 1.0067, 1.0217, 1.032, 1.0383, 1.0414, 1.0421, 1.0409, 1.0385, 1.0351, 1.0313, 1.0272, 1.0231, 1.0192, 1.0156, 1.0123, 1.0093, 1.0068, 1.0047, 1.0029, 1.0015, 1.0004, 0.9996, 0.999, 0.9986, 0.9984, 0.9982, 0.9982, 0.9983, 0.9984, 0.9985, 0.9987, 0.9989, 0.9991, 0.9992, 0.9994); translate: 0px -590px; }
+  84.158% { translate: 0px -776px; }
+  86.494% { animation-timing-function: linear(0, 0.0207, 0.0746, 0.1508, 0.2405, 0.3366, 0.4337, 0.5276, 0.6155, 0.6955, 0.7665, 0.8281, 0.8804, 0.9236, 0.9585, 0.9859, 1.0067, 1.0217, 1.032, 1.0383, 1.0414, 1.0421, 1.0409, 1.0385, 1.0351, 1.0313, 1.0272, 1.0231, 1.0192, 1.0156, 1.0123, 1.0093, 1.0068, 1.0047, 1.0029, 1.0015, 1.0004, 0.9996, 0.999, 0.9986, 0.9984, 0.9982, 0.9982, 0.9983, 0.9984, 0.9985, 0.9987, 0.9989, 0.9991, 0.9992, 0.9994); translate: 0px -783px; }
+  91.976% { translate: 0px -770px; }
+  98.392% { animation-timing-function: cubic-bezier(0.83, 0, 0.39, 1); translate: 0px -770px; }
+  100% { translate: 0px -1613px; }
+}
+
+@keyframes intro-cycle-innovative-y {
+  0% { translate: 0px 0px; }
+  75.941% { animation-timing-function: linear(0, 0.0207, 0.0746, 0.1508, 0.2405, 0.3366, 0.4337, 0.5276, 0.6155, 0.6955, 0.7665, 0.8281, 0.8804, 0.9236, 0.9585, 0.9859, 1.0067, 1.0217, 1.032, 1.0383, 1.0414, 1.0421, 1.0409, 1.0385, 1.0351, 1.0313, 1.0272, 1.0231, 1.0192, 1.0156, 1.0123, 1.0093, 1.0068, 1.0047, 1.0029, 1.0015, 1.0004, 0.9996, 0.999, 0.9986, 0.9984, 0.9982, 0.9982, 0.9983, 0.9984, 0.9985, 0.9987, 0.9989, 0.9991, 0.9992, 0.9994); translate: 0px 0px; }
+  84.13% { translate: 0px -569px; }
+  86.494% { animation-timing-function: linear(0, 0.0207, 0.0746, 0.1508, 0.2405, 0.3366, 0.4337, 0.5276, 0.6155, 0.6955, 0.7665, 0.8281, 0.8804, 0.9236, 0.9585, 0.9859, 1.0067, 1.0217, 1.032, 1.0383, 1.0414, 1.0421, 1.0409, 1.0385, 1.0351, 1.0313, 1.0272, 1.0231, 1.0192, 1.0156, 1.0123, 1.0093, 1.0068, 1.0047, 1.0029, 1.0015, 1.0004, 0.9996, 0.999, 0.9986, 0.9984, 0.9982, 0.9982, 0.9983, 0.9984, 0.9985, 0.9987, 0.9989, 0.9991, 0.9992, 0.9994); translate: 0px -576px; }
+  91.976% { translate: 0px -563px; }
+  98.392% { animation-timing-function: cubic-bezier(0.83, 0, 0.39, 1); translate: 0px -563px; }
+  100% { translate: 0px -1406px; }
+}
+
+@keyframes intro-cycle-experiences-y {
+  0% { translate: 0px 0px; }
+  84.089% { animation-timing-function: linear(0, 0.0207, 0.0746, 0.1508, 0.2405, 0.3366, 0.4337, 0.5276, 0.6155, 0.6955, 0.7665, 0.8281, 0.8804, 0.9236, 0.9585, 0.9859, 1.0067, 1.0217, 1.032, 1.0383, 1.0414, 1.0421, 1.0409, 1.0385, 1.0351, 1.0313, 1.0272, 1.0231, 1.0192, 1.0156, 1.0123, 1.0093, 1.0068, 1.0047, 1.0029, 1.0015, 1.0004, 0.9996, 0.999, 0.9986, 0.9984, 0.9982, 0.9982, 0.9983, 0.9984, 0.9985, 0.9987, 0.9989, 0.9991, 0.9992, 0.9994); translate: 0px 0px; }
+  91.976% { translate: 0px -397px; }
+  98.392% { animation-timing-function: cubic-bezier(0.83, 0, 0.39, 1); translate: 0px -397px; }
+  100% { translate: 0px -1240px; }
+}
+
+/* fade-ins for the three cycle words (see the .intro-cycle-word comment) —
+   each starts just before its own -y move kicks in */
+@keyframes intro-cycle-thoughtful-op { 0% { opacity: 0; } 66% { opacity: 0; } 68.5% { opacity: 1; } 100% { opacity: 1; } }
+@keyframes intro-cycle-innovative-op { 0% { opacity: 0; } 74% { opacity: 0; } 76.5% { opacity: 1; } 100% { opacity: 1; } }
+@keyframes intro-cycle-experiences-op { 0% { opacity: 0; } 82% { opacity: 0; } 84.5% { opacity: 1; } 100% { opacity: 1; } }
+
+/* fade the whole stage out at the very end so the hand-off to the real
+   home page underneath isn't a hard cut */
+.intro-overlay.is-ending {
+  transition: opacity 0.4s ease;
+  opacity: 0;
+}
+
+/* accessibility: skip the motion, jump straight to the home page */
+@media (prefers-reduced-motion: reduce) {
+  .intro-overlay {
+    display: none !important;
+  }
+}

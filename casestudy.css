@@ -48,7 +48,7 @@ body {
   margin-left: 320px;
   padding-right: 60px;
   padding-top: 45px;
-  padding-bottom: 120px;
+  padding-bottom: 60px; /* consistent 60px gap between the last content block and the footer */
   display: flex;
   flex-direction: column;
   gap: 30px;
@@ -169,18 +169,28 @@ body {
 
 /* ---------- IBM side quest card (award callout) ---------- */
 
+/* the whole callout sits in a bordered card, same treatment as the
+   project cards (Figma frame 1437:232): #fcfcfc fill, #d9d9d9 stroke,
+   20px radius, 30px inner gap, image at 323x182 with its own 10px-radius
+   stroke. */
 .cs-sidequest {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #d9d9d9;
+  border-radius: 20px;
+  background: #fcfcfc;
   display: flex;
   align-items: center;
-  gap: 60px;
+  gap: 30px;
+  padding: 30px 44px 30px 45px;
 }
 
 .cs-sidequest img {
-  width: 376px;
-  height: 212px;
+  width: 323px;
+  height: 182px;
   flex-shrink: 0;
   border: 1px solid #d9d9d9;
-  border-radius: 20px;
+  border-radius: 10px;
   object-fit: cover;
 }
 
@@ -202,12 +212,47 @@ body {
   gap: 30px;
 }
 
+/* header row: name label on the left, up-right arrow flush to the right */
+.cs-testimonial-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
 .cs-testimonial-role {
   font-family: 'CommitMono', monospace;
   font-weight: 400;
   font-size: 12px;
   color: #0f62fe;
   text-transform: uppercase;
+}
+
+/* the "- role title" half of the label is gray; the name stays IBM blue */
+.cs-testimonial-role-sub {
+  color: #7b7b7b;
+}
+
+/* arrow link: gray by default, IBM blue on hover; opens the LinkedIn
+   recommendations section in a new tab. currentColor drives the SVG
+   stroke so the hover transition is a single property. */
+.cs-testimonial-link {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #7b7b7b;
+  transition: color 0.15s ease;
+}
+
+.cs-testimonial-link:hover {
+  color: #0f62fe;
+}
+
+.cs-testimonial-arrow {
+  display: block;
+  width: 13px;
+  height: 13px;
 }
 
 /* ---------- typography ---------- */
@@ -229,8 +274,8 @@ body {
 }
 
 .cs-heading {
-  font-family: 'Lora', serif;
-  font-weight: 600;
+  font-family: 'PP Editorial Old', serif;
+  font-weight: 400;
   font-size: 25px;
   line-height: normal;
   color: #5e5e5e;
@@ -252,17 +297,210 @@ body {
   color: #219ebc;
 }
 
+/* non-bold IBM-blue inline accent (the bold variant is .cs-ibm-accent) */
+.cs-body .accent-ibm {
+  color: #0f62fe;
+}
+
 .cs-block {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
+/* PROJECTS and SIDE QUEST read as flat sections in Figma: the label sits
+   a full 30px above its card(s), and stacked cards are 30px apart — not
+   the tight 12px label+body grouping the plain text blocks use. */
+#projects,
+#sidequest {
+  gap: 30px;
+}
+
 /* ---------- header meta row (Timeline / Role / Team / Tools) ---------- */
 
+/* the meta group is centered within the text column (Figma keeps ~30-60px
+   of balanced margin on each side), not flush left. The 150px gap is a
+   desktop luxury — it steps down on narrower viewports, and the row wraps
+   rather than pushing columns off-screen. */
 .cs-meta {
   display: flex;
-  gap: 150px;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 36px 150px;
+}
+
+@media (max-width: 1240px) {
+  .cs-meta { gap: 30px 60px; }
+}
+
+@media (max-width: 1024px) {
+  .cs-meta { gap: 22px 28px; }
+}
+
+/* below ~half a desktop width the fixed outline rail costs more room than
+   it's worth — drop it and let the content run full width. The meta row
+   gets its breathing room back once the 320px rail is gone. */
+@media (max-width: 900px) {
+  .case-outline {
+    display: none;
+  }
+
+  .case-content {
+    margin-left: 0;
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+
+  .cs-meta { gap: 32px 56px; }
+}
+
+/* ---------------------------------------------------------------------
+   Case-study mobile layout — below half a desktop width every case study
+   switches to the single-column stacking of its Figma "adjustable phone"
+   frame (Pearl 1497:385, SpeakEasy 1496:276, IBM 1507:671): sections that
+   desktop lays out as a side-by-side row read top-to-bottom instead, so
+   nothing is squeezed or clipped. Desktop (>900px) is untouched. Same
+   <=900px breakpoint as the outline-rail drop above.
+   --------------------------------------------------------------------- */
+@media (max-width: 900px) {
+  /* meta row: the updated "adjustable phone" frames keep all four columns
+     on ONE row, as a centered group with a uniform column gap. Force a
+     single row (nowrap); min-width:0 lets the widest value (IBM's team
+     list) wrap internally so the row never pushes past the screen. */
+  .cs-meta {
+    flex-wrap: nowrap;
+    /* space-evenly puts equal space at the ends and between every
+       column, so the group stays centered and evenly spaced whether the
+       viewport is ~500px or right at the 900px breakpoint */
+    justify-content: space-evenly;
+    column-gap: clamp(12px, 3vw, 28px);
+    row-gap: 20px;
+  }
+
+  /* only the team column is allowed to shrink below its content width —
+     it already wraps its own text (see .cs-meta-team below). The other
+     three columns keep nowrap values, so shrinking them below their
+     content would silently clip text (e.g. "Product Designer") against
+     the body's overflow-x:hidden instead of wrapping or scrolling. */
+  .cs-meta-item:has(.cs-meta-team) {
+    min-width: 0;
+  }
+
+  /* keep the short values ("12 Weeks", "Automation & ILM", "Product
+     Designer") each on their own tidy line — only the team list wraps
+     (it opts back in below) */
+  .cs-meta-value {
+    white-space: nowrap;
+  }
+
+  /* app-icon strip: lose the wide side padding, let the four icons share
+     the row and shrink, and let long labels ("FOCUS KEEPER") wrap
+     instead of spilling past the card */
+  .cs-app-icons {
+    gap: 12px;
+    padding: 18px 16px;
+  }
+
+  .cs-app-icon {
+    width: auto;
+    flex: 1 1 0;
+    min-width: 0;
+    max-width: 81px;
+  }
+
+  .cs-app-icon img {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1;
+  }
+
+  .cs-app-icon span {
+    white-space: normal;
+    text-align: center;
+  }
+
+  /* comparison boxes: stack (the frame lays them flex-col, no arrow) */
+  .cs-compare {
+    flex-direction: column;
+  }
+
+  .cs-compare-box {
+    flex: none;
+    width: 100%;
+  }
+
+  .cs-compare-arrow {
+    display: none;
+  }
+
+  /* donut chart + insights: two stacked full-width blocks in the frame,
+     not a side-by-side pair. The ring box scales down with the column;
+     its badges are %-anchored (see pearl.html) so they track the arc. */
+  .cs-donut-section {
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+  }
+
+  .cs-donut-wrap {
+    width: 100%;
+    max-width: 417px;
+    height: auto;
+    aspect-ratio: 1;
+  }
+
+  .cs-donut-rings {
+    width: 100%;
+    height: 100%;
+  }
+
+  .cs-insights {
+    width: 100%;
+  }
+
+  /* adaptation cards: stack (frame lays all three flex-col) */
+  .cs-adaptations {
+    flex-direction: column;
+  }
+
+  .cs-adaptation-card {
+    flex: none;
+    width: 100%;
+  }
+
+  /* ---- IBM "adjustable phone" frame (1507:671) ---- */
+
+  /* project cards: MacBook mockup on top, body text beneath, inside the
+     same bordered card */
+  .cs-project-card {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 30px;
+    padding: 30px;
+  }
+
+  .cs-project-shot {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 242 / 160;
+  }
+
+  /* side quest: same stacked image-over-text treatment, and the frame
+     wraps it in a bordered card (desktop leaves it as a bare row) */
+  .cs-sidequest {
+    flex-direction: column;
+    gap: 30px;
+    padding: 30px;
+    border: 1px solid #d9d9d9;
+    border-radius: 20px;
+    background: #fcfcfc;
+  }
+
+  .cs-sidequest img {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 376 / 212;
+  }
 }
 
 .cs-meta-item {
@@ -287,6 +525,12 @@ body {
   color: #5e5e5e;
 }
 
+/* IBM team names: one per line on desktop (mobile turns them into a
+   wrapping comma list — see the <=900px block above) */
+.cs-meta-team span {
+  display: block;
+}
+
 /* IBM's meta labels are its brand blue instead of Pearl/SpeakEasy's teal */
 .cs-meta.ibm-meta .cs-meta-label {
   color: #0f62fe;
@@ -295,8 +539,8 @@ body {
 /* ---------- HMW callout ---------- */
 
 .cs-hmw {
-  font-family: 'Lora', serif;
-  font-weight: 600;
+  font-family: 'PP Editorial Old', serif;
+  font-weight: 400;
   font-size: 25px;
   line-height: normal;
   color: #219ebc;
@@ -382,8 +626,8 @@ body {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-family: 'Lora', serif;
-  font-weight: 600;
+  font-family: 'PP Editorial Old', serif;
+  font-weight: 400;
   font-size: 20px;
   color: #219ebc;
 }
@@ -417,8 +661,8 @@ body {
 }
 
 .cs-adaptation-title {
-  font-family: 'Lora', serif;
-  font-weight: 600;
+  font-family: 'PP Editorial Old', serif;
+  font-weight: 400;
   font-size: 20px;
   color: #219ebc;
 }
@@ -436,6 +680,17 @@ body {
   margin-top: 2px;
 }
 
+/* Figma sizes tabler:check in a 24px box and at-icons:cross in a 20px
+   box, which lands both at the same ~2.5px visual weight. Forcing the
+   check (its viewBox is 24 units) into the 20px cross box was scaling
+   its 2.5px stroke down to ~2px, so the crosses read heavier. Give the
+   check back its native 24px box to match. */
+.cs-adaptation-point img[src*="check"] {
+  width: 24px;
+  height: 24px;
+  margin-top: 0;
+}
+
 .cs-adaptation-point p {
   font-family: 'IBM Plex Sans', sans-serif;
   font-weight: 400;
@@ -444,23 +699,36 @@ body {
   color: #7b7b7b;
 }
 
-/* ---------- donut/ring research chart ---------- */
+/* ---------- donut/ring research chart (Figma "GRAPH 2") ---------- */
 
 .cs-donut-section {
   display: flex;
-  gap: 60px;
+  gap: 10px;
   align-items: center;
 }
 
 .cs-donut-wrap {
   position: relative;
   flex-shrink: 0;
-  width: 340px;
-  height: 340px;
+  width: 417px;
+  height: 417px;
 }
 
+/* the rings are Figma's own exported artwork (custom arc lengths + inner
+   shadows), not concentric CSS circles — so the arcs match exactly */
+.cs-donut-rings {
+  display: block;
+  width: 417px;
+  height: 417px;
+}
+
+/* badges are placed by their top-left corner at the exact offsets Figma
+   uses (they sit along the arc, not stacked in a straight column) */
 .cs-donut-badge {
   position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: #fcfcfc;
   border: 1px solid #d9d9d9;
   border-radius: 8px;
@@ -468,18 +736,27 @@ body {
   font-family: 'DM Sans', 'IBM Plex Sans', sans-serif;
   font-weight: 700;
   font-size: 12px;
-  transform: translate(-50%, -50%);
+  line-height: normal;
+  white-space: nowrap;
 }
 
 .cs-insights {
+  flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 12px;
+}
+
+.cs-insights > div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
 }
 
 .cs-insight-title {
-  font-family: 'Lora', serif;
-  font-weight: 600;
+  font-family: 'PP Editorial Old', serif;
+  font-weight: 400;
   font-size: 20px;
   line-height: normal;
 }
@@ -490,7 +767,7 @@ body {
   font-size: 15px;
   line-height: normal;
   color: #7b7b7b;
-  max-width: 550px;
+  max-width: 535px;
 }
 
 /* ---------- device/screen sections ---------- */
@@ -685,14 +962,66 @@ body {
   object-fit: fill;
 }
 
+/* Below ~half the design width — the same breakpoint where the outline
+   rail is dropped — the "final designs" device sections switch to the
+   "adjustable phone" treatment used by both Pearl (1497:406) and
+   SpeakEasy (1496:313 etc.): the gradient panel/background, the autoplay
+   video preview and the "CORE FRAMES" card all fall away, leaving a plain
+   centered row of the four screen mockups (each PNG already carries its
+   own iPhone bezel), with no border on the row. Applies to plain Pearl
+   frames and SpeakEasy's .outline-frame alike. */
+@media (max-width: 900px) {
+  .cs-screen-frame {
+    aspect-ratio: auto;
+    border: 0;
+    border-radius: 0;
+    overflow: visible;
+    display: flex;
+    justify-content: center;
+    padding: 20px 0;
+  }
+
+  .cs-screen-frame .cs-screen-bg,
+  .cs-screen-frame .cs-screen-phone,
+  .cs-screen-frame .cs-screen-core-bg,
+  .cs-screen-frame .cs-screen-core-label {
+    display: none;
+  }
+
+  .cs-screen-frame .cs-screen-core {
+    position: static;
+    width: 100%;
+    height: auto;
+    border: 0;
+    border-radius: 0;
+    background: none;
+    padding: 0;
+  }
+
+  .cs-screen-frame .cs-screen-mockups {
+    gap: 20px;
+  }
+
+  .cs-screen-frame .cs-mockup-frame {
+    width: 22%;
+    max-width: 119px;
+    border-radius: 0;
+  }
+}
+
 /* ---------- persona card (SpeakEasy) ---------- */
 
+/* the gradient panel is a padded frame around the card, and its height
+   grows with the card's content — the old fixed 946/497 aspect ratio +
+   absolutely-positioned fixed-height card clipped the text once it had
+   to wrap on narrower screens. */
 .cs-persona {
   position: relative;
   width: 100%;
-  aspect-ratio: 946 / 497;
   border-radius: 20px;
   overflow: hidden;
+  padding: clamp(20px, 6%, 60px);
+  box-sizing: border-box;
 }
 
 .cs-persona-bg {
@@ -701,17 +1030,16 @@ body {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  z-index: 0;
 }
 
 .cs-persona-card {
-  position: absolute;
-  left: 6.34%;
-  top: 12.07%;
-  width: 87.1%;
-  height: 75.86%;
+  position: relative;
+  z-index: 1;
+  width: 100%;
   border: 1px solid #fcfcfc;
   border-radius: 10px;
-  padding: 3.17%;
+  padding: clamp(16px, 3.5%, 32px);
   display: flex;
   flex-direction: column;
   gap: 30px;
@@ -720,13 +1048,14 @@ body {
 }
 
 .cs-persona-name {
-  font-family: 'Lora', serif;
-  font-weight: 600;
+  font-family: 'PP Editorial Old', serif;
+  font-weight: 400;
   font-size: 25px;
 }
 
 .cs-persona-tags {
   display: flex;
+  flex-wrap: wrap;
   gap: 15px;
   align-items: center;
   margin-top: 15px;
@@ -751,10 +1080,13 @@ body {
 
 .cs-persona-cols {
   display: flex;
-  gap: 15px;
+  flex-wrap: wrap;
+  gap: 15px 30px;
 }
 
 .cs-persona-col {
+  flex: 1 1 260px;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -813,4 +1145,78 @@ body {
   display: block;
   width: 100%;
   height: auto;
+}
+
+/* ---------------------------------------------------------------------
+   Mobile overrides that have to sit at the end of the file — their base
+   rules are declared further down than the mobile blocks above, so an
+   equal-specificity override only wins from here. Same <=900px
+   "adjustable phone" breakpoint as the rest.
+   --------------------------------------------------------------------- */
+@media (max-width: 900px) {
+  /* SpeakEasy persona: NEEDS & GOALS / PAINPOINTS stack (frame 1496:276) */
+  .cs-persona-cols {
+    flex-direction: column;
+  }
+
+  .cs-persona-col {
+    flex: none;
+    width: 100%;
+  }
+
+  /* SpeakEasy home-iterations gallery: the frame drops the white card
+     chrome and lets the four version screens sit straight on the page */
+  .cs-iterations {
+    background: none;
+    border: 0;
+    border-radius: 0;
+    padding: 0;
+    gap: 14px;
+  }
+
+  /* SpeakEasy device sections use .outline-frame, whose own border rule
+     out-specifies the generic .cs-screen-frame reset above — clear it
+     here so the frame collapses to a bare mockup row like Pearl's */
+  .cs-screen-frame.outline-frame {
+    border: 0;
+  }
+
+  /* Pearl judges' scorecard: the "pearl - adjustable phone" frame drops
+     the gradient panel and lets the scorecard photo run the full column
+     width so the rubric text is legible on a small screen (frame node
+     1497:520 — one full-bleed image, no backdrop). */
+  .cs-jumpstart {
+    aspect-ratio: auto;
+    border-radius: 0;
+    overflow: visible;
+  }
+
+  .cs-jumpstart-bg {
+    display: none;
+  }
+
+  .cs-jumpstart-scorecard {
+    position: static;
+    width: 100%;
+    height: auto;
+  }
+
+  /* IBM's six-name team collapses from one-per-line to a wrapping comma
+     list (frame 1509:1048). This override has to live here, after the
+     desktop `.cs-meta-team span { display: block }` rule further up. */
+  .cs-meta-team span {
+    display: inline;
+  }
+
+  .cs-meta-team span:not(:last-child)::after {
+    content: ", ";
+  }
+
+  /* the team column is the one that wraps: cap its width so the comma
+     list stays a tidy few lines instead of hogging the row and starving
+     the other three columns */
+  .cs-meta-team {
+    white-space: normal;
+    max-width: clamp(190px, 32vw, 250px);
+  }
 }

@@ -6,7 +6,11 @@
 .page {
   position: relative;
   width: 100vw;
-  height: 100vh;
+  /* leave exactly the footer's height at the bottom of the viewport: the
+     fixed .site-footer (45px) sits there and the sidebar + game shrink to
+     match, so the footer is flush underneath with nothing overlapped and
+     the page still never scrolls. */
+  height: calc(100vh - 45px);
   background: #fcfcfc;
   overflow: hidden;
   display: flex;
@@ -40,6 +44,17 @@
   height: 217px;
   border-radius: 5px;
   object-fit: cover;
+  flex-shrink: 0;
+}
+
+/* groups the bio/experience/misc blocks as a single flex item alongside the
+   photo, so the mobile layout can lay the photo and this whole column out
+   side by side without touching their own internal (vertical) stacking. */
+.bio-column {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
 }
 
 .bio-block {
@@ -49,7 +64,7 @@
 }
 
 .bio-heading {
-  font-family: 'Lora', serif;
+  font-family: 'PP Editorial Old', serif;
   font-weight: 400;
   font-size: 20px;
   color: #5e5e5e;
@@ -71,7 +86,7 @@
 }
 
 .section-heading {
-  font-family: 'Lora', serif;
+  font-family: 'PP Editorial Old', serif;
   font-weight: 400;
   font-size: 20px;
   color: #5e5e5e;
@@ -124,13 +139,24 @@
   gap: 10px;
 }
 
-/* main area: remaining space to the right of the side panel.
-   Holds the pannable, zoomed-in collage — nothing is ever cropped out of
-   existence, the image is just rendered larger than the viewport and you
-   drag/scroll to explore it. */
-.main-area {
+/* game frame: remaining space to the right of the side panel. Wraps the
+   pannable collage viewport (.main-area) together with the item tag row so
+   the tag row can be positioned relative to this shared box — on desktop
+   that's an absolute overlay near its bottom edge (unchanged from before),
+   on mobile the two become stacked flex children instead (see the mobile
+   media query) so the tag list sits below the image rather than on it. */
+.game-frame {
   position: relative;
   flex: 1 1 auto;
+  height: 100%;
+}
+
+/* main area: holds the pannable, zoomed-in collage — nothing is ever
+   cropped out of existence, the image is just rendered larger than the
+   viewport and you drag/scroll to explore it. */
+.main-area {
+  position: relative;
+  width: 100%;
   height: 100%;
   overflow: hidden;
   touch-action: none;
@@ -346,7 +372,7 @@
 }
 
 .info-card-title {
-  font-family: 'Lora', serif;
+  font-family: 'PP Editorial Old', serif;
   font-weight: 400;
   font-size: 20px;
   color: #5e5e5e;
@@ -534,11 +560,17 @@
   transition: opacity 0.15s ease;
 }
 
-#custom-cursor.hinting .cursor-dot {
-  opacity: 0;
+/* the scanner only stands in for the dot while a hint is active AND the
+   pointer is actually over the game image — .main-area toggles .over-game
+   in about.js. Move off the image mid-hint and the normal orange dot
+   crossfades back (the scanner is only for while you're hunting).
+   opacity:0 needs !important here because shared.js re-writes the dot's
+   inline opacity to 1 on every mousemove. */
+#custom-cursor.hinting.over-game .cursor-dot {
+  opacity: 0 !important;
 }
 
-#custom-cursor.hinting .scanner-cursor {
+#custom-cursor.hinting.over-game .scanner-cursor {
   opacity: 1;
 }
 
@@ -590,4 +622,255 @@
   0%, 70% { opacity: 0; }
   75% { opacity: 1; }
   100% { opacity: 1; }
+}
+
+/* ---------------------------------------------------------------------
+   Mobile hint scanner: on a touch device there's no persistent cursor for
+   the desktop scanner (inside #custom-cursor) to ride along with, so this
+   is a wholly separate copy — fixed to the center of .main-area rather
+   than tracking a pointer — shown only at the mobile breakpoint below.
+   Kept independent of the desktop cursor system entirely (not a shared,
+   repositioned element) so neither can regress the other.
+   --------------------------------------------------------------------- */
+.mobile-hint-scanner {
+  display: none;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 15;
+  opacity: 0;
+  /* visibility (not just opacity) belt-and-suspenders-hides this at rest —
+     it should only ever be reachable via .active, added by JS solely when a
+     hint is actually requested (about.js's startHint), but opacity alone
+     still paints/composites the element, so this rules out any stray
+     rendering of it at rest even if something upstream misbehaves. */
+  visibility: hidden;
+  transition: opacity 0.15s ease;
+}
+
+.mobile-hint-scanner.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.mobile-hint-scanner .scanner-cursor {
+  position: static;
+  opacity: 1;
+  transform: translate(-50%, -50%) rotate(0deg);
+}
+
+/* both mobile-only, styled/shown in the media query below — hidden here so
+   desktop never sees them (the game-instructions text stands in for the
+   desktop's info/hint icon+popup pair; the scroll-hint pill only ever
+   makes sense above a game section short enough to scroll past). */
+.game-instructions,
+.scroll-hint-banner {
+  display: none;
+}
+
+/* ---------------------------------------------------------------------
+   Mobile layout — below half a desktop width (same breakpoint the case
+   study pages use), the fixed side-by-side canvas gives way to a normal
+   scrolling page: the bio sits up top, full-bleed against the same
+   #fcfcfc page background as everywhere else on the site (no card, no
+   inset panel), keeping its side-panel content in the same vertical
+   stack (wide photo on top, text below) rather than a boxed-in layout —
+   and the game becomes its own fixed-height section below it (a
+   phone-sized "viewport" onto the same pannable collage, not the full
+   remaining screen height) with its item list scrolling in its own strip
+   BELOW the image — not overlaid on top of it — so panning the photo and
+   scrolling the item list are two physically separate touch targets
+   instead of fighting over the same gesture. Desktop (>900px) is
+   untouched. ---------------------------------------------------------------------- */
+@media (max-width: 900px) {
+  /* the desktop page is a fixed-viewport canvas (shared.css's global
+     overflow:hidden matches that); mobile needs the page to scroll
+     normally instead, so this turns it back on for this page only. */
+  body {
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  .page {
+    display: block;
+    height: auto;
+    width: 100%;
+    overflow: visible;
+  }
+
+  /* the page scrolls at this breakpoint, so the footer drops back into
+     normal flow at the bottom of the content instead of being pinned to
+     the viewport (its desktop behaviour, set in shared.css). */
+  .site-footer-fixed {
+    position: static;
+    height: auto;
+  }
+
+  /* full width, same background as the rest of the site — no separate
+     panel color, no boxed-in card, just a normal section of the page. */
+  .side-panel {
+    flex: none;
+    width: 100%;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid rgba(148, 148, 148, 0.25);
+    background: #fcfcfc;
+  }
+
+  /* the desktop's 75px top padding exists to clear the fixed nav inside a
+     100vh column; here the nav just sits before this section in normal
+     flow, so a plain 45px clearance (matching the nav's own height) is
+     enough, with the rest of the padding back to a normal 30px. Stays a
+     plain vertical stack (photo, then text) — same orientation as the
+     desktop side panel, just full-width instead of a fixed 350px rail. */
+  .side-panel-content {
+    padding: 45px 24px 30px;
+  }
+
+  /* fixed game-viewport height rather than filling the rest of the
+     screen — a deliberate "phone-sized window" onto the collage, per the
+     redesign, not a full-height game. Now a flex column so the pannable
+     image and the tag strip below it split this fixed height between them
+     instead of the tag strip overlaying the image. */
+  .game-frame {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 90vh;
+    min-height: 560px;
+    max-height: 860px;
+  }
+
+  .main-area {
+    flex: 1 1 auto;
+    width: 100%;
+    height: auto;
+    min-height: 0;
+  }
+
+  /* the icon+popup pair explains the mechanics fine on a full desktop
+     column, but on a phone-sized game viewport they end up sitting on top
+     of the photo itself — replaced below by .game-instructions, a plain
+     always-visible strip above the image that covers nothing. */
+  .info-button,
+  .info-popup,
+  .hint-button,
+  .hint-popup {
+    display: none;
+  }
+
+  .game-instructions {
+    display: block;
+    flex: 0 0 auto;
+    margin: 0;
+    padding: 14px 16px;
+    background: #ff7800;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 1.5;
+    color: #fcfcfc;
+    text-align: left;
+  }
+
+  .game-instructions p {
+    margin: 0;
+  }
+
+  .game-instructions p + p {
+    margin-top: 6px;
+  }
+
+  .game-instructions-label {
+    font-weight: 700;
+  }
+
+  /* item list: its own flex row below the image (not an overlay on top of
+     it anymore), still a horizontal scroll strip so the items don't have
+     to squeeze/wrap to fit. */
+  .tag-row {
+    position: static;
+    flex: 0 0 auto;
+    left: auto;
+    right: auto;
+    bottom: auto;
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding: 12px 16px;
+    background: #fcfcfc;
+    border-top: 1px solid rgba(148, 148, 148, 0.25);
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 16px, #000 calc(100% - 16px), transparent);
+    mask-image: linear-gradient(to right, transparent, #000 16px, #000 calc(100% - 16px), transparent);
+  }
+
+  .tag-row::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tag {
+    flex-shrink: 0;
+  }
+
+  /* the desktop scanner rides along with #custom-cursor, which only ever
+     gets positioned by mousemove — on a touch device that never fires, so
+     without this it would just sit wherever it last was (likely its
+     unpositioned starting corner) instead of not appearing at all. */
+  #custom-cursor .scanner-cursor {
+    display: none !important;
+  }
+
+  .mobile-hint-scanner {
+    display: block;
+  }
+
+  /* item detail card: keep the text, drop the reference photos — on an
+     already-busy phone screen (bio, instructions, image, tag strip) the
+     extra photos read as clutter, but the write-up itself is worth
+     keeping. */
+  .info-card-media {
+    display: none !important;
+  }
+
+  /* "scroll for some fun" nudge: pinned below the nav (45px nav height +
+     10px), 30px from the right edge — matching the nav's own right
+     padding. Slides in from just past the right edge while the user's
+     still up near the bio (the game not really in view yet) and slides
+     back out once about.js's IntersectionObserver reports at least half
+     of .main-area visible. */
+  .scroll-hint-banner {
+    display: flex;
+    position: fixed;
+    top: 55px;
+    right: 30px;
+    z-index: 12;
+    opacity: 0;
+    transform: translateX(120%);
+    pointer-events: none;
+    transition: opacity 0.35s ease, transform 0.35s ease;
+  }
+
+  .scroll-hint-banner.visible {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .scroll-hint-pill {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 14px;
+    border-radius: 999px;
+    background: #ff7800;
+    color: #fcfcfc;
+    font-family: 'CommitMono', monospace;
+    font-weight: 400;
+    font-size: 11px;
+    white-space: nowrap;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+  }
 }

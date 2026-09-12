@@ -4,8 +4,8 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>About — Portfolio</title>
-<link rel="stylesheet" href="shared.css" />
-<link rel="stylesheet" href="about.css" />
+<link rel="stylesheet" href="shared.css?v=5" />
+<link rel="stylesheet" href="about.css?v=12" />
 </head>
 <body>
   <div class="page" data-name="about page">
@@ -14,36 +14,47 @@
       <div class="side-panel-content">
         <img class="profile-photo" src="assets/profile.jpg" alt="Arti standing on a boardwalk with a Ferris wheel in the background" />
 
-        <div class="bio-block">
-          <p class="bio-heading">Hi, I&rsquo;m Arti!</p>
-          <div class="bio-text">
-            <p>I am currently working at IBM as a design intern on the UXR team.</p>
-            <p>I&rsquo;m currently designing at IBM. I&rsquo;m a product designer driven by curiosity and empathy, creating human-centered experiences that balance thoughtful interaction, visual craft, and purposeful design.</p>
-          </div>
-        </div>
-
-        <div class="experience-block">
-          <p class="section-heading">Experience</p>
-          <div class="experience-list">
-            <div class="experience-row">
-              <p class="experience-role"><span class="experience-org">IBM</span> / Design &amp; Research Intern</p>
-              <p class="experience-date">Summer 2026</p>
-            </div>
-            <div class="experience-row">
-              <p class="experience-role"><span class="experience-org">UCSC ITS</span> / Undergrad UX Assistant</p>
-              <p class="experience-date">2025 - 2026</p>
+        <div class="bio-column">
+          <div class="bio-block">
+            <p class="bio-heading">Hi, I&rsquo;m Arti!</p>
+            <div class="bio-text">
+              <p>I&rsquo;m a product designer and researcher driven by curiosity and empathy, creating human-centered experiences that balance thoughtful interaction, visual craft, and purposeful design.</p>
             </div>
           </div>
-        </div>
 
-        <div class="misc-block">
-          <p class="section-heading">Miscellaneous</p>
-          <p class="misc-text">When I&rsquo;m not designing, you&rsquo;ll probably find me dancing, painting with gouache, or exploring the latest food spots with friends and family. Every great meal is followed by a mandatory digestion walk, and, of course, a sweet treat to finish it off.</p>
+          <div class="experience-block">
+            <p class="section-heading">Experience</p>
+            <div class="experience-list">
+              <div class="experience-row">
+                <p class="experience-role"><span class="experience-org">IBM</span> / Design &amp; Research Intern</p>
+                <p class="experience-date">Summer 2026</p>
+              </div>
+              <div class="experience-row">
+                <p class="experience-role"><span class="experience-org">UCSC ITS</span> / Undergrad UX Assistant</p>
+                <p class="experience-date">2025 - 2026</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="misc-block">
+            <p class="section-heading">Miscellaneous</p>
+            <p class="misc-text">When I&rsquo;m not designing, you&rsquo;ll probably find me dancing, painting with gouache, or exploring the latest food spots with friends and family. Every great meal is followed by a mandatory digestion walk, and, of course, a sweet treat to finish it off.</p>
+          </div>
         </div>
       </div>
     </aside>
 
-    <div class="main-area">
+    <div class="game-frame">
+      <!-- mobile-only: replaces the desktop's info/hint icon+popup pair,
+           which on a small phone-sized game viewport ended up sitting on
+           top of the photo itself. Same instructions, just always visible
+           and out of the image's way instead of overlapping it. -->
+      <div class="game-instructions" id="game-instructions">
+        <p><span class="game-instructions-label">How to play</span>: Drag around the photo to find the hidden objects. Click their names as you discover them to learn more!</p>
+        <p><span class="game-instructions-label">Need a hint?</span> Click the gray item name, and a cursor will appear at the center of your screen. As you drag the photo, the cursor will point you in the direction of the hidden object.</p>
+      </div>
+
+      <div class="main-area">
       <div class="collage-wrap" data-name="Adobe Express - file 1">
         <canvas class="collage-img" id="collage-canvas" role="img" aria-label="Collage of personal photos and objects: photobooth strip, toy crab, tube of cream, orange fish toy, smiski figure, puzzle piece, gold elephant, drumming figure, perfume, joycon lanyard"></canvas>
 
@@ -186,6 +197,43 @@
         <div class="info-card-media" id="info-card-media"></div>
       </div>
 
+      <!-- mobile-only hint scanner: fixed to the center of .main-area
+           (there's no persistent cursor on a touch device for the desktop
+           scanner in #custom-cursor to ride along with), rotated the same
+           way — pointing from this fixed point toward the hinted item. -->
+      <div class="mobile-hint-scanner" id="mobile-hint-scanner" aria-hidden="true">
+        <svg class="scanner-cursor" width="107.083" height="107.083" viewBox="0 0 107.083 107.083" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <g>
+            <g class="scanner-ring scanner-ring-4">
+              <mask id="scanner-mask-1-m" fill="white">
+                <path d="M26.7708 26.7708C30.2864 23.2552 34.46 20.4665 39.0534 18.5639C43.6467 16.6612 48.5698 15.682 53.5416 15.682C58.5134 15.682 63.4365 16.6612 68.0299 18.5639C72.6232 20.4665 76.7969 23.2552 80.3124 26.7708L53.5416 53.5416L26.7708 26.7708Z" />
+              </mask>
+              <path d="M26.7708 26.7708C30.2864 23.2552 34.46 20.4665 39.0534 18.5639C43.6467 16.6612 48.5698 15.682 53.5416 15.682C58.5134 15.682 63.4365 16.6612 68.0299 18.5639C72.6232 20.4665 76.7969 23.2552 80.3124 26.7708L53.5416 53.5416L26.7708 26.7708Z" fill="#FF7800" fill-opacity="0.1" stroke="#FCFCFC" stroke-opacity="0.1" stroke-width="2" mask="url(#scanner-mask-1-m)" />
+            </g>
+            <g class="scanner-ring scanner-ring-3">
+              <mask id="scanner-mask-2-m" fill="white">
+                <path d="M32.2822 32.2826C35.074 29.4908 38.3884 27.2762 42.036 25.7653C45.6837 24.2544 49.5932 23.4767 53.5414 23.4767C57.4896 23.4767 61.3991 24.2544 65.0468 25.7653C68.6945 27.2762 72.0088 29.4908 74.8006 32.2826L53.5414 53.5417L32.2822 32.2826Z" />
+              </mask>
+              <path d="M32.2822 32.2826C35.074 29.4908 38.3884 27.2762 42.036 25.7653C45.6837 24.2544 49.5932 23.4767 53.5414 23.4767C57.4896 23.4767 61.3991 24.2544 65.0468 25.7653C68.6945 27.2762 72.0088 29.4908 74.8006 32.2826L53.5414 53.5417L32.2822 32.2826Z" fill="#FF7800" fill-opacity="0.3" stroke="#FCFCFC" stroke-opacity="0.3" stroke-width="2" mask="url(#scanner-mask-2-m)" />
+            </g>
+            <g class="scanner-ring scanner-ring-2">
+              <mask id="scanner-mask-3-m" fill="white">
+                <path d="M37.7941 37.7942C39.8621 35.7262 42.3171 34.0858 45.0191 32.9666C47.7211 31.8474 50.617 31.2714 53.5416 31.2714C56.4662 31.2714 59.3621 31.8474 62.0641 32.9666C64.7661 34.0858 67.2211 35.7262 69.2891 37.7942L53.5416 53.5418L37.7941 37.7942Z" />
+              </mask>
+              <path d="M37.7941 37.7942C39.8621 35.7262 42.3171 34.0858 45.0191 32.9666C47.7211 31.8474 50.617 31.2714 53.5416 31.2714C56.4662 31.2714 59.3621 31.8474 62.0641 32.9666C64.7661 34.0858 67.2211 35.7262 69.2891 37.7942L53.5416 53.5418L37.7941 37.7942Z" fill="#FF7800" fill-opacity="0.6" stroke="#FCFCFC" stroke-opacity="0.6" stroke-width="2" mask="url(#scanner-mask-3-m)" />
+            </g>
+            <g class="scanner-ring scanner-ring-1">
+              <mask id="scanner-mask-4-m" fill="white">
+                <path d="M63.7774 43.3059C62.4332 41.9617 60.8374 40.8954 59.0811 40.1679C57.3249 39.4404 55.4425 39.066 53.5415 39.066C51.6405 39.066 49.7582 39.4404 48.0019 40.1679C46.2456 40.8954 44.6498 41.9617 43.3056 43.3058L53.5415 53.5418L63.7774 43.3059Z" />
+              </mask>
+              <path d="M63.7774 43.3059C62.4332 41.9617 60.8374 40.8954 59.0811 40.1679C57.3249 39.4404 55.4425 39.066 53.5415 39.066C51.6405 39.066 49.7582 39.4404 48.0019 40.1679C46.2456 40.8954 44.6498 41.9617 43.3056 43.3058L53.5415 53.5418L63.7774 43.3059Z" fill="#FF7800" fill-opacity="0.8" stroke="#FCFCFC" stroke-opacity="0.8" stroke-width="2" mask="url(#scanner-mask-4-m)" />
+            </g>
+          </g>
+          <circle cx="54.1294" cy="56.5001" r="10" fill="#FF7800" stroke="#FCFCFC" />
+        </svg>
+      </div>
+      </div>
+
       <div class="tag-row" data-name="Frame 33">
         <span class="tag" data-item="smiski">SMISKI</span>
         <span class="tag" data-item="tube">PAINT TUBE</span>
@@ -204,11 +252,29 @@
       <div class="nav-links">
         <a href="home page.html#work" class="nav-link">WORK</a>
         <a href="about.html" class="nav-link">ABOUT</a>
-        <a href="#resume" class="nav-link">RESUME</a>
+        <a href="https://drive.google.com/file/d/111vidwaICF3pyrerJC__ybmi6Y8UYV2D/view?usp=sharing" class="nav-link" target="_blank" rel="noopener noreferrer">RESUME</a>
       </div>
     </nav>
 
+    <!-- mobile-only nudge: pinned below the nav, slides in from the right
+         while the user is still up near the bio (the game not yet
+         scrolled into view) and steps aside once they've scrolled the
+         game at least half into view — see the IntersectionObserver in
+         about.js and the mobile media query in about.css. -->
+    <div class="scroll-hint-banner" id="scroll-hint-banner" aria-hidden="true">
+      <span class="scroll-hint-pill">SCROLL FOR SOME FUN</span>
+    </div>
+
   </div>
+
+  <footer class="site-footer site-footer-fixed">
+    <p class="site-footer-note">MADE WITH LOTS OF &lt;3 AND FILTER COFFEE</p>
+    <nav class="site-footer-links" aria-label="Social links">
+      <a class="site-footer-link" href="https://www.linkedin.com/in/arti-gnanasekar/" target="_blank" rel="noopener noreferrer">LINKEDIN</a>
+      <a class="site-footer-link" href="https://x.com/artignanam" target="_blank" rel="noopener noreferrer">X</a>
+      <a class="site-footer-link" href="mailto:arti.gnanam@gmail.com">EMAIL</a>
+    </nav>
+  </footer>
 
   <div id="custom-cursor">
     <img class="cursor-dot" src="assets/orange-cursor.svg" alt="" />
@@ -244,6 +310,6 @@
   </div>
 
   <script src="shared.js?v=7"></script>
-  <script src="about.js"></script>
+  <script src="about.js?v=4"></script>
 </body>
 </html>

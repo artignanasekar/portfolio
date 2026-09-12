@@ -1,15 +1,7 @@
-/* Home page hero — from Figma "home page" (node 966:2501), Figma Motion
-   animation transcribed almost verbatim (same keyframe %, easing, and
-   21.23s loop) so it stays in sync with the original design.
-
-   .hero-wrap sits below the shared fixed nav and is the size of the
-   browser window; .hero-stage is the fixed 1152x658 Figma canvas (703px
-   frame minus the 45px nav), scaled via --hero-scale (set in hero.js) to
-   always fully COVER the window — like background-size:cover — so the
-   edges of the stage touch the edges of the viewport with no visible gap,
-   cropping whichever axis has room to spare instead of letterboxing it.
-   Every coordinate below is a straight copy of Figma's, minus 45 off any
-   "top" value to account for the nav offset. */
+/* Home page — from Figma "home page" (node 1592:4864). This replaces an
+   earlier looping photo-collage hero (node 966:2501) with a plain
+   headline + subtitle; the work section below is unchanged in structure,
+   just widened to match the new frame's larger card size. */
 
 /* the home page scrolls (unlike the fixed-viewport about page) so the work
    section below the hero is reachable; shared.css hides overflow globally,
@@ -19,262 +11,53 @@ body {
   overflow-x: hidden;
 }
 
-.hero-wrap {
-  position: relative;
-  margin-top: 45px;
-  width: 100%;
-  height: calc(100vh - 45px);
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #fcfcfc;
-  background-image: var(--hero-dither);
-  background-repeat: repeat;
-  background-size: 16px 16px;
+.home-hero {
+  max-width: 1360px;
+  margin: 0 auto;
+  padding: 145px 30px 0;
+  box-sizing: border-box;
 }
 
-/* Bayer 16x16 ordered-dither texture on the white stage background
-   (Figma Dither: Bayer 16x16, size 1, levels 8, brightness 100%, contrast
-   1, mono off), generated at runtime in hero.js the same way about.js
-   dithers the collage photo, then tiled here as a 16x16 repeating image. */
-.hero-stage {
-  position: relative;
-  width: 1152px;
-  height: 658px;
-  flex-shrink: 0;
-  background-color: #fcfcfc;
-  background-image: var(--hero-dither);
-  background-repeat: repeat;
-  background-size: 16px 16px;
-  transform: scale(var(--hero-scale, 1));
+.home-hero-title {
+  font-family: 'PP Editorial Old', serif;
+  font-weight: 400;
+  font-size: 50px;
+  line-height: 1.1;
+  color: #ff7800;
+  margin: 0;
 }
 
-/* decorative plus-mark grid: 96px pitch, static. The real Figma grid is
-   only 11x7 marks (967x583, at 93,47), but it's extended way past the
-   stage bounds here so the same pattern bleeds into the letterboxed
-   margins on a wide desktop window instead of stopping at the frame edge.
-   -3747/-1873 are chosen as 93/47 minus a whole number of 96px steps, so
-   the tiling phase lines up perfectly with the original grid — no visible
-   seam at the stage boundary. */
-.hero-grid {
-  position: absolute;
-  left: -3747px;
-  top: -1873px;
-  width: 7680px;
-  height: 3840px;
-  background-image: url('assets/hero/plus-grid-tile.svg');
-  background-repeat: repeat;
-  background-size: 96px 96px;
-}
-
-/* ---------- guide lines: sweep around the grid on a loop ---------- */
-
-.hero-line {
-  position: absolute;
-  background: rgba(255, 120, 0, 0.3);
-}
-/* extended well past the stage bounds (same reasoning as .hero-grid above)
-   so the sweeping lines bleed into the margins instead of stopping dead
-   at the frame edge; each line's own animated translate is unaffected. */
-.hero-line--v {
-  width: 1px;
-  height: calc(100% + 3000px);
-  top: -1500px;
-}
-.hero-line--h {
-  width: calc(100% + 6000px);
-  height: 1px;
-  left: -3000px;
-}
-
-#hero-line-1 {
-  left: 288px;
-  translate: 863px 0px;
-  animation: kf_1131_5974_translate_0 21.23s linear infinite;
-}
-#hero-line-2 {
-  left: 96px;
-  translate: -95px 0px;
-  animation: kf_1127_3993_translate_0 21.23s linear infinite;
-}
-#hero-line-3 {
-  top: 51px;
-  translate: 0px -95px;
-  animation: kf_1130_4479_translate_0 21.23s linear infinite;
-}
-#hero-line-4 {
-  top: 147px;
-  translate: 0px 511px;
-  animation: kf_1142_10411_translate_0 21.23s linear infinite;
-}
-
-@keyframes kf_1131_5974_translate_0 { 0% { animation-timing-function: cubic-bezier(0.57, 0, 0.34, 1); translate: 863px 0px; } 2.372% { translate: 96px 0px; } 5.257% { animation-timing-function: cubic-bezier(0.57, 0, 0.34, 1); translate: 96px 0px; } 7.775% { animation-timing-function: step-end; translate: 768px 0px; } 11.053% { animation-timing-function: cubic-bezier(0.57, 0, 0.34, 1); translate: 768px 0px; } 14.886% { translate: 288px 0px; } 17.512% { animation-timing-function: cubic-bezier(0.57, 0, 0.34, 1); translate: 288px 0px; } 21.558% { translate: 576px 0px; } 24.384% { animation-timing-function: cubic-bezier(0.57, 0, 0.34, 1); translate: 576px 0px; } 28.653% { animation-timing-function: step-end; translate: 768px 0px; } 35.049% { animation-timing-function: cubic-bezier(0.57, 0, 0.34, 1); translate: 768px 0px; } 39.938% { translate: 96px 0px; } 46.062% { animation-timing-function: cubic-bezier(0.57, 0, 0.34, 1); translate: 96px 0px; } 50.738% { translate: 576px 0px; } 57.415% { animation-timing-function: cubic-bezier(0.57, 0, 0.34, 1); translate: 576px 0px; } 62.991% { translate: 864px 0px; } 71.253% { animation-timing-function: cubic-bezier(0.57, 0, 0.34, 1); translate: 864px 0px; } 76.225% { translate: 288px 0px; } 84.387% { animation-timing-function: cubic-bezier(0.57, 0, 0.34, 1); translate: 288px 0px; } 91.224% { translate: 384px 0px; } 100% { translate: 384px 0px; } }
-
-@keyframes kf_1127_3993_translate_0 { 0% { animation-timing-function: cubic-bezier(0.57, 0, 0.34, 1); translate: -95px 0px; } 2.951% { animation-timing-function: step-end; translate: 0px 0px; } 5.257% { animation-timing-function: cubic-bezier(0.57, 0, 0.34, 1); translate: 0px 0px; } 7.775% { translate: 576px -1px; } 11.029% { animation-timing-function: cubic-bezier(0.57, 0, 0.34, 1); translate: 576px -1px; } 14.886% { translate: 0px -1px; } 17.512% { animation-timing-function: cubic-bezier(0.57, 0, 0.34, 1); translate: 0px -1px; } 21.558% { translate: 576px -1px; } 24.384% { animation-timing-function: cubic-bezier(0.57, 0, 0.34, 1); translate: 576px -1px; } 28.653% { animation-timing-function: step-end; translate: 768px -1px; } 35.05% { animation-timing-function: cubic-bezier(0.57, 0, 0.34, 1); translate: 768px -1px; } 39.938% { translate: 96px -1px; } 46.062% { animation-timing-function: cubic-bezier(0.57, 0, 0.34, 1); translate: 96px -1px; } 50.726% { translate: 480px -1px; } 57.415% { animation-timing-function: cubic-bezier(0.57, 0, 0.34, 1); translate: 480px -1px; } 62.991% { animation-timing-function: step-end; translate: 768px -1px; } 71.253% { animation-timing-function: cubic-bezier(0.57, 0, 0.34, 1); translate: 768px -1px; } 76.225% { translate: 288px -1px; } 100% { translate: 288px -1px; } }
-
-@keyframes kf_1130_4479_translate_0 { 0% { animation-timing-function: cubic-bezier(0.57, 0, 0.34, 1); translate: 0px -95px; } 2.955% { translate: 0px 0px; } 11.044% { animation-timing-function: cubic-bezier(0.57, 0, 0.34, 1); translate: 0px 0px; } 14.907% { translate: 0px 480px; } 24.418% { animation-timing-function: cubic-bezier(0.57, 0, 0.34, 1); translate: 0px 480px; } 28.693% { animation-timing-function: step-end; translate: 0px 288px; } 35.098% { animation-timing-function: cubic-bezier(0.57, 0, 0.34, 1); translate: 0px 288px; } 39.938% { translate: 0px 96px; } 57.415% { animation-timing-function: cubic-bezier(0.57, 0, 0.34, 1); translate: 0px 96px; } 62.991% { translate: 0px 192px; } 71.253% { animation-timing-function: cubic-bezier(0.57, 0, 0.34, 1); translate: 0px 192px; } 76.225% { animation-timing-function: step-end; translate: 0px 0px; } 84.387% { animation-timing-function: cubic-bezier(0.57, 0, 0.34, 1); translate: 0px 0px; } 91.224% { translate: 0px 96px; } 100% { translate: 0px 96px; } }
-
-@keyframes kf_1142_10411_translate_0 { 0% { animation-timing-function: cubic-bezier(0.574, 0.002, 0.338, 0.996); translate: 0px 511px; } 2.955% { translate: 0px 0px; } 11.044% { animation-timing-function: cubic-bezier(0.57, 0, 0.34, 1); translate: 0px 0px; } 14.907% { translate: 0px 480px; } 24.418% { animation-timing-function: cubic-bezier(0.57, 0, 0.34, 1); translate: 0px 480px; } 28.693% { translate: 0px 384px; } 35.098% { animation-timing-function: cubic-bezier(0.57, 0, 0.34, 1); translate: 0px 384px; } 39.938% { translate: 0px 288px; } 46.062% { animation-timing-function: cubic-bezier(0.57, 0, 0.34, 1); translate: 0px 288px; } 50.726% { translate: 0px 192px; } 57.415% { animation-timing-function: cubic-bezier(0.57, 0, 0.34, 1); translate: 0px 192px; } 62.991% { translate: 0px 384px; } 71.253% { animation-timing-function: cubic-bezier(0.57, 0, 0.34, 1); translate: 0px 384px; } 76.225% { translate: 0px 192px; } 84.387% { animation-timing-function: cubic-bezier(0.57, 0, 0.34, 1); translate: 0px 192px; } 91.224% { translate: 0px 288px; } 100% { translate: 0px 288px; } }
-
-/* ---------- text reveals: typewriter-style width clip ---------- */
-
-.hero-text-clip {
-  position: absolute;
-  overflow: hidden;
-}
-.hero-text {
+.home-hero-subtitle {
+  margin: 20px 0 0;
   font-family: 'CommitMono', monospace;
   font-weight: 400;
   font-size: 15px;
-  line-height: normal;
-  color: #ff7800;
+  color: #7b7b7b;
   white-space: nowrap;
 }
-
-/* the 4 texts type on once, on page load, and stay put — unlike the
-   photos below they don't loop, so animation-iteration-count is 1 rather
-   than infinite (fill-mode:forwards keeps the final full-width state
-   instead of snapping back to the 1px base width once the single run
-   ends). */
-#hero-text-1-clip {
-  left: 109px;
-  top: 66px;
-  width: 1px;
-  animation: kf_1152_3664_width_0 21.23s linear 1 forwards;
-}
-#hero-text-2-clip {
-  left: 687px;
-  top: 66px;
-  width: 1px;
-  animation: kf_1152_3913_width_0 21.23s linear 1 forwards;
-}
-#hero-text-2-clip .hero-text {
-  width: 360px;
-  white-space: normal;
-  text-align: left;
-}
-#hero-text-3-clip {
-  left: 109px;
-  top: 546px;
-  width: 1px;
-  animation: kf_1041_218_width_0 21.23s linear 1 forwards;
-}
-#hero-text-4-clip {
-  left: 687px;
-  top: 546px;
-  width: 1px;
-  animation: kf_960_2443_width_0 21.23s linear 1 forwards;
-}
-
-@keyframes kf_1152_3664_width_0 { 0% { width: 1px; } 2.955% { animation-timing-function: cubic-bezier(0.57, 0, 0.34, 1); width: 1px; } 5.248% { width: 241px; } 100% { width: 241px; } }
-@keyframes kf_1152_3913_width_0 { 0% { width: 1px; } 7.786% { animation-timing-function: cubic-bezier(0.57, 0, 0.34, 1); width: 1px; } 11.075% { width: 360px; } 100% { width: 360px; } }
-@keyframes kf_1041_218_width_0 { 0% { width: 1px; } 14.907% { animation-timing-function: cubic-bezier(0.57, 0, 0.34, 1); width: 1px; } 17.491% { width: 426px; } 100% { width: 426px; } }
-@keyframes kf_960_2443_width_0 { 0% { width: 1px; } 21.572% { animation-timing-function: cubic-bezier(0.57, 0, 0.34, 1); width: 1px; } 24.43% { width: 107px; } 100% { width: 107px; } }
-
-/* ---------- photo + caption pairs: each pops up once per loop ---------- */
-
-.hero-photo-clip {
-  position: absolute;
-  overflow: hidden;
-}
-.hero-photo-inner {
-  position: absolute;
-  left: 0;
-  width: 100%;
-}
-.hero-photo-inner img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.hero-label-clip {
-  position: absolute;
-  overflow: hidden;
-}
-.hero-label-inner {
-  position: absolute;
-  left: 0;
-  width: 100%;
-  height: 20px;
-  background: #ff7800;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: 'CommitMono', monospace;
-  font-weight: 400;
-  font-size: 10px;
-  color: #fcfcfc;
-  white-space: nowrap;
-}
-
-/* 1. this is arti! */
-#hero-photo-1-clip { left: 880px; top: 354px; width: 163px; height: 163px; }
-#hero-photo-1-inner { height: 163px; top: 170px; animation: kf_1142_10111_translate_0 21.23s linear infinite; }
-#hero-label-1-clip { left: 880px; top: 547px; width: 163px; height: 20px; }
-#hero-label-1-inner { top: -20px; animation: kf_1142_10112_translate_0 21.23s linear infinite; }
-
-@keyframes kf_1142_10111_translate_0 { 0% { translate: 0px 0px; } 28.693% { animation-timing-function: cubic-bezier(0.57, 0, 0.34, 1); translate: 0px 0px; } 30.833% { translate: 0px -170px; } 32.938% { animation-timing-function: cubic-bezier(0.57, 0, 0.34, 1); translate: 0px -170px; } 35.099% { translate: 0px -7px; } 100% { translate: 0px -7px; } }
-@keyframes kf_1142_10112_translate_0 { 0% { translate: 0px 0px; } 28.699% { animation-timing-function: cubic-bezier(0.57, 0, 0.34, 1); translate: 0px 0px; } 30.823% { translate: 0px 20px; } 32.936% { animation-timing-function: cubic-bezier(0.57, 0, 0.34, 1); translate: 0px 20px; } 35.099% { translate: 0px 0px; } 100% { translate: 0px 0px; } }
-
-/* 2. balloon bouquet */
-#hero-photo-2-clip { left: 206px; top: 162px; width: 163px; height: 259px; }
-#hero-photo-2-inner { height: 259px; top: 270px; animation: kf_978_2581_translate_0 21.23s linear infinite; }
-#hero-label-2-clip { left: 206px; top: 451px; width: 163px; height: 20px; }
-#hero-label-2-inner { top: -20px; animation: kf_1142_9845_translate_0 21.23s linear infinite; }
-
-@keyframes kf_978_2581_translate_0 { 0% { translate: 0px 0px; } 39.894% { animation-timing-function: cubic-bezier(0.57, 0, 0.34, 1); translate: 0px 0px; } 42.004% { translate: 0px -270px; } 43.883% { animation-timing-function: cubic-bezier(0.57, 0, 0.34, 1); translate: 0px -270px; } 46.118% { translate: 0px -11px; } 100% { translate: 0px -11px; } }
-@keyframes kf_1142_9845_translate_0 { 0% { translate: 0px 0px; } 39.886% { animation-timing-function: cubic-bezier(0.57, 0, 0.34, 1); translate: 0px 0px; } 41.996% { translate: 0px 20px; } 43.887% { animation-timing-function: cubic-bezier(0.57, 0, 0.34, 1); translate: 0px 20px; } 46.122% { translate: 0px 0px; } 100% { translate: 0px 0px; } }
-
-/* 3. home away from home */
-#hero-photo-3-clip { left: 592px; top: 162px; width: 257px; height: 161px; }
-#hero-photo-3-inner { height: 161px; top: 170px; animation: kf_978_2582_translate_0 21.23s linear infinite; }
-#hero-label-3-clip { left: 592px; top: 353px; width: 259px; height: 20px; }
-#hero-label-3-inner { top: -20px; animation: kf_1142_9844_translate_0 21.23s linear infinite; }
-
-@keyframes kf_978_2582_translate_0 { 0% { translate: 0px 0px; } 50.642% { animation-timing-function: cubic-bezier(0.57, 0, 0.34, 1); translate: 0px 0px; } 53.295% { translate: 0px -170px; } 54.553% { animation-timing-function: cubic-bezier(0.57, 0, 0.34, 1); translate: 0px -170px; } 57.454% { translate: 0px -9px; } 100% { translate: 0px -9px; } }
-@keyframes kf_1142_9844_translate_0 { 0% { translate: 0px 0px; } 50.678% { animation-timing-function: cubic-bezier(0.57, 0, 0.34, 1); translate: 0px 0px; } 53.326% { translate: 0px 20px; } 54.584% { animation-timing-function: cubic-bezier(0.57, 0, 0.34, 1); translate: 0px 20px; } 57.45% { translate: 0px 0px; } 100% { translate: 0px 0px; } }
-
-/* 4. game nights w/ forever roomies */
-#hero-photo-4-clip { left: 879px; top: 260px; width: 257px; height: 257px; }
-#hero-photo-4-inner { height: 257px; top: 260px; animation: kf_1155_7126_translate_0 21.23s linear infinite; }
-#hero-label-4-clip { left: 880px; top: 547px; width: 258px; height: 20px; }
-#hero-label-4-inner { top: -20px; animation: kf_1165_9281_translate_0 21.23s linear infinite; }
-
-@keyframes kf_1155_7126_translate_0 { 0% { translate: 0px 0px; } 62.987% { animation-timing-function: cubic-bezier(0.57, 0, 0.34, 1); translate: 0px 0px; } 66.161% { translate: 0px -260px; } 68.089% { animation-timing-function: cubic-bezier(0.57, 0, 0.34, 1); translate: 0px -260px; } 71.265% { translate: 0px -3px; } 100% { translate: 0px -3px; } }
-@keyframes kf_1165_9281_translate_0 { 0% { translate: 0px 0px; } 62.999% { animation-timing-function: cubic-bezier(0.57, 0, 0.34, 1); translate: 0px 0px; } 66.161% { translate: 0px 20px; } 68.079% { animation-timing-function: cubic-bezier(0.57, 0, 0.34, 1); translate: 0px 20px; } 71.265% { translate: 0px 0px; } 100% { translate: 0px 0px; } }
-
-/* 5. late nights @ mchenry */
-#hero-photo-5-clip { left: 400px; top: 66px; width: 161px; height: 255px; }
-#hero-photo-5-inner { height: 255px; top: 260px; animation: kf_1152_5008_translate_0 21.23s linear infinite; }
-#hero-label-5-clip { left: 400px; top: 351px; width: 161px; height: 20px; }
-#hero-label-5-inner { top: -20px; animation: kf_1142_9848_translate_0 21.23s linear infinite; }
-
-@keyframes kf_1152_5008_translate_0 { 0% { translate: 0px 0px; } 76.225% { animation-timing-function: cubic-bezier(0.57, 0, 0.34, 1); translate: 0px 0px; } 79.309% { translate: 0px -260px; } 80.964% { animation-timing-function: cubic-bezier(0.57, 0, 0.34, 1); translate: 0px -260px; } 84.378% { translate: 0px -5px; } 100% { translate: 0px -5px; } }
-@keyframes kf_1142_9848_translate_0 { 0% { translate: 0px 0px; } 76.221% { animation-timing-function: cubic-bezier(0.57, 0, 0.34, 1); translate: 0px 0px; } 79.351% { translate: 0px 20px; } 80.943% { animation-timing-function: cubic-bezier(0.57, 0, 0.34, 1); translate: 0px 20px; } 84.377% { translate: 0px 0px; } 100% { translate: 0px 0px; } }
-
-/* 6. bay areaaaaaa */
-#hero-photo-6-clip { left: 400px; top: 162px; width: 257px; height: 257px; }
-#hero-photo-6-inner { height: 257px; top: 260px; animation: kf_1165_12086_translate_0 21.23s linear infinite; }
-#hero-label-6-clip { left: 400px; top: 449px; width: 259px; height: 20px; }
-#hero-label-6-inner { top: -20px; animation: kf_1165_11799_translate_0 21.23s linear infinite; }
-
-@keyframes kf_1165_12086_translate_0 { 0% { translate: 0px 0px; } 91.212% { animation-timing-function: cubic-bezier(0.57, 0, 0.34, 1); translate: 0px 0px; } 94.598% { translate: 0px -260px; } 96.299% { animation-timing-function: cubic-bezier(0.57, 0, 0.34, 1); translate: 0px -260px; } 99.998% { translate: 0px -3px; } 100% { translate: 0px -3px; } }
-@keyframes kf_1165_11799_translate_0 { 0% { translate: 0px 0px; } 91.224% { animation-timing-function: cubic-bezier(0.57, 0, 0.34, 1); translate: 0px 0px; } 94.61% { translate: 0px 20px; } 96.308% { animation-timing-function: cubic-bezier(0.57, 0, 0.34, 1); translate: 0px 20px; } 100% { translate: 0px 0px; } }
 
 /* ---------- work section: case-study thumbnails below the hero ---------- */
 
 .work-section {
   position: relative;
-  max-width: 1152px;
+  max-width: 1360px;
   margin: 0 auto;
-  padding: 60px 0 120px;
+  padding: 60px 30px 120px;
+  box-sizing: border-box;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 30px;
   scroll-margin-top: 45px; /* offset for the fixed nav bar when jumped to via #work */
+}
+
+/* 30px matches the case-study pages' own side gutter (see casestudy.css),
+   so the margin doesn't visibly jump when you click into a case study.
+   Held at every width — not just below 900px — so the centered box never
+   touches the viewport edges on its own between 900px and ~1420px. */
+@media (max-width: 900px) {
+  .work-section {
+    grid-template-columns: 1fr;
+  }
 }
 
 .work-card {
@@ -284,7 +67,21 @@ body {
   text-decoration: none;
 }
 
-.work-card img {
+/* the meta/title/desc trio reads as one tight caption block in Figma
+   (~6px between lines) — much closer than the 14px gap between the
+   cover image and the caption block above it. */
+.work-caption {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+/* direct-child only — a plain descendant selector here also matches the
+   eye/bee/M icon SVGs nested inside .work-card-cover, forcing them to
+   width:100% (clobbering their own percentage sizing in shared.css and
+   breaking the composition's responsive scaling) and rounding their
+   corners with border-radius. */
+.work-card > img {
   display: block;
   width: 100%;
   height: auto;
@@ -309,125 +106,23 @@ body {
 .work-meta {
   font-family: 'CommitMono', monospace;
   font-weight: 400;
-  font-size: 10px;
+  font-size: 12px;
   letter-spacing: 0.5px;
   color: #7b7b7b;
   text-transform: uppercase;
 }
 
 .work-title {
-  font-family: 'Lora', serif;
+  font-family: 'PP Editorial Old', serif;
   font-weight: 400;
-  font-size: 20px;
+  font-size: 25px;
   color: #5e5e5e;
 }
 
 .work-desc {
   font-family: 'IBM Plex Sans', sans-serif;
   font-weight: 400;
-  font-size: 12px;
+  font-size: 15px;
   line-height: 1.1;
   color: #787878;
-}
-
-/* ---------- footer: Figma "Frame 205" (1533x289) ---------- */
-
-.site-footer {
-  position: relative;
-  width: 1533px;
-  height: 297px; /* the 21-tile grid (3 x 99px) runs 8px past Figma's
-                    stated 289px frame height; fit it exactly rather than
-                    clip the bottom row */
-  margin: 0 auto 60px;
-  background-color: #fcfcfc;
-  background-image: var(--hero-dither);
-  background-repeat: repeat;
-  background-size: 16px 16px;
-}
-
-.footer-heading {
-  position: absolute;
-  left: 60px;
-  top: 77px;
-  font-family: 'Lora', serif;
-  font-weight: 500;
-  font-size: 30px;
-  color: #ff7800;
-  white-space: nowrap;
-}
-
-.footer-nav {
-  position: absolute;
-  left: 60px;
-  top: 137px;
-  display: flex;
-  gap: 60px;
-}
-
-.footer-nav-col {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  width: 117px;
-}
-
-.footer-link {
-  font-family: 'CommitMono', monospace;
-  font-weight: 400;
-  font-size: 15px;
-  color: #ff7800;
-  text-decoration: none;
-  white-space: nowrap;
-}
-
-/* photo grid: 21 flip tiles, blank until hovered, then flip open like a
-   vintage split-flap display to reveal the photo underneath. */
-.footer-grid {
-  position: absolute;
-  left: 769px;
-  top: 0;
-  width: 760px;
-  height: 297px;
-  display: grid;
-  grid-template-columns: repeat(8, 95px);
-  grid-template-rows: repeat(3, 99px);
-}
-
-.flip-tile {
-  perspective: 500px;
-}
-
-.flip-tile-inner {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-  transform-style: preserve-3d;
-}
-
-.flip-tile:hover .flip-tile-inner,
-.flip-tile.is-open .flip-tile-inner {
-  transform: rotateX(180deg);
-}
-
-.flip-face {
-  position: absolute;
-  inset: 0;
-  backface-visibility: hidden;
-  overflow: hidden;
-}
-
-/* the closed/blank face has no styling of its own — it's transparent, so
-   the footer's own dither background shows straight through and the grid
-   reads as seamless with the rest of the footer until it's hovered. */
-
-.flip-face-back {
-  transform: rotateX(180deg);
-}
-
-.flip-face-back img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
 }

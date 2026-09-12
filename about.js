@@ -243,6 +243,13 @@ window.addEventListener('resize', () => {
 // on top of shared.js's own positioning of the cursor dot.
 document.addEventListener('mousemove', updateHintDirection);
 
+// Track whether the pointer is over the game image. The scanner cursor only
+// replaces the dot while this is true (see the .over-game rules in
+// about.css), so moving off the image mid-hint falls back to the normal
+// cursor instead of carrying the scanner around the rest of the page.
+viewport.addEventListener('mouseenter', () => customCursor.classList.add('over-game'));
+viewport.addEventListener('mouseleave', () => customCursor.classList.remove('over-game'));
+
 // --- I-Spy: click an item (seamlessly overlaid on the real photo) to pop
 // its matching star burst out from behind it as a found-it notification. ---
 
@@ -325,13 +332,16 @@ viewport.addEventListener('click', (e) => {
 // and resets back to the normal cursor once that item is found. ---
 
 const scannerCursorEl = document.getElementById('scanner-cursor');
+const mobileScannerEl = document.getElementById('mobile-hint-scanner');
+const mobileScannerCursorEl = mobileScannerEl ? mobileScannerEl.querySelector('.scanner-cursor') : null;
 let hintTargetId = null;
 
-function updateHintDirection() {
-  if (!hintTargetId || !sourceLoaded || canvas.width === 0) return;
-  const item = SPY_ITEMS.find((i) => i.id === hintTargetId);
-  if (!item) return;
-
+// shared by both scanner variants: the angle from a fixed screen point
+// (the mouse, on desktop; .main-area's own center, on mobile — there's no
+// pointer to ride along with there) to the hinted item's CURRENT on-screen
+// position, which shifts as the collage is panned even if the fixed point
+// doesn't move.
+function hintAngleFrom(fromX, fromY, item) {
   const rect = viewport.getBoundingClientRect();
   const { xMin, xMax, yMin, yMax } = item.bounds;
   const targetCanvasX = ((xMin + xMax) / 2) * canvas.width;
@@ -339,11 +349,24 @@ function updateHintDirection() {
   const targetX = rect.left + panX + targetCanvasX;
   const targetY = rect.top + panY + targetCanvasY;
 
-  const dx = targetX - lastMouseClientX;
-  const dy = targetY - lastMouseClientY;
-  const angle = Math.atan2(dx, -dy) * (180 / Math.PI);
+  const dx = targetX - fromX;
+  const dy = targetY - fromY;
+  return Math.atan2(dx, -dy) * (180 / Math.PI);
+}
 
+function updateHintDirection() {
+  if (!hintTargetId || !sourceLoaded || canvas.width === 0) return;
+  const item = SPY_ITEMS.find((i) => i.id === hintTargetId);
+  if (!item) return;
+
+  const angle = hintAngleFrom(lastMouseClientX, lastMouseClientY, item);
   scannerCursorEl.style.transform = `translate(-50%, -50%) rotate(${angle}deg)`;
+
+  if (mobileScannerCursorEl) {
+    const rect = viewport.getBoundingClientRect();
+    const angleFromCenter = hintAngleFrom(rect.left + rect.width / 2, rect.top + rect.height / 2, item);
+    mobileScannerCursorEl.style.transform = `translate(-50%, -50%) rotate(${angleFromCenter}deg)`;
+  }
 }
 
 function restartScannerRings() {
@@ -363,6 +386,7 @@ function restartScannerRings() {
 function startHint(id) {
   hintTargetId = id;
   customCursor.classList.add('hinting');
+  if (mobileScannerEl) mobileScannerEl.classList.add('active');
   restartScannerRings();
   updateHintDirection();
 }
@@ -370,6 +394,7 @@ function startHint(id) {
 function stopHint() {
   hintTargetId = null;
   customCursor.classList.remove('hinting');
+  if (mobileScannerEl) mobileScannerEl.classList.remove('active');
 }
 
 // --- Info cards: once an item's tag has turned orange (found), clicking it
@@ -697,3 +722,19 @@ setupPopup(hintButton, hintPopup);
 // Auto-show the info popup for a few seconds on page load, then tuck it
 // away behind the "i" so first-time visitors get the hint without it lingering.
 infoPopupControls.open(INFO_POPUP_AUTO_SHOW_MS);
+
+// --- Mobile "scroll for some fun" nudge: visible while the user is still
+// up near the bio (the game not really in view yet), and out of the way
+// once they've scrolled the game at least half into view. Toggling this
+// class is harmless on desktop too — about.css keeps the banner
+// display:none there regardless of the class. ---
+const scrollHintBanner = document.getElementById('scroll-hint-banner');
+if (scrollHintBanner && 'IntersectionObserver' in window) {
+  const scrollHintObserver = new IntersectionObserver(
+    ([entry]) => {
+      scrollHintBanner.classList.toggle('visible', entry.intersectionRatio < 0.5);
+    },
+    { threshold: [0, 0.5] }
+  );
+  scrollHintObserver.observe(viewport);
+}

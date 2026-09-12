@@ -13,16 +13,58 @@
 }
 
 @font-face {
-  font-family: 'Lora';
-  src: url('fonts/Lora-Regular.woff2') format('woff2');
+  font-family: 'PP Editorial Old';
+  src: url('fonts/PPEditorialOld-Regular.otf') format('opentype');
   font-weight: 400;
   font-style: normal;
+}
+
+@font-face {
+  font-family: 'PP Editorial Old';
+  src: url('fonts/PPEditorialOld-Italic.otf') format('opentype');
+  font-weight: 400;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'PP Editorial Old';
+  src: url('fonts/PPEditorialOld-Ultralight.otf') format('opentype');
+  font-weight: 200;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'PP Editorial Old';
+  src: url('fonts/PPEditorialOld-UltralightItalic.otf') format('opentype');
+  font-weight: 200;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'PP Editorial Old';
+  src: url('fonts/PPEditorialOld-Ultrabold.otf') format('opentype');
+  font-weight: 800;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'PP Editorial Old';
+  src: url('fonts/PPEditorialOld-UltraboldItalic.otf') format('opentype');
+  font-weight: 800;
+  font-style: italic;
 }
 
 @font-face {
   font-family: 'IBM Plex Sans';
   src: url('fonts/IBMPlexSans-Regular.woff2') format('woff2');
   font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'IBM Plex Sans';
+  src: url('fonts/IBMPlexSans-Bold.woff2') format('woff2');
+  font-weight: 700;
   font-style: normal;
 }
 
@@ -33,7 +75,17 @@
   cursor: none;
 }
 
-html, body {
+/* color-scheme:light + an explicit html background stop the browser from
+   painting its dark-mode default (black, on macOS Chrome) into the
+   rubber-band overscroll area when a visitor on a dark-mode system
+   scrolls past the top/bottom of a page. */
+html {
+  height: 100%;
+  background: #fcfcfc;
+  color-scheme: light;
+}
+
+body {
   height: 100%;
 }
 
@@ -71,7 +123,7 @@ body {
   justify-content: center;
   font-family: 'CommitMono', monospace;
   font-weight: 400;
-  font-size: 10px;
+  font-size: 12px;
   color: #7b7b7b;
   text-decoration: none;
   white-space: nowrap;
@@ -87,7 +139,7 @@ body {
 .nav-brand {
   font-family: 'CommitMono', monospace;
   font-weight: 400;
-  font-size: 10px;
+  font-size: 12px;
   color: #7b7b7b;
   text-decoration: none;
   white-space: nowrap;
@@ -144,4 +196,90 @@ body {
 .ibm-icon-m {
   width: 29.06%;
   height: auto;
+}
+
+/* site footer: Figma "footer" (node 1678:5531). Made to match the nav bar
+   exactly — full window width, 45px min height, same #fcfcfc fill and the
+   same hairline stroke, just on the top edge here (the edge that faces the
+   page content) so the two bookend the page consistently. The left note
+   and the right link cluster are each held a constant 30px off the
+   viewport edge by 30px side padding on a space-between flex row, so the
+   insets never change with window size.
+
+   Both pieces are nowrap; on a narrow window they can't share one line and
+   space-between would then push the link cluster off the right edge — a
+   phantom horizontal scroll / dead strip to the right of every page. So
+   the row is allowed to wrap (links drop to their own line, still 30px in
+   via the padding); below 560px it stops being a row at all — see the
+   media query under .site-footer-fixed. Desktop layout is unchanged. */
+.site-footer {
+  position: relative;
+  z-index: 6; /* sit above the case-study pages' fixed outline sidebar (z-index 5) */
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 20px;
+  width: 100%;
+  min-height: 45px;
+  padding: 0 30px;
+  background: #fcfcfc;
+  border-top: 1px solid rgba(148, 148, 148, 0.25);
+}
+
+.site-footer-note,
+.site-footer-link {
+  font-family: 'CommitMono', monospace;
+  font-weight: 400;
+  font-size: 12px; /* matches the nav bar's .nav-link */
+  color: #7b7b7b; /* matches the nav bar's .nav-link */
+  white-space: nowrap;
+}
+
+.site-footer-links {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.site-footer-link {
+  text-decoration: none;
+}
+
+.site-footer-link:hover {
+  color: #ff7800;
+}
+
+/* about page: that page is a fixed, non-scrolling 100vh canvas. The footer
+   is pinned to the bottom 45px of the viewport and about.css shortens
+   .page to calc(100vh - 45px) so the sidebar + game sit flush on top of it
+   (no overlap, no scroll). about.css drops this back to static at its
+   mobile breakpoint, where the page does scroll. */
+.site-footer-fixed {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  height: 45px;
+  z-index: 10;
+}
+
+/* phone widths: past the point where the note + links start to crowd, drop
+   the space-between row entirely and stack it — note on top, then every
+   link on its own line, all left-aligned to the same 30px gutter. (On the
+   about page this range is already past its own 900px breakpoint, where
+   the footer has gone back to static/auto-height, so the stack has room.) */
+@media (max-width: 560px) {
+  .site-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+    padding-top: 18px;
+    padding-bottom: 18px;
+  }
+
+  .site-footer-links {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
 }
