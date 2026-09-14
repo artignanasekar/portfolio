@@ -137,12 +137,20 @@ body {
    the screen (measured directly off its alpha channel, not just Figma's
    declared child offset, since the two layers aren't pixel-registered),
    so the frame's own notch/bezel renders on top of it untouched. */
-.cs-project-shot .cs-project-screen {
+.cs-project-shot .cs-project-screen-clip {
   position: absolute;
   left: 10.18%;
   top: 13.18%;
   width: 79.61%;
   height: 75.84%;
+  overflow: hidden;
+}
+
+.cs-project-shot .cs-project-screen {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
   filter: blur(4px);
 }

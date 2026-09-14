@@ -152,19 +152,19 @@
 .intro-word {
   font-family: 'CommitMono', monospace;
   font-weight: 400;
-  font-size: 45px;
+  font-size: 65px;
   line-height: 1;
   color: #fcfcfc;
   white-space: nowrap;
   opacity: 0;
 }
-#intro-word-a { left: 237px; top: 366px; }
-#intro-word-ux { left: 550px; top: 267px; }
-#intro-word-product { left: 859px; top: 247px; }
-#intro-word-amp { left: 617px; top: 312px; }
-#intro-word-designer { left: 1119px; top: 389px; }
-#intro-word-who { left: 411px; top: 667px; }
-#intro-word-turns { left: 781px; top: 626px; }
+#intro-word-a { left: 231px; top: 367px; }
+#intro-word-ux { left: 517px; top: 247px; }
+#intro-word-product { left: 851px; top: 292px; }
+#intro-word-amp { left: 608px; top: 304px; }
+#intro-word-designer { left: 1032px; top: 432px; }
+#intro-word-who { left: 377px; top: 675px; }
+#intro-word-turns { left: 742px; top: 620px; }
 
 /* ---------- phase C: "CURIOSITY" assembling, its O filled with a photo ---------- */
 
