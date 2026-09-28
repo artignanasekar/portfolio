@@ -1,3 +1,8 @@
+import { inject } from '@vercel/analytics';
+
+// Vercel Web Analytics: every page loads shared.js, so this covers the site.
+inject();
+
 // --- Custom cursor: orange dot everywhere on the site. ---
 // .cursor-dot defaults to opacity:0 in CSS — it only knows the real
 // cursor position once a mousemove/mouseenter fires, so revealing it
