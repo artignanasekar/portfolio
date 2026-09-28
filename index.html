@@ -20,7 +20,7 @@
 <meta name="twitter:card" content="summary_large_image" />
 
 <link rel="stylesheet" href="shared.css?v=5" />
-<link rel="stylesheet" href="hero.css?v=14" />
+<link rel="stylesheet" href="hero.css?v=15" />
 <link rel="stylesheet" href="intro.css?v=12" />
 </head>
 <body>
@@ -109,7 +109,58 @@
         </div>
       </a>
       <a class="work-card" href="pearl">
-        <img src="assets/work/pearl.png" alt="Pearl app screens on a blue background, with the Pearl mascot fish" />
+        <div class="pearl-thumb" role="img" aria-label="Animated: blue glass waves wash in to reveal three Pearl app screens, then flood the card for the Pearl fish mascot and the slogan lock in, lock out, repeat">
+          <div class="pearl-thumb-screens">
+            <img src="assets/pearl/thumb/home-pearl.png" alt="" />
+            <img src="assets/pearl/thumb/prod-pearl.png" alt="" />
+            <img src="assets/pearl/thumb/treasure-pearl.png" alt="" />
+          </div>
+          <svg class="pearl-thumb-waves" viewBox="0 0 1000 568" preserveAspectRatio="none" aria-hidden="true">
+            <defs>
+              <linearGradient id="pt-back-grad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#a6d7ed" />
+                <stop offset="0.3" stop-color="#8ecae6" />
+                <stop offset="1" stop-color="#86c4e1" />
+              </linearGradient>
+              <linearGradient id="pt-front-grad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#1cafcb" />
+                <stop offset="0.3" stop-color="#00a1c0" />
+                <stop offset="1" stop-color="#0096b4" />
+              </linearGradient>
+              <linearGradient id="pt-rim" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0" stop-color="#fff" stop-opacity="0.35" />
+                <stop offset="0.28" stop-color="#fff" stop-opacity="0.85" />
+                <stop offset="0.55" stop-color="#fff" stop-opacity="0.4" />
+                <stop offset="0.8" stop-color="#fff" stop-opacity="0.75" />
+                <stop offset="1" stop-color="#fff" stop-opacity="0.3" />
+              </linearGradient>
+              <filter id="pt-glow" x="-10%" y="-50%" width="120%" height="200%">
+                <feGaussianBlur stdDeviation="5" />
+              </filter>
+              <filter id="pt-shadow" x="-10%" y="-20%" width="120%" height="140%">
+                <feDropShadow dx="0" dy="-3" stdDeviation="6" flood-color="#00506a" flood-opacity="0.18" />
+              </filter>
+              <clipPath id="pt-back-clipref"><path class="pt-back-clip" /></clipPath>
+              <clipPath id="pt-front-clipref"><path class="pt-front-clip" /></clipPath>
+            </defs>
+            <g>
+              <path class="pt-back-fill" fill="url(#pt-back-grad)" />
+              <g clip-path="url(#pt-back-clipref)">
+                <path class="pt-back-crest pt-glow" />
+              </g>
+              <path class="pt-back-crest pt-rim" />
+            </g>
+            <g>
+              <path class="pt-front-fill" fill="url(#pt-front-grad)" filter="url(#pt-shadow)" />
+              <g clip-path="url(#pt-front-clipref)">
+                <path class="pt-front-crest pt-glow" />
+              </g>
+              <path class="pt-front-crest pt-rim" />
+            </g>
+          </svg>
+          <img class="pearl-thumb-fish" src="assets/pearl/thumb/pearl-fish.svg" alt="" />
+          <p class="pearl-thumb-slogan">lock in, lock out, repeat</p>
+        </div>
         <div class="work-caption">
           <p class="work-meta">Pearl | Grand Prize @ SB Creative&rsquo;s Lab Designathon 2025</p>
           <p class="work-title">Helping students build healthier digital habits.</p>
@@ -143,5 +194,6 @@
 
   <script src="shared.js?v=7"></script>
   <script src="intro.js?v=18"></script>
+  <script src="pearl-thumb.js?v=1"></script>
 </body>
 </html>

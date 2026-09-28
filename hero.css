@@ -126,3 +126,86 @@ body {
   line-height: 1.1;
   color: #787878;
 }
+
+/* Pearl cover: live animated thumbnail (pearl-thumb.js drives the waves,
+   screens, fish and slogan on one 7s loop). Starts on the portfolio white
+   with a hairline stroke; same 521:296 frame as the IBM cover. */
+.pearl-thumb {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 521 / 296;
+  background: #fcfcfc;
+  border: 1px solid #d9d9d9;
+  border-radius: 8px;
+  box-sizing: border-box;
+  overflow: hidden;
+  container-type: inline-size;
+  isolation: isolate;
+}
+
+.pearl-thumb-screens {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1.5%;
+}
+
+/* phone PNGs share one 508x980 canvas (phone + soft shadow), so equal
+   heights line the three bezels up exactly */
+.pearl-thumb-screens img {
+  height: 92%;
+  width: auto;
+  opacity: 0;
+  transform-origin: 50% 60%;
+  will-change: transform, opacity;
+}
+
+.pearl-thumb-waves {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.pearl-thumb-waves .pt-glow {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 16;
+  stroke-opacity: 0.22;
+  filter: url(#pt-glow);
+}
+
+.pearl-thumb-waves .pt-rim {
+  fill: none;
+  stroke: url(#pt-rim);
+  stroke-width: 1.6;
+  vector-effect: non-scaling-stroke;
+}
+
+.pearl-thumb-fish {
+  position: absolute;
+  left: 50%;
+  top: 44%;
+  height: 70%;
+  width: auto;
+  opacity: 0;
+  transform: translate(-50%, -50%);
+  will-change: transform, opacity;
+}
+
+.pearl-thumb-slogan {
+  position: absolute;
+  left: 50%;
+  top: 83%;
+  margin: 0;
+  white-space: nowrap;
+  font-family: 'CommitMono', monospace;
+  font-size: 2.6cqw;
+  letter-spacing: 0.04em;
+  color: #fff;
+  opacity: 0;
+  transform: translate(-50%, 0);
+}
