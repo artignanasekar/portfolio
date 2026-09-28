@@ -8,11 +8,13 @@
 
   var LOOP = 7; // seconds
 
+  // first swell peaks with its highest crest ~30px (8.3%) below the top of a
+  // ~361px-tall card, just above the phones (which sit 40px / 11% down).
   // wave level keyframes: [time s, level] where 0 = bottom edge, 1 = top edge.
   // the back (light) wave leads the front on the way up and trails it on the
   // way down, so its band peeks out above the pearl blue like foam on sand.
-  var FRONT = [[0, -0.14], [1.1, 0.66], [2.1, -0.24], [3.6, -0.24], [4.6, 1.24], [6.35, 1.24], [7, -0.14]];
-  var BACK  = [[0, -0.14], [1.0, 0.76], [2.2, -0.24], [3.6, -0.24], [4.55, 1.3], [6.5, 1.3],   [7, -0.14]];
+  var FRONT = [[0, -0.14], [1.1, 0.81], [2.1, -0.24], [3.6, -0.24], [4.6, 1.24], [6.35, 1.24], [7, -0.14]];
+  var BACK  = [[0, -0.14], [1.0, 0.84], [2.2, -0.24], [3.6, -0.24], [4.55, 1.3], [6.5, 1.3],   [7, -0.14]];
 
   // wave personalities. pattern 0 = broad shore swell (beat 1), pattern 1 =
   // tighter crests for the full-cover wash (beat 3). k = cycles across the
@@ -30,7 +32,8 @@
     ]
   };
   var AMP = [0.075, 0.045]; // crest height (fraction of card) per pattern
-  var TILT = 0.1;           // shore swell rides higher on the left (sketch beat 1)
+  var TILT = 0.1;           // shore swell rides higher on the left as it rises,
+                            // levelling out as it nears its peak
   var POINTS = 72;
 
   var svg = root.querySelector('.pearl-thumb-waves');
@@ -74,7 +77,7 @@
 
   function crestPoints(name, t, lv, m) {
     var comps = WAVES[name], amp = AMP[0] + (AMP[1] - AMP[0]) * m;
-    var tilt = TILT * (1 - m), pts = [];
+    var tilt = TILT * (1 - m) * clamp(1 - lv / 0.84, 0, 1), pts = [];
     for (var i = 0; i <= POINTS; i++) {
       var x = i / POINTS, y = 0;
       for (var c = 0; c < comps.length; c++) {
