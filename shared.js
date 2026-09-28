@@ -4,10 +4,10 @@
 // there (rather than being visible by default) avoids a stray dot
 // flashing at its unpositioned 0,0 corner on every page load.
 
-const customCursor = document.getElementById('custom-cursor');
+export const customCursor = document.getElementById('custom-cursor');
 const cursorDot = document.querySelector('.cursor-dot');
-let lastMouseClientX = 0;
-let lastMouseClientY = 0;
+export let lastMouseClientX = 0;
+export let lastMouseClientY = 0;
 
 function positionCursor(e) {
   customCursor.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;

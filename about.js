@@ -238,7 +238,7 @@ window.addEventListener('resize', () => {
   }, 150);
 });
 
-// customCursor + lastMouseClientX/Y come from shared.js (loaded first).
+import { customCursor, lastMouseClientX, lastMouseClientY } from './shared.js';
 // The hint scanner needs to recompute its angle on every mouse move too,
 // on top of shared.js's own positioning of the cursor dot.
 document.addEventListener('mousemove', updateHintDirection);
