@@ -148,24 +148,25 @@ body {
   inset: 0;
 }
 
-/* phones blown up and pinned in place, bottom ~1/5 cropped by the card.
-   Each PNG is a 508x980 canvas with the 436px-wide phone body at x=36,
-   y=15, so width 36.1% makes the body 31% of the card, and top 9.2% puts
-   the body's top edge 11% (~40px) down the card; centres 33.5%
-   apart leave a ~2.5% gap between bodies. The wave does all the motion —
-   the phones never move. */
+/* phones pinned in place with room on every side, bottom ~1/5 cropped by
+   the card. Each PNG is a 508x980 canvas with the 436px-wide phone body at
+   x=36, y=15, so width 31.47% makes the body 27% of the card and top 20.66%
+   puts the body's top edge 22.3% down (below the first swell's peak, so
+   pearl-thumb.js can reveal them unseen — keep PHONE_TOP there in sync).
+   Centres 29.5% apart leave a 2.5% gap between bodies and ~7% at the sides.
+   The wave does all the motion — the phones never move. */
 .pearl-thumb-screens img {
   position: absolute;
-  top: 9.2%;
-  width: 36.1%;
+  top: 20.66%;
+  width: 31.47%;
   height: auto;
   opacity: 0;
   transform: translateX(-50%);
 }
 
-.pearl-thumb-screens img:nth-child(1) { left: 16.5%; }
+.pearl-thumb-screens img:nth-child(1) { left: 20.5%; }
 .pearl-thumb-screens img:nth-child(2) { left: 50%; }
-.pearl-thumb-screens img:nth-child(3) { left: 83.5%; }
+.pearl-thumb-screens img:nth-child(3) { left: 79.5%; }
 
 .pearl-thumb-waves {
   position: absolute;

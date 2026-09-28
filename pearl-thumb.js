@@ -35,6 +35,10 @@
   var TILT = 0.1;           // shore swell rides higher on the left as it rises,
                             // levelling out as it nears its peak
   var POINTS = 72;
+  // phone bodies' top edge and horizontal span as fractions of the card
+  // (keep in sync with .pearl-thumb-screens img in hero.css)
+  var PHONE_TOP = 0.223, PHONE_X = [0.07, 0.93];
+  var revealed = false;
 
   var svg = root.querySelector('.pearl-thumb-waves');
   var els = {
@@ -102,24 +106,40 @@
   }
 
   function drawWave(name, keys, t, m) {
-    var crest = crestPath(crestPoints(name, t, level(keys, t), m));
+    var pts = crestPoints(name, t, level(keys, t), m);
+    var crest = crestPath(pts);
     var body = crest + 'L' + W + ' ' + (H + 40) + 'L0 ' + (H + 40) + 'Z';
     var e = els[name];
     e.fill.setAttribute('d', body);
     e.clip.setAttribute('d', body);
     for (var i = 0; i < e.crest.length; i++) e.crest[i].setAttribute('d', crest);
+    return pts;
+  }
+
+  // true once the water (either wave — both are opaque) sits above the
+  // phones' top edge everywhere across them, so they can switch on unseen
+  function phonesCovered(front, back) {
+    var limit = PHONE_TOP * H - 8;
+    for (var i = 0; i < front.length; i++) {
+      var x = front[i][0] / W;
+      if (x < PHONE_X[0] || x > PHONE_X[1]) continue;
+      if (Math.min(front[i][1], back[i][1]) > limit) return false;
+    }
+    return true;
   }
 
   function render(t) {
     var m = patternMix(t);
-    drawWave('back', BACK, t, m);
-    drawWave('front', FRONT, t, m);
+    var back = drawWave('back', BACK, t, m);
+    var front = drawWave('front', FRONT, t, m);
 
-    // phones are pinned in place: all three appear together while the swell
-    // is at its peak, then the receding wave simply uncovers them. Hidden once
-    // the flood covers them so the loop restarts on white.
-    var screenOp = t < 4.7 ? ramp(t, 0.95, 1.1).toFixed(3) : 0;
-    for (var i = 0; i < screens.length; i++) screens[i].style.opacity = screenOp;
+    // phones are pinned in place and switch on only while fully submerged at
+    // the swell's peak, so the receding wave uncovers them with no fade or
+    // peek. Hidden again once the flood covers them so the loop restarts on
+    // white. (Fallback after the peak in case a wave shape never fully covers.)
+    if (t < 0.3 || t >= 4.7) revealed = false;
+    else if (!revealed && (phonesCovered(front, back) || t > 1.2)) revealed = true;
+    for (var i = 0; i < screens.length; i++) screens[i].style.opacity = revealed ? 1 : 0;
 
     // logo fades in quickly once the flood has covered the card
     logo.style.opacity = (ramp(t, 4.5, 4.75) * (1 - ramp(t, 6.15, 6.35))).toFixed(3);
