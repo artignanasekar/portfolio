@@ -1,6 +1,6 @@
 /* Pearl animated thumbnail: two glassy waves wash up a shore, recede to reveal
    three app screens, then a second, choppier swell floods the card in Pearl
-   blue for the fish + slogan before draining and looping. One 7s timeline
+   blue for the fish logo before draining and looping. One 7s timeline
    drives everything so the beats stay in sync; tweak the keyframes below. */
 (function () {
   var root = document.querySelector('.pearl-thumb');
@@ -47,14 +47,12 @@
     }
   };
   var screens = root.querySelectorAll('.pearl-thumb-screens img');
-  var fish = root.querySelector('.pearl-thumb-fish');
-  var slogan = root.querySelector('.pearl-thumb-slogan');
+  var logo = root.querySelector('.pearl-thumb-fish');
 
   var W = 1000, H = 568; // svg viewBox units
 
   function clamp(v, a, b) { return v < a ? a : v > b ? b : v; }
   function easeInOut(x) { return 0.5 - 0.5 * Math.cos(Math.PI * x); }
-  function easeOut(x) { return 1 - Math.pow(1 - x, 3); }
   function ramp(t, a, b) { return clamp((t - a) / (b - a), 0, 1); }
 
   function level(keys, t) {
@@ -114,22 +112,14 @@
     drawWave('back', BACK, t, m);
     drawWave('front', FRONT, t, m);
 
-    // screens fade in while submerged at the swell's peak, then rise into
-    // place as the water drains back; hidden once the flood covers them so
-    // the loop restarts on white.
-    for (var i = 0; i < screens.length; i++) {
-      var s = screens[i], d = i * 0.06;
-      var rise = easeOut(ramp(t, 1.1 + d, 2.25 + d));
-      s.style.opacity = t < 4.7 ? ramp(t, 0.95, 1.1).toFixed(3) : 0;
-      s.style.transform = 'translateY(' + ((1 - rise) * 50).toFixed(2) + '%) scale(' + (0.95 + 0.05 * rise).toFixed(4) + ')';
-    }
+    // phones are pinned in place: all three appear together while the swell
+    // is at its peak, then the receding wave simply uncovers them. Hidden once
+    // the flood covers them so the loop restarts on white.
+    var screenOp = t < 4.7 ? ramp(t, 0.95, 1.1).toFixed(3) : 0;
+    for (var i = 0; i < screens.length; i++) screens[i].style.opacity = screenOp;
 
-    var fIn = ramp(t, 4.55, 5.2), sIn = ramp(t, 4.9, 5.45), out = ramp(t, 6.15, 6.4);
-    var pop = fIn < 1 ? 0.86 + 0.14 * easeOut(fIn) + 0.03 * Math.sin(Math.PI * fIn) : 1;
-    fish.style.opacity = (easeOut(fIn) * (1 - out)).toFixed(3);
-    fish.style.transform = 'translate(-50%, -50%) scale(' + pop.toFixed(4) + ')';
-    slogan.style.opacity = (easeOut(sIn) * (1 - out)).toFixed(3);
-    slogan.style.transform = 'translate(-50%, ' + ((1 - easeOut(sIn)) * 40).toFixed(1) + '%)';
+    // logo fades in quickly once the flood has covered the card
+    logo.style.opacity = (ramp(t, 4.5, 4.75) * (1 - ramp(t, 6.15, 6.35))).toFixed(3);
   }
 
   if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) {
