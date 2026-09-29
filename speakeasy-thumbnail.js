@@ -64,6 +64,9 @@ const config = {
   cardGap: 12,
   leftExit: { start: 3.9, duration: 0.35, ease: 'power2.in' },
   toCards: { start: 3.9, duration: 0.6, stagger: 0.04, ease: 'back.out(1.3)' },
+  // case-study blue that rises behind the feed as the columns become cards,
+  // then leaves out the top with the cards
+  panel: { color: '#2274a5', start: 3.85, duration: 0.6, ease: 'power3.out' },
   flip: { start: 4.6, duration: 0.5, angle: 180, ease: 'back.out(1.2)' }, // first card
   // one continuous scroll through cards 2-4 (no stops); each card's flip
   // finishes exactly as it reaches the top slot
@@ -86,6 +89,7 @@ function init(root) {
   const MIC = { cx: 307, cy: 629.5, left: 259, right: 355, cordTop: 0 };
 
   const stage = root.querySelector('.se-stage');
+  const panel = root.querySelector('.se-panel');
   const mic = root.querySelector('.se-mic');
   const tagLeft = root.querySelector('.se-tag-left');
   const tagRight = root.querySelector('.se-tag-right');
@@ -187,6 +191,7 @@ function init(root) {
     gsap.set([...left, tagLeft], { x: -slide, y: 0, opacity: 1 });
     gsap.set([...right, tagRight], { x: slide, y: 0, opacity: 1, rotation: 0 });
     gsap.set(cards, { opacity: 0, yPercent: 0 });
+    gsap.set(panel, { y: FRAME_H });
     gsap.set(flips, { rotationX: 0 });
   };
   reset();
@@ -231,6 +236,10 @@ function init(root) {
   });
 
   // 4. columns become the cards
+  const pn = config.panel;
+  panel.setAttribute('fill', pn.color);
+  tl.to(panel, { y: 0, duration: pn.duration, ease: pn.ease }, pn.start);
+
   const le = config.leftExit;
   tl.to([mic, ...left], { x: -toLocal(FRAME_W), duration: le.duration, ease: le.ease }, le.start);
 
@@ -283,7 +292,8 @@ function init(root) {
     yPercent: feedY(last) - ((config.cardTop + cardH) / cardH) * 100 - 10,
     // only the last two cards are still in view; stagger from them
     duration: ex.duration, ease: ex.ease, stagger: (i) => Math.max(0, i - (last - 1)) * ex.stagger
-  }, reach(1) + ex.delay - ex.stagger); // so the last card leaves exactly `delay` after its flip
+  }, reach(1) + ex.delay - ex.stagger) // so the last card leaves exactly `delay` after its flip
+    .to(panel, { y: -FRAME_H, duration: ex.duration, ease: ex.ease }, reach(1) + ex.delay);
 
   tl.set({}, {}, tl.duration() + config.emptyBeat);
 
