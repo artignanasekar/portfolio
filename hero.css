@@ -267,7 +267,7 @@ body {
 }
 
 .se-card-front {
-  background: #cd3735;
+  background: var(--front, #2274a5);
   border-radius: calc(var(--u) * var(--radius, 12));
 }
 

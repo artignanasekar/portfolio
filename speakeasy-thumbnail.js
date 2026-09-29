@@ -42,7 +42,7 @@ const config = {
   columnGap: 11,
   columnHeight: 64, // resting height
   columnRadius: 6, // keep below columnWidth / 2 or the columns turn into pills
-  morph: { start: 1.95, duration: 0.6, stagger: 0.03, ease: 'back.out(1.5)' },
+  morph: { start: 1.95, duration: 0.6, stagger: 0.03, ease: 'back.out(1.5)', holeClose: 0.2 },
 
   meter: {
     start: 2.55,
@@ -64,9 +64,10 @@ const config = {
   cardGap: 12,
   leftExit: { start: 3.9, duration: 0.35, ease: 'power2.in' },
   toCards: { start: 3.9, duration: 0.6, stagger: 0.04, ease: 'back.out(1.3)' },
-  // case-study blue that rises behind the feed as the columns become cards,
-  // then leaves out the top with the cards
-  panel: { color: '#2274a5', start: 3.85, duration: 0.6, ease: 'power3.out' },
+  // card backs (the unflipped side) are the case-study blue; the red columns
+  // cross-fade to it while they fold into cards
+  cardBackColor: '#2274a5',
+  cardBackFade: 0.2, // seconds, starting with each column's fold (short, so red + blue never reads as purple)
   flip: { start: 4.6, duration: 0.5, angle: 180, ease: 'back.out(1.2)' }, // first card
   // one continuous scroll through cards 2-4 (no stops); each card's flip
   // finishes exactly as it reaches the top slot
@@ -89,7 +90,6 @@ function init(root) {
   const MIC = { cx: 307, cy: 629.5, left: 259, right: 355, cordTop: 0 };
 
   const stage = root.querySelector('.se-stage');
-  const panel = root.querySelector('.se-panel');
   const mic = root.querySelector('.se-mic');
   const tagLeft = root.querySelector('.se-tag-left');
   const tagRight = root.querySelector('.se-tag-right');
@@ -143,7 +143,27 @@ function init(root) {
   const colX = (side, i) => side === 'left'
     ? MIC.left - colGap - colW / 2 - (3 - i) * (colW + colGap)
     : MIC.right + colGap + colW / 2 + i * (colW + colGap);
-  const column = (side, i, h) => rectPath(colX(side, i), MIC.cy, colW, toLocal(h), radius);
+  // P and the two A's have a counter (a second subpath). Left to MorphSVG the
+  // counter collapses to a stray dot, so instead it irises shut in place just
+  // before the morph (holeClose), leaving a zero-size subpath that then rides
+  // along at the column centre where it can't be seen.
+  const hasHole = (el) => (el.getAttribute('d').match(/M/g) || []).length > 1;
+  const dot = (x, y) => `M${+x.toFixed(2)} ${+y.toFixed(2)}v0.01h0.01v-0.01Z`;
+  const withHole = (el, d, cx, cy) => hasHole(el) ? d + dot(cx, cy) : d;
+  // the letter's outline with its counter shrunk to a point at its centre
+  const probe = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  stage.appendChild(probe);
+  const closedLetter = (el) => {
+    const parts = el.getAttribute('d').split(/(?=M)/).map((d) => {
+      probe.setAttribute('d', d);
+      const b = probe.getBBox();
+      return { d, area: b.width * b.height, cx: b.x + b.width / 2, cy: b.y + b.height / 2 };
+    }).sort((a, b) => b.area - a.area);
+    return parts[0].d + dot(parts[1].cx, parts[1].cy);
+  };
+  const closed = new Map([...left, ...right].filter(hasHole).map((el) => [el, closedLetter(el)]));
+  probe.remove();
+  const column = (el, side, i, h) => withHole(el, rectPath(colX(side, i), MIC.cy, colW, toLocal(h), radius), colX(side, i), MIC.cy);
 
   // card feed in thumbnail units: Figma's 342 x 135 card scaled uniformly by
   // k, centred, stacked top to bottom (cards 3 and 4 start below the frame)
@@ -158,6 +178,18 @@ function init(root) {
   // place the HTML cards
   layer.style.setProperty('--k', k.toFixed(4));
   layer.style.setProperty('--radius', cardRadius.toFixed(2));
+  layer.style.setProperty('--front', config.cardBackColor);
+
+  // a blue twin on top of each right-hand letter shares every tween and fades
+  // in as the column folds, so red -> blue is an opacity change only
+  const twins = right.map((el) => {
+    const twin = el.cloneNode();
+    twin.setAttribute('class', 'se-twin');
+    twin.style.fill = config.cardBackColor;
+    el.after(twin);
+    return twin;
+  });
+  const pair = (i) => [right[i], twins[i]];
   cards.forEach((card, i) => {
     const s = slots[i];
     Object.assign(card.style, {
@@ -190,8 +222,8 @@ function init(root) {
     gsap.set(mic, { y: -toLocal(FRAME_H) * 1.1, x: 0, rotation: config.micDrop.swing, svgOrigin: `${MIC.cx} ${MIC.cordTop}` });
     gsap.set([...left, tagLeft], { x: -slide, y: 0, opacity: 1 });
     gsap.set([...right, tagRight], { x: slide, y: 0, opacity: 1, rotation: 0 });
+    gsap.set(twins, { x: slide, y: 0, opacity: 0, rotation: 0 });
     gsap.set(cards, { opacity: 0, yPercent: 0 });
-    gsap.set(panel, { y: FRAME_H });
     gsap.set(flips, { rotationX: 0 });
   };
   reset();
@@ -206,6 +238,7 @@ function init(root) {
   const li = config.lockIn;
   tl.to(left, { x: 0, duration: li.duration, ease: li.ease, stagger: { each: li.stagger, from: 'end' } }, li.start)
     .to(right, { x: 0, duration: li.duration, ease: li.ease, stagger: li.stagger }, li.start)
+    .to(twins, { x: 0, duration: li.duration, ease: li.ease, stagger: li.stagger }, li.start)
     .to([tagLeft, tagRight], { x: 0, duration: li.duration, ease: li.ease }, li.start + li.stagger);
 
   // 3. letters become the waveform
@@ -216,8 +249,15 @@ function init(root) {
   [left, right].forEach((group) => group.forEach((el, i) => {
     const side = group === left ? 'left' : 'right';
     const order = side === 'left' ? 3 - i : i; // ripple out from the mic
-    tl.to(el, {
-      morphSVG: { shape: column(side, i, config.columnHeight), shapeIndex: 'auto' },
+    const targets = side === 'left' ? el : pair(i);
+    if (closed.has(el)) {
+      tl.to(targets, {
+        morphSVG: { shape: closed.get(el), shapeIndex: 'auto' },
+        duration: mo.holeClose, ease: 'power2.in'
+      }, mo.start + order * mo.stagger - mo.holeClose);
+    }
+    tl.to(targets, {
+      morphSVG: { shape: column(el, side, i, config.columnHeight), shapeIndex: 'auto' },
       duration: mo.duration, ease: mo.ease
     }, mo.start + order * mo.stagger);
   }));
@@ -228,18 +268,14 @@ function init(root) {
     const t0 = me.start + n * me.offset;
     const beat = (me.end - t0) / (me.beats + 1);
     [...meterHeights[n], config.columnHeight].forEach((h, b) => {
-      tl.to(el, {
-        morphSVG: { shape: column(side, i, h), shapeIndex: 0 },
+      tl.to(side === 'left' ? el : pair(i), {
+        morphSVG: { shape: column(el, side, i, h), shapeIndex: 0 },
         duration: beat, ease: me.ease
       }, t0 + b * beat);
     });
   });
 
   // 4. columns become the cards
-  const pn = config.panel;
-  panel.setAttribute('fill', pn.color);
-  tl.to(panel, { y: 0, duration: pn.duration, ease: pn.ease }, pn.start);
-
   const le = config.leftExit;
   tl.to([mic, ...left], { x: -toLocal(FRAME_W), duration: le.duration, ease: le.ease }, le.start);
 
@@ -249,20 +285,22 @@ function init(root) {
     const cx = colX('right', i), cy = MIC.cy;
     const tx = toLocal(TX), ty = toLocal(TY);
     const cardCx = toLocal(s.x + s.w / 2) - tx, cardCy = toLocal(s.y + s.h / 2) - ty;
-    tl.set(el, { svgOrigin: `${cx} ${cy}` }, tc.start)
-      .to(el, {
+    const at = tc.start + i * tc.stagger;
+    tl.set(pair(i), { svgOrigin: `${cx} ${cy}` }, tc.start)
+      .to(pair(i), {
         // upright rect of the card's size turned a quarter CCW = the card
-        morphSVG: { shape: rectPath(cx, cy, toLocal(s.h), toLocal(s.w), toLocal(cardRadius)), shapeIndex: 0 },
+        morphSVG: { shape: withHole(el, rectPath(cx, cy, toLocal(s.h), toLocal(s.w), toLocal(cardRadius)), cx, cy), shapeIndex: 0 },
         rotation: -90,
         x: cardCx - cx,
         y: cardCy - cy,
         duration: tc.duration, ease: tc.ease
-      }, tc.start + i * tc.stagger);
+      }, at)
+      .to(twins[i], { opacity: 1, duration: config.cardBackFade, ease: 'power1.inOut' }, at);
   });
 
   // swap the settled SVG rects for the identical HTML card fronts
   const handoff = tc.start + 3 * tc.stagger + tc.duration;
-  tl.set(cards, { opacity: 1 }, handoff).set(right, { opacity: 0 }, handoff);
+  tl.set(cards, { opacity: 1 }, handoff).set([...right, ...twins], { opacity: 0 }, handoff);
 
   // first card flips in place
   const fl = config.flip;
@@ -292,8 +330,7 @@ function init(root) {
     yPercent: feedY(last) - ((config.cardTop + cardH) / cardH) * 100 - 10,
     // only the last two cards are still in view; stagger from them
     duration: ex.duration, ease: ex.ease, stagger: (i) => Math.max(0, i - (last - 1)) * ex.stagger
-  }, reach(1) + ex.delay - ex.stagger) // so the last card leaves exactly `delay` after its flip
-    .to(panel, { y: -FRAME_H, duration: ex.duration, ease: ex.ease }, reach(1) + ex.delay);
+  }, reach(1) + ex.delay - ex.stagger); // so the last card leaves exactly `delay` after its flip
 
   tl.set({}, {}, tl.duration() + config.emptyBeat);
 
