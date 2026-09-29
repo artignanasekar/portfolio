@@ -15,8 +15,8 @@ import { watchThumb, prefersReducedMotion } from './thumbnail-player.js';
 gsap.registerPlugin(MorphSVGPlugin);
 
 const config = {
-  loop: 8.25, // timeline seconds, including the empty white beat before the restart
-  speed: 1.12, // playback rate for the whole loop (1.12 -> ~7.4s real time)
+  speed: 1.12, // playback rate for the whole loop (1.12 -> ~6.7s real time)
+  emptyBeat: 0.15, // empty white frame after the cards leave, before the restart
 
   // lockup: SPEAKEASY + taglines, fitted to this height and centred
   lockupHeight: 240,
@@ -66,10 +66,10 @@ const config = {
   flip: { start: 4.6, duration: 0.5, angle: 180, ease: 'back.out(1.2)' }, // first card
   // one continuous scroll through cards 2-4 (no stops); each card's flip
   // finishes exactly as it reaches the top slot
-  scroll: { start: 4.9, duration: 2.1, ease: 'sine.inOut', flipDuration: 0.55, flipEase: 'power2.inOut' },
-  // the last card holds ~0.6s after it lands, until exit.start
+  scroll: { start: 4.9, duration: 1.6, ease: 'sine.inOut', flipDuration: 0.45, flipEase: 'power2.inOut' },
 
-  exit: { start: 7.6, duration: 0.35, stagger: 0.04, ease: 'power4.in' }
+  // leaves `delay` seconds after the last card finishes flipping
+  exit: { delay: 0.1, duration: 0.35, stagger: 0.04, ease: 'power4.in' }
 };
 
 const root = document.querySelector('.speakeasy-thumb');
@@ -263,10 +263,11 @@ function init(root) {
   const ex = config.exit;
   tl.to(cards, {
     yPercent: feedY(last) - ((config.cardTop + cardH) / cardH) * 100 - 10,
-    duration: ex.duration, ease: ex.ease, stagger: ex.stagger
-  }, ex.start);
+    // only the last two cards are still in view; stagger from them
+    duration: ex.duration, ease: ex.ease, stagger: (i) => Math.max(0, i - (last - 1)) * ex.stagger
+  }, reach(1) + ex.delay - ex.stagger); // so the last card leaves exactly `delay` after its flip
 
-  tl.set({}, {}, config.loop);
+  tl.set({}, {}, tl.duration() + config.emptyBeat);
 
   tl.timeScale(config.speed);
   watchThumb(root, { play: () => tl.play(), pause: () => tl.pause() });
