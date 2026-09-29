@@ -201,3 +201,191 @@ body {
   transform: translate(-50%, -50%);
   will-change: transform, opacity;
 }
+
+/* SpeakEasy cover: live animated thumbnail (speakeasy-thumbnail.js drives
+   one ~6s GSAP loop). Same 521:296 frame and chrome as the Pearl cover. The
+   SVG holds the mic, the SPEAKEASY letters and the taglines; the four game
+   cards are HTML layered on top so they can do a real 3D flip. Everything is
+   sized in thumbnail units (--u = 1/521 of the frame width) so it scales. */
+@font-face {
+  font-family: 'General Sans';
+  src: url('fonts/GeneralSans-Semibold.otf') format('opentype');
+  font-weight: 600;
+  font-style: normal;
+}
+
+.speakeasy-thumb {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 521 / 296;
+  background: #fff;
+  border: 1px solid #d9d9d9;
+  border-radius: 8px;
+  box-sizing: border-box;
+  overflow: hidden;
+  container-type: inline-size;
+}
+
+.speakeasy-thumb-art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.speakeasy-thumb-art path { fill: #cd3735; }
+
+.speakeasy-thumb-cards {
+  --u: calc(100cqi / 521);
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* left/top/width/height and --k (Figma px -> thumbnail units for the card
+   face) are set per layout by speakeasy-thumbnail.js */
+.se-card {
+  position: absolute;
+  perspective: calc(var(--u) * 600);
+  opacity: 0;
+}
+
+.se-card-flip {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+}
+
+.se-card-front,
+.se-card-back {
+  position: absolute;
+  inset: 0;
+  box-sizing: border-box;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.se-card-front {
+  background: #cd3735;
+  border-radius: calc(var(--u) * var(--radius, 12));
+}
+
+/* the Figma card: chrome stretches to the slot, the 342x135 body keeps its
+   proportions (1em = one Figma px) and sits left, vertically centred */
+.se-card-back {
+  --fpx: calc(var(--u) * var(--k, 1));
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border: calc(var(--fpx) * 0.965) solid #d9d9d9;
+  border-radius: calc(var(--fpx) * 15);
+  transform: rotateX(180deg);
+  overflow: hidden;
+}
+.se-card--contact .se-card-back { border-color: rgba(0, 0, 0, 0.2); }
+.se-card--brainteaser .se-card-back {
+  border-width: var(--fpx);
+  border-radius: calc(var(--fpx) * 20.44);
+}
+
+.se-card-body {
+  position: relative;
+  flex: none;
+  font-size: var(--fpx);
+  width: 342em;
+  height: 135em;
+  margin-left: calc(var(--fpx) * -0.965);
+  color: #000;
+}
+
+.se-card-body > * { position: absolute; }
+.se-card-body img { display: block; }
+
+.se-card-icon { inset: 8.15% 63.74% 8.15% 3.22%; width: auto; height: auto; }
+img.se-card-icon { width: 33.04%; height: 83.7%; }
+.se-card--contact .se-card-icon,
+.se-card--brainteaser .se-card-icon { inset: 8.15% 63.85% 8.15% 3.21%; }
+.se-card--contact img.se-card-icon { width: 32.94%; }
+.se-card--brainteaser .se-card-icon { background: #eee; border-radius: 7em; }
+.se-card--brainteaser .se-card-icon img {
+  position: absolute;
+  left: 15.03%;
+  top: 7.07%;
+  width: 71.52%;
+  height: 86.74%;
+}
+
+.se-card-title {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  font-family: 'General Sans', sans-serif;
+  font-weight: 600;
+  font-size: 16em;
+  letter-spacing: -0.05em;
+  line-height: 0;
+  white-space: nowrap;
+}
+.se-card-title > span { line-height: normal; }
+.se-card--wavelength .se-card-title { inset: 14.07% 24.82% 66.84% 39.47%; font-size: 18.191em; justify-content: flex-start; }
+.se-card--scattergories .se-card-title { inset: 14.07% 7.58% 69.63% 39.36%; color: #110102; }
+.se-card--contact .se-card-title { inset: 8.15% 13.12% 72.59% 39.36%; font-size: 18.191em; justify-content: flex-start; }
+.se-card--brainteaser .se-card-title { inset: 14.07% 7.58% 69.63% 39.36%; }
+
+.se-card-desc {
+  font-family: 'Inter', sans-serif;
+  font-size: 11em;
+  line-height: 1.05;
+}
+.se-card--wavelength .se-card-desc { inset: 37.04% 12.87% 36.3% 39.47%; }
+.se-card--scattergories .se-card-desc { inset: 34.07% 7.29% 48.15% 39.36%; }
+.se-card--contact .se-card-desc { inset: 29.63% 14.87% 25.93% 39.36%; }
+.se-card--brainteaser .se-card-desc {
+  inset: 34.07% 14.87% 48.15% 39.36%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.se-card-ai-icon {
+  inset: 79.26% 57.02% 11.85% 39.47%;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+.se-card-ai-icon img { width: 12em; height: 12.001em; flex: none; }
+
+.se-card-ai {
+  inset: 71.85% 14.04% 4.44% 40.94%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10em;
+}
+.se-card-ai > span {
+  font-family: 'Inter', sans-serif;
+  font-size: 11em;
+  line-height: 1.05;
+  white-space: nowrap;
+}
+
+.se-card-players { inset: 79.26% 7.02% 11.85% 88.3%; width: 4.68%; height: 8.89%; }
+.se-card--contact .se-card-players,
+.se-card--brainteaser .se-card-players { inset: 79.26% 5.56% 11.85% 89.77%; }
+
+.se-card-count {
+  inset: 81.48% 3.22% 8.15% 93.27%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  font-family: 'General Sans', sans-serif;
+  font-weight: 600;
+  font-size: 10em;
+  letter-spacing: -0.05em;
+  line-height: 0;
+  white-space: nowrap;
+}
+.se-card-count > span { line-height: normal; }
+.se-card--contact .se-card-count,
+.se-card--brainteaser .se-card-count { left: 94.74%; }
