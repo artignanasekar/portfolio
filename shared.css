@@ -270,24 +270,34 @@ body {
   box-sizing: border-box;
 }
 
-/* phone widths: the note and the links can't share one line, so the bar
-   becomes a compact two-row stack — note on top, sized to the viewport so
-   it always fits on a single line inside the 30px gutters, links side by
-   side underneath. */
+/* phone widths: the footer goes back to its original stacked form at the
+   end of the page instead of being pinned (a stack this tall would cover
+   too much of a phone screen) — note on top, wrapping inside the same 30px
+   gutter as the nav bar, then every link on its own line. --footer-h drops
+   to 0 so pages stop reserving room for a pinned bar. */
 @media (max-width: 560px) {
   :root {
-    --footer-h: 62px;
+    --footer-h: 0px;
   }
 
   .site-footer {
+    position: static;
+    height: auto;
     flex-direction: column;
     align-items: flex-start;
-    justify-content: center;
-    gap: 8px;
+    gap: 14px;
+    padding: 18px 30px;
+  }
+
+  .site-footer-links {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
   }
 
   .site-footer-note {
-    font-size: clamp(9px, 2.6vw, 11px);
+    white-space: normal;
+    line-height: 1.5;
   }
 }
 

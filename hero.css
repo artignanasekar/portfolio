@@ -9,9 +9,11 @@
      row and the fixed footer all fit in the window, and every scroll
      gesture — wheel, trackpad, keys, touch — moves only the row, sideways.
      The cards shrink if the window is too short to fit them at full size.
-   - Phones, and windows under 700px tall (too short to fit the hero, the
-     cards and the footer at a readable size): the page scrolls normally
-     and the row is a native swipe row. */
+   - Phones: the page scrolls normally and the case studies stack, one
+     per line.
+   - Wider windows under 700px tall (too short to fit the hero, the cards
+     and the footer at a readable size): the page scrolls normally and the
+     row is a native swipe row. */
 
 .home-hero {
   max-width: 1360px;
@@ -132,13 +134,16 @@
   }
 }
 
-/* phones: the page scrolls normally; the row snaps card by card */
+/* phones and short windows: the page scrolls normally */
 @media (max-width: 560px), (max-height: 699px) {
   body {
     overflow-y: auto;
     overflow-x: hidden;
   }
+}
 
+/* short-but-wide windows keep the row, as a swipe row that snaps card by card */
+@media (min-width: 561px) and (max-height: 699px) {
   .work-stage {
     scroll-snap-type: x mandatory;
     scroll-padding-inline: 30px;
@@ -146,6 +151,30 @@
 
   .work-track > .work-card {
     scroll-snap-align: start;
+  }
+}
+
+/* phones: no row at all — the case studies stack one per line, full
+   width inside the 30px gutters, 30px apart (the original phone layout) */
+@media (max-width: 560px) {
+  .work-section {
+    padding: 60px 30px 120px;
+  }
+
+  .work-stage {
+    overflow: visible;
+    container-type: normal;
+  }
+
+  .work-track {
+    flex-direction: column;
+    align-items: stretch;
+    width: auto;
+    padding: 0;
+  }
+
+  .work-track > .work-card {
+    width: 100%;
   }
 }
 
