@@ -16,8 +16,8 @@ import { watchThumb, prefersReducedMotion } from './thumbnail-player.js';
 gsap.registerPlugin(DrawSVGPlugin);
 
 const config = {
-  speed: 1.12, // playback rate for the whole loop (1.12 -> ~5.8s real time); times below are at 1x
-  loop: 6.5, // seconds; the reset below must end by here
+  speed: 1.12, // playback rate for the whole loop (1.12 -> ~5.4s real time); times below are at 1x
+  loop: 6.0, // seconds; the reset below must end by here
   blue: '#0F62FE', // IBM Blue 60
   black: '#000000',
   line: '#ffffff',
@@ -105,10 +105,10 @@ const config = {
     settleEase: 'elastic.out(1.2, 0.35)'
   },
 
-  // 6. hold on the finished logo until the reset (~4.15-6.0s)
+  // 6. hold on the finished logo until the reset (~4.15-5.5s)
 
   // 7. reset: the art fades and the black crossfades back to blue
-  reset: { start: 6.0, fade: 0.3, fadeEase: 'power1.in', bgDuration: 0.5, bgEase: 'power1.inOut' }
+  reset: { start: 5.5, fade: 0.3, fadeEase: 'power1.in', bgDuration: 0.5, bgEase: 'power1.inOut' }
 };
 
 const root = document.querySelector('.ibm-thumb');

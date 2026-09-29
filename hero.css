@@ -137,7 +137,7 @@ body {
 }
 
 /* Pearl cover: live animated thumbnail (pearl-thumb.js drives the waves,
-   screens and logo on one 7s loop). Starts on the portfolio white
+   screens and logo on one 6.5s loop). Starts on the portfolio white
    with a hairline stroke; same 521:296 frame as the IBM cover. */
 .pearl-thumb {
   position: relative;

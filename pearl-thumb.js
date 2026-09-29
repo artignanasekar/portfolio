@@ -1,20 +1,20 @@
 /* Pearl animated thumbnail: two glassy waves wash up a shore, recede to reveal
    three app screens, then a second, choppier swell floods the card in Pearl
-   blue for the fish logo before draining and looping. One 7s timeline
+   blue for the fish logo before draining and looping. One 6.5s timeline
    drives everything so the beats stay in sync; tweak the keyframes below. */
 (function () {
   var root = document.querySelector('.pearl-thumb');
   if (!root) return;
 
-  var LOOP = 7; // seconds
+  var LOOP = 6.5; // seconds
 
   // first swell peaks with its highest crest ~30px (8.3%) below the top of a
   // ~361px-tall card, just above the phones (which sit 40px / 11% down).
   // wave level keyframes: [time s, level] where 0 = bottom edge, 1 = top edge.
   // the back (light) wave leads the front on the way up and trails it on the
   // way down, so its band peeks out above the pearl blue like foam on sand.
-  var FRONT = [[0, -0.14], [1.1, 0.81], [2.1, -0.24], [3.6, -0.24], [4.6, 1.24], [6.35, 1.24], [7, -0.14]];
-  var BACK  = [[0, -0.14], [1.0, 0.84], [2.2, -0.24], [3.6, -0.24], [4.55, 1.3], [6.5, 1.3],   [7, -0.14]];
+  var FRONT = [[0, -0.14], [1.1, 0.81], [2.1, -0.24], [3.6, -0.24], [4.6, 1.24], [5.85, 1.24], [6.5, -0.14]];
+  var BACK  = [[0, -0.14], [1.0, 0.84], [2.2, -0.24], [3.6, -0.24], [4.55, 1.3], [6.0, 1.3],   [6.5, -0.14]];
 
   // wave personalities. pattern 0 = broad shore swell (beat 1), pattern 1 =
   // tighter crests for the full-cover wash (beat 3). k = cycles across the
@@ -75,8 +75,8 @@
   function patternMix(t) {
     if (t < 3.3) return 0;
     if (t < 3.5) return easeInOut(ramp(t, 3.3, 3.5));
-    if (t < 6.4) return 1;
-    return 1 - easeInOut(ramp(t, 6.4, 7));
+    if (t < 5.9) return 1;
+    return 1 - easeInOut(ramp(t, 5.9, 6.5));
   }
 
   function crestPoints(name, t, lv, m) {
@@ -142,7 +142,7 @@
     for (var i = 0; i < screens.length; i++) screens[i].style.opacity = revealed ? 1 : 0;
 
     // logo fades in quickly once the flood has covered the card
-    logo.style.opacity = (ramp(t, 4.5, 4.75) * (1 - ramp(t, 6.15, 6.35))).toFixed(3);
+    logo.style.opacity = (ramp(t, 4.5, 4.75) * (1 - ramp(t, 5.65, 5.85))).toFixed(3);
   }
 
   if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) {
