@@ -3,13 +3,15 @@
    headline + subtitle; the work section below is unchanged in structure,
    just widened to match the new frame's larger card size. */
 
-/* the home page scrolls (unlike the fixed-viewport about page) so the work
-   section below the hero is reachable; shared.css hides overflow globally,
-   so this overrides it back on for just this page. */
-body {
-  overflow-y: auto;
-  overflow-x: hidden;
-}
+/* Two layouts, split by FIXED_LAYOUT in work-scroll.js (keep in sync):
+
+   - Larger screens: the page itself never scrolls. Nav, hero, the case-study
+     row and the fixed footer all fit in the window, and every scroll
+     gesture — wheel, trackpad, keys, touch — moves only the row, sideways.
+     The cards shrink if the window is too short to fit them at full size.
+   - Phones, and windows under 700px tall (too short to fit the hero, the
+     cards and the footer at a readable size): the page scrolls normally
+     and the row is a native swipe row. */
 
 .home-hero {
   max-width: 1360px;
@@ -22,7 +24,6 @@ body {
   font-family: 'PP Editorial Old', serif;
   font-weight: 400;
   font-size: 50px;
-  line-height: 1.1;
   color: #ff7800;
   margin: 0;
 }
@@ -36,25 +37,21 @@ body {
   white-space: nowrap;
 }
 
-/* ---------- work section: case-study thumbnails below the hero ---------- */
+/* ---------- work section: the horizontal row of case-study cards ---------- */
 
 .work-section {
   position: relative;
-  padding: 60px 0 120px;
+  padding: 60px 0;
   scroll-margin-top: 45px; /* offset for the fixed nav bar when jumped to via #work */
 }
 
-/* horizontal row: the three case studies sit side by side in one row that
-   runs full-bleed to the window edges. work-scroll.js turns the page's
-   normal vertical scroll into a sideways slide of the row — .work-scroller
-   is given the extra height the slide needs, .work-stage sticks in view
-   while it plays, and the page carries on down to the footer once the
-   last card reaches the right-hand gutter. Without JS (or before it runs)
-   the stage is a plain native horizontal scroller instead. */
+/* the row runs full-bleed to the window edges and scrolls sideways; its
+   scrollbar is hidden (the cards peeking off the edge show there's more) */
 .work-stage {
   container-type: inline-size;
   overflow-x: auto;
   overflow-y: hidden;
+  overscroll-behavior-x: contain; /* a sideways swipe never turns into browser back/forward */
   scrollbar-width: none;
 }
 
@@ -63,38 +60,92 @@ body {
 }
 
 /* the first card lines up with the hero text (same 1360px centred box,
-   30px inside it) and the last card stops 30px before the window's right
-   edge — the site's standard gutter. */
+   30px inside it) and the last card stops the same distance before the
+   window's right edge. Two cards on screen at a time, the third slides in. */
 .work-track {
   --gutter: max(30px, calc((100cqw - 1360px) / 2 + 30px));
   --card: calc((min(100cqw, 1360px) - 90px) / 2);
   display: flex;
+  align-items: flex-start;
   gap: 30px;
   width: max-content;
   padding: 0 var(--gutter);
 }
 
-.work-section.is-scrubbed .work-stage {
-  position: sticky;
-  overflow: hidden;
-}
-
-.work-section.is-scrubbed .work-track {
-  will-change: transform;
-  touch-action: pan-y; /* vertical swipes scroll the page; horizontal drags are ours */
-}
-
-/* same card size as the old two-column grid: two cards on screen, the
-   third slides in. On narrower screens one card fills most of the width
-   with the next peeking in from the right, so it's obvious there's more. */
 .work-track > .work-card {
   flex: none;
   width: var(--card);
 }
 
+/* narrower screens: one card fills most of the width, the next peeks in */
 @media (max-width: 900px) {
   .work-track {
     --card: calc(100cqw - 96px);
+  }
+}
+
+/* larger screens: everything fits in one window-sized column. The row
+   takes whatever height is left under the hero, and the cards are capped
+   so the cover + caption (--caption-h, measured by work-scroll.js) fit it. */
+@media (min-width: 561px) and (min-height: 700px) {
+  body {
+    overflow: hidden;
+  }
+
+  .page {
+    height: 100vh;
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .home-hero {
+    flex: none;
+    width: 100%;
+    padding-top: clamp(75px, 13vh, 145px);
+  }
+
+  .work-section {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    padding: clamp(20px, 4vh, 60px) 0 clamp(16px, 3vh, 30px);
+  }
+
+  .work-stage {
+    flex: 1;
+    min-width: 0;
+    container-type: size;
+  }
+
+  .work-track {
+    --card-fit: calc((100cqh - var(--caption-h, 130px) - 14px) * 521 / 296);
+    /* 280px floor: the caption wraps taller as the card narrows, so
+       without one a short window could squeeze the cards away entirely */
+    --card: max(280px, min(calc((min(100cqw, 1360px) - 90px) / 2), var(--card-fit)));
+  }
+}
+
+@media (min-width: 561px) and (min-height: 700px) and (max-width: 900px) {
+  .work-track {
+    --card: max(280px, min(calc(100cqw - 96px), var(--card-fit)));
+  }
+}
+
+/* phones: the page scrolls normally; the row snaps card by card */
+@media (max-width: 560px), (max-height: 699px) {
+  body {
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  .work-stage {
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: 30px;
+  }
+
+  .work-track > .work-card {
+    scroll-snap-align: start;
   }
 }
 

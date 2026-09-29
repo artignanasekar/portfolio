@@ -209,31 +209,33 @@ body {
   height: auto;
 }
 
-/* site footer: Figma "footer" (node 1678:5531). Made to match the nav bar
-   exactly — full window width, 45px min height, same #fcfcfc fill and the
-   same hairline stroke, just on the top edge here (the edge that faces the
-   page content) so the two bookend the page consistently. The left note
-   and the right link cluster are each held a constant 30px off the
-   viewport edge by 30px side padding on a space-between flex row, so the
-   insets never change with window size.
+/* site footer: Figma "footer" (node 1678:5531). One component for every
+   page — the markup lives once in partials/site-footer.html and vite.config.js
+   drops it in wherever a page has <!-- site-footer -->. It's pinned to the
+   bottom of the window on every page, the bookend to the fixed nav bar:
+   full window width, same #fcfcfc fill and hairline stroke (on the top
+   edge here, facing the content), same 30px side gutters.
 
-   Both pieces are nowrap; on a narrow window they can't share one line and
-   space-between would then push the link cluster off the right edge — a
-   phantom horizontal scroll / dead strip to the right of every page. So
-   the row is allowed to wrap (links drop to their own line, still 30px in
-   via the padding); below 560px it stops being a row at all — see the
-   media query under .site-footer-fixed. Desktop layout is unchanged. */
+   --footer-h is its exact height; every page keeps that much room clear at
+   the bottom of its content (see the .page rule below and each page's own
+   stylesheet) so nothing ever ends up hidden underneath it. */
+:root {
+  --footer-h: 45px;
+}
+
 .site-footer {
-  position: relative;
-  z-index: 6; /* sit above the case-study pages' fixed outline sidebar (z-index 5) */
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  z-index: 10; /* above the case-study pages' fixed outline sidebar (z-index 5) */
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 10px 20px;
+  gap: 20px;
   width: 100%;
-  min-height: 45px;
+  height: var(--footer-h);
   padding: 0 30px;
+  box-sizing: border-box;
   background: #fcfcfc;
   border-top: 1px solid rgba(148, 148, 148, 0.25);
 }
@@ -261,68 +263,54 @@ body {
   color: #ff7800;
 }
 
-/* about page: that page is a fixed, non-scrolling 100vh canvas. The footer
-   is pinned to the bottom 45px of the viewport and about.css shortens
-   .page to calc(100vh - 45px) so the sidebar + game sit flush on top of it
-   (no overlap, no scroll). about.css drops this back to static at its
-   mobile breakpoint, where the page does scroll. */
-.site-footer-fixed {
-  position: fixed;
-  left: 0;
-  bottom: 0;
-  height: 45px;
-  z-index: 10;
+/* scrolling pages: leave the footer's height clear below the last content
+   so the end of the page scrolls up above the pinned footer, not under it */
+.page {
+  padding-bottom: var(--footer-h);
+  box-sizing: border-box;
 }
 
-/* phone widths: past the point where the note + links start to crowd, drop
-   the space-between row entirely and stack it — note on top, then every
-   link on its own line, all left-aligned to the same 30px gutter. (On the
-   about page this range is already past its own 900px breakpoint, where
-   the footer has gone back to static/auto-height, so the stack has room.) */
+/* phone widths: the note and the links can't share one line, so the bar
+   becomes a compact two-row stack — note on top, sized to the viewport so
+   it always fits on a single line inside the 30px gutters, links side by
+   side underneath. */
 @media (max-width: 560px) {
+  :root {
+    --footer-h: 62px;
+  }
+
   .site-footer {
     flex-direction: column;
     align-items: flex-start;
-    gap: 14px;
-    padding-top: 18px;
-    padding-bottom: 18px;
+    justify-content: center;
+    gap: 8px;
   }
 
-  .site-footer-links {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-  }
-
-  /* the note is wider than a phone screen on one line — let it wrap
-     inside the same 30px gutter as the nav bar instead of running off
-     the right edge */
   .site-footer-note {
-    white-space: normal;
-    max-width: 100%;
-    line-height: 1.5;
+    font-size: clamp(9px, 2.6vw, 11px);
   }
 }
 
-/* phone widths: PP Editorial Old's "normal" line height is ~1.5x, which
-   reads as an awkward gap once a serif heading wraps onto several lines on
-   a narrow screen. Tighten every multi-line serif heading sitewide (the
-   IBM Plex Sans / CommitMono text keeps its spacing). The body prefix lifts
-   specificity over each page stylesheet's own line-height: normal, since
-   shared.css loads first. The home hero title already sits at 1.1. */
-@media (max-width: 900px) {
-  body :is(
-    .cs-heading,
-    .cs-hmw,
-    .cs-compare-title,
-    .cs-adaptation-title,
-    .cs-insight-title,
-    .cs-persona-name,
-    .work-title,
-    .bio-heading,
-    .section-heading,
-    .info-card-title
-  ) {
-    line-height: 1.25;
-  }
+/* PP Editorial Old's built-in "normal" line height is 1.5x (its hhea
+   metrics), which leaves an awkward gap between the lines of any serif
+   heading that wraps. Every PP Editorial heading on the site uses 1.25 at
+   every width instead — the spacing the Pearl case study had on phone. The
+   body prefix lifts specificity over each page stylesheet's own
+   line-height (shared.css loads first). CommitMono / IBM Plex Sans text
+   keeps its own spacing; the intro animation's single-line words are
+   positioned by hand and left alone. */
+body :is(
+  .home-hero-title,
+  .work-title,
+  .cs-heading,
+  .cs-hmw,
+  .cs-compare-title,
+  .cs-adaptation-title,
+  .cs-insight-title,
+  .cs-persona-name,
+  .bio-heading,
+  .section-heading,
+  .info-card-title
+) {
+  line-height: 1.25;
 }

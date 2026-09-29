@@ -20,7 +20,7 @@ body {
   position: fixed;
   left: 0;
   top: 45px;
-  bottom: 0;
+  bottom: var(--footer-h); /* ends on top of the fixed footer */
   width: 260px;
   background: #f3f3f3;
   padding: 65px 0 0 20px;
@@ -864,13 +864,20 @@ body {
   aspect-ratio: 187 / 392;
 }
 
+/* sized to sit a little *under* the bezel on every side. The bezel PNG's
+   transparent screen opening starts at y=69 of its 2760px height (2.5%);
+   the slot used to start at 2.55%, a hairline below it, which let the page
+   background show through as a white sliver along the top of the screen.
+   The corners follow the opening's ~194px (of 1350) round corners, as
+   horizontal / vertical percentages of this tall box — a single % radius
+   is elliptical here and pulled away from the bezel near the corners. */
 .cs-screen-video-slot {
   position: absolute;
   left: 4.28%;
-  top: 2.55%;
+  top: 2.14%;
   width: 91.4%;
-  height: 95.4%;
-  border-radius: 10%;
+  height: 95.81%;
+  border-radius: 16.7% / 7.8%;
   overflow: hidden;
   background: #000;
 }

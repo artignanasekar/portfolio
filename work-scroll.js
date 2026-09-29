@@ -1,178 +1,188 @@
-/* Home page work row: vertical scroll drives a horizontal slide.
+/* Home page work row.
 
-   The three case-study cards sit in one full-bleed row (.work-track). While
-   the row is on screen, scrolling the page down slides it left instead of
-   moving it up — 1px of scroll = 1px of slide — until SpeakEasy's right
-   edge reaches the 30px gutter, then the page carries on to the footer.
+   On larger screens the home page is one fixed, window-sized view (see
+   hero.css): nav, hero, the row of case-study cards, footer. The page never
+   scrolls; instead every scroll gesture moves the row sideways, so scrolling
+   the home page just means scrolling through the case studies.
 
-   How: .work-stage is position:sticky, and .work-scroller is made exactly
-   (row height + slide distance) tall, so the stage stays pinned for exactly
-   `distance` px of scroll. The window stays the only real scroller, which
-   keeps native momentum, iOS toolbar collapse, and the WORK nav link's
-   window.scrollTo all behaving normally.
+   - Mouse wheel / trackpad: vertical (and horizontal) deltas scroll the row.
+     Trackpad deltas are applied directly so they track the fingers; coarse
+     mouse-wheel notches are eased so they glide instead of jumping.
+   - Touch (tablets): sideways swipes are the row's own native scrolling;
+     vertical swipes are converted into sideways movement too.
+   - Keyboard: arrows / Page Up / Page Down / Space / Home / End.
 
-   The stage pins at the lower of: where it naturally sits at the top of the
-   page (so the slide starts on the very first scroll when the hero and row
-   both fit), or where the whole row just fits above the bottom of the
-   window. Horizontal input — trackpad side-swipes and touch drags — is
-   converted into page scroll too, so every gesture drives the same slide. */
+   It also measures the tallest card caption and publishes it as
+   --caption-h, which hero.css uses to cap the card size so cover + caption
+   always fit the height available under the hero.
 
-const NAV_HEIGHT = 45;
-const MIN_GAP_BELOW_NAV = 20;
-const GAP_ABOVE_WINDOW_BOTTOM = 40;
+   On phones the page scrolls normally and the row is a plain native swipe
+   row, so none of the input handling applies there. */
 
-const section = document.getElementById('work');
-const scroller = section?.querySelector('.work-scroller');
-const stage = section?.querySelector('.work-stage');
-const track = section?.querySelector('.work-track');
+// keep in sync with the media queries in hero.css
+const FIXED_LAYOUT = '(min-width: 561px) and (min-height: 700px)';
 
-if (section && scroller && stage && track) {
-  section.classList.add('is-scrubbed');
+const stage = document.querySelector('.work-stage');
+const track = stage?.querySelector('.work-track');
 
-  let stickTop = NAV_HEIGHT; // viewport y the stage pins at
-  let distance = 0; // horizontal px the row slides
-  let startY = 0; // window.scrollY where the slide starts
-  let frame = 0;
-
-  const docTop = (el) => el.getBoundingClientRect().top + window.scrollY;
+if (stage && track) {
+  const fixedLayout = matchMedia(FIXED_LAYOUT);
+  const maxScroll = () => stage.scrollWidth - stage.clientWidth;
   const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
 
-  function render() {
-    frame = 0;
-    const progress = distance
-      ? clamp((stickTop - scroller.getBoundingClientRect().top) / distance, 0, 1)
-      : 0;
-    track.style.transform = `translate3d(${-progress * distance}px, 0, 0)`;
+  // --- caption height -> card size ---------------------------------------
+
+  // the caption's height depends on the card's width, which depends on the
+  // caption height — so settle it in a few passes rather than one
+  function fitCaptions() {
+    for (let pass = 0; pass < 3; pass++) {
+      const tallest = Math.max(
+        0,
+        ...[...track.querySelectorAll('.work-caption')].map((c) => c.offsetHeight),
+      );
+      if (!tallest) return; // not laid out yet (hidden behind the intro)
+      const current = parseFloat(getComputedStyle(track).getPropertyValue('--caption-h')) || 0;
+      if (Math.abs(tallest - current) < 1) break;
+      track.style.setProperty('--caption-h', `${Math.ceil(tallest)}px`);
+    }
   }
 
-  function requestRender() {
-    if (!frame) frame = requestAnimationFrame(render);
+  let fitFrame = 0;
+  const requestFit = () => {
+    if (!fitFrame) fitFrame = requestAnimationFrame(() => { fitFrame = 0; fitCaptions(); });
+  };
+  // re-fit whenever the row or a caption changes size — window resizes,
+  // fonts loading, and the page first being laid out after the intro
+  if ('ResizeObserver' in window) {
+    const ro = new ResizeObserver(requestFit);
+    ro.observe(stage);
+    track.querySelectorAll('.work-caption').forEach((c) => ro.observe(c));
+  } else {
+    window.addEventListener('resize', requestFit);
   }
+  document.fonts?.ready.then(requestFit);
+  requestFit();
 
-  function layout() {
-    distance = Math.max(0, Math.round(track.offsetWidth - stage.clientWidth));
-    const rowHeight = stage.offsetHeight;
-    // clientHeight (the small viewport on iOS) rather than innerHeight,
-    // which jumps as Safari's toolbar shows and hides
-    const viewportHeight = document.documentElement.clientHeight;
-    const scrollerTop = docTop(scroller);
+  // --- eased scrolling for coarse input ----------------------------------
 
-    stickTop = Math.round(
-      Math.min(
-        scrollerTop,
-        Math.max(NAV_HEIGHT + MIN_GAP_BELOW_NAV, viewportHeight - rowHeight - GAP_ABOVE_WINDOW_BOTTOM),
-      ),
-    );
-    startY = scrollerTop - stickTop;
-
-    stage.style.top = `${stickTop}px`;
-    scroller.style.height = `${rowHeight + distance}px`;
-    // shared.js's WORK link lands the page here: slide at its start, row pinned
-    section.dataset.anchorOffset = String(stickTop - (scrollerTop - docTop(section)));
-    render();
-  }
-
-  window.addEventListener('scroll', requestRender, { passive: true });
-  window.addEventListener('resize', layout);
-  if ('ResizeObserver' in window) new ResizeObserver(layout).observe(track);
-  document.fonts?.ready.then(layout);
-  layout();
-
-  // --- horizontal input -> page scroll -----------------------------------
-
-  // scroll by dy, but never let a sideways gesture push the page past the
-  // ends of the slide (it can still move the page toward them)
-  function scrollSideways(dy) {
-    const y = window.scrollY;
-    const lo = Math.min(startY, y);
-    const hi = Math.max(startY + distance, y);
-    window.scrollTo(0, clamp(y + dy, lo, hi));
-  }
-
-  // trackpad side-swipe / shift+wheel. Left alone at either end so the
-  // browser's own back/forward swipe still works there.
-  stage.addEventListener(
-    'wheel',
-    (e) => {
-      if (Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;
-      const dx = e.deltaX * (e.deltaMode === 1 ? 16 : 1);
-      const y = window.scrollY;
-      if ((dx < 0 && y <= startY) || (dx > 0 && y >= startY + distance)) return;
-      e.preventDefault();
-      stopGlide();
-      scrollSideways(dx);
-    },
-    { passive: false },
-  );
-
-  // touch / pen drag. touch-action: pan-y on the track hands vertical swipes
-  // to the browser (they scroll the page, which slides the row anyway), so
-  // the pointer events that reach us here are the horizontal drags.
-  let drag = null;
+  let target = 0;
   let glide = 0;
-  let suppressClick = false;
+
+  function glideTo(x) {
+    target = clamp(x, 0, maxScroll());
+    if (glide) return;
+    const step = () => {
+      const diff = target - stage.scrollLeft;
+      if (Math.abs(diff) < 0.5) {
+        stage.scrollLeft = target;
+        glide = 0;
+        return;
+      }
+      stage.scrollLeft += diff * 0.18;
+      glide = requestAnimationFrame(step);
+    };
+    glide = requestAnimationFrame(step);
+  }
 
   function stopGlide() {
     cancelAnimationFrame(glide);
     glide = 0;
   }
 
-  track.addEventListener('pointerdown', (e) => {
-    if (e.pointerType === 'mouse') return;
+  function scrollDirect(dx) {
     stopGlide();
-    drag = { id: e.pointerId, x: e.clientX, y: e.clientY, lastX: e.clientX, lastT: e.timeStamp, v: 0, active: false };
-  });
-
-  track.addEventListener('pointermove', (e) => {
-    if (!drag || e.pointerId !== drag.id) return;
-    if (!drag.active) {
-      const dx = e.clientX - drag.x;
-      const dy = e.clientY - drag.y;
-      if (Math.abs(dx) < 6 || Math.abs(dx) < Math.abs(dy)) return;
-      drag.active = true;
-      suppressClick = true;
-      track.setPointerCapture?.(e.pointerId);
-    }
-    const step = e.clientX - drag.lastX;
-    const dt = Math.max(1, e.timeStamp - drag.lastT);
-    drag.v = 0.8 * (-step / dt) + 0.2 * drag.v; // px of scroll per ms, smoothed
-    drag.lastX = e.clientX;
-    drag.lastT = e.timeStamp;
-    scrollSideways(-step);
-  });
-
-  function endDrag(e) {
-    if (!drag || e.pointerId !== drag.id) return;
-    const { active, v } = drag;
-    drag = null;
-    if (!active || Math.abs(v) < 0.05) return;
-
-    // let a flick coast to a stop, like a native swipe
-    let velocity = v;
-    let last = performance.now();
-    const coast = (now) => {
-      const dt = now - last;
-      last = now;
-      scrollSideways(velocity * dt);
-      velocity *= Math.pow(0.95, dt / 16);
-      glide = Math.abs(velocity) > 0.02 ? requestAnimationFrame(coast) : 0;
-    };
-    glide = requestAnimationFrame(coast);
+    stage.scrollLeft = clamp(stage.scrollLeft + dx, 0, maxScroll());
   }
 
-  track.addEventListener('pointerup', endDrag);
-  track.addEventListener('pointercancel', endDrag);
+  // --- wheel / trackpad ----------------------------------------------------
 
-  // a drag that ends over a card shouldn't also open it
-  track.addEventListener(
-    'click',
+  window.addEventListener(
+    'wheel',
     (e) => {
-      if (!suppressClick) return;
-      suppressClick = false;
+      if (!fixedLayout.matches || e.ctrlKey) return; // ctrl = pinch-zoom
+      const horizontal = Math.abs(e.deltaX) > Math.abs(e.deltaY);
+      // sideways swipes over the row are its own native scroll already
+      if (horizontal && stage.contains(e.target)) return;
+
+      const unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? stage.clientWidth : 1;
+      const delta = (horizontal ? e.deltaX : e.deltaY) * unit;
+      if (!delta) return;
       e.preventDefault();
-      e.stopPropagation();
+
+      // small pixel deltas are a trackpad: follow them exactly. Big steps
+      // are a mouse wheel: ease toward the new position.
+      if (e.deltaMode === 0 && Math.abs(delta) < 60) scrollDirect(delta);
+      else glideTo((glide ? target : stage.scrollLeft) + delta);
     },
-    true,
+    { passive: false },
   );
-  track.addEventListener('pointerdown', () => { suppressClick = false; }, true);
+
+  // --- touch: vertical swipes move the row sideways ----------------------
+
+  let touch = null;
+
+  window.addEventListener(
+    'touchstart',
+    (e) => {
+      if (!fixedLayout.matches || e.touches.length !== 1) return;
+      stopGlide();
+      const t = e.touches[0];
+      touch = { x: t.clientX, y: t.clientY, lastY: t.clientY, lastT: e.timeStamp, v: 0, vertical: null };
+    },
+    { passive: true },
+  );
+
+  window.addEventListener(
+    'touchmove',
+    (e) => {
+      if (!touch || e.touches.length !== 1) return;
+      const t = e.touches[0];
+      if (touch.vertical === null) {
+        const dx = Math.abs(t.clientX - touch.x);
+        const dy = Math.abs(t.clientY - touch.y);
+        if (dx < 6 && dy < 6) return;
+        touch.vertical = dy > dx;
+      }
+      if (!touch.vertical) return; // sideways: the row's native scroll handles it
+      e.preventDefault();
+      const step = touch.lastY - t.clientY;
+      const dt = Math.max(1, e.timeStamp - touch.lastT);
+      touch.v = 0.8 * (step / dt) + 0.2 * touch.v;
+      touch.lastY = t.clientY;
+      touch.lastT = e.timeStamp;
+      scrollDirect(step);
+    },
+    { passive: false },
+  );
+
+  window.addEventListener('touchend', () => {
+    if (!touch) return;
+    const { vertical, v } = touch;
+    touch = null;
+    // let a flick coast, like a native swipe
+    if (vertical && Math.abs(v) > 0.1) glideTo(stage.scrollLeft + v * 320);
+  });
+
+  // --- keyboard ----------------------------------------------------------
+
+  window.addEventListener('keydown', (e) => {
+    if (!fixedLayout.matches || e.altKey || e.ctrlKey || e.metaKey) return;
+    if (e.target.closest?.('input, textarea, select, [contenteditable]')) return;
+    const page = stage.clientWidth * 0.8;
+    const moves = {
+      ArrowDown: 120,
+      ArrowRight: 120,
+      ArrowUp: -120,
+      ArrowLeft: -120,
+      PageDown: page,
+      PageUp: -page,
+      ' ': e.shiftKey ? -page : page,
+      Home: -Infinity,
+      End: Infinity,
+    };
+    if (!(e.key in moves)) return;
+    e.preventDefault();
+    const from = glide ? target : stage.scrollLeft;
+    glideTo(Number.isFinite(moves[e.key]) ? from + moves[e.key] : moves[e.key]);
+  });
 }

@@ -7,10 +7,11 @@
   position: relative;
   width: 100vw;
   /* leave exactly the footer's height at the bottom of the viewport: the
-     fixed .site-footer (45px) sits there and the sidebar + game shrink to
-     match, so the footer is flush underneath with nothing overlapped and
-     the page still never scrolls. */
-  height: calc(100vh - 45px);
+     fixed .site-footer (--footer-h) sits there and the sidebar + game
+     shrink to match, so the footer is flush underneath with nothing
+     overlapped and the page still never scrolls. */
+  height: calc(100vh - var(--footer-h));
+  padding-bottom: 0;
   background: #fcfcfc;
   overflow: hidden;
   display: flex;
@@ -697,19 +698,14 @@
     overflow-x: hidden;
   }
 
+  /* the page scrolls at this breakpoint; the footer stays pinned (shared.css),
+     so keep its height clear below the last section */
   .page {
     display: block;
     height: auto;
     width: 100%;
     overflow: visible;
-  }
-
-  /* the page scrolls at this breakpoint, so the footer drops back into
-     normal flow at the bottom of the content instead of being pinned to
-     the viewport (its desktop behaviour, set in shared.css). */
-  .site-footer-fixed {
-    position: static;
-    height: auto;
+    padding-bottom: var(--footer-h);
   }
 
   /* full width, same background as the rest of the site — no separate

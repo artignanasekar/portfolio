@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { defineConfig } from 'vite';
 
@@ -44,9 +45,35 @@ function sharedCssFirst() {
   };
 }
 
+// The site footer is one component: its markup lives in
+// partials/site-footer.html and is inlined wherever a page has a
+// <!-- site-footer --> placeholder, in dev and in the build.
+const FOOTER_PARTIAL = resolve(import.meta.dirname, 'partials/site-footer.html');
+
+function siteFooter() {
+  return {
+    name: 'site-footer',
+    transformIndexHtml: {
+      order: 'pre',
+      handler(html) {
+        if (!html.includes('<!-- site-footer -->')) return html;
+        const footer = readFileSync(FOOTER_PARTIAL, 'utf8').trim();
+        return html.replace(/([ \t]*)<!-- site-footer -->/g, (_, indent) =>
+          footer.split('\n').map((line) => indent + line).join('\n'));
+      },
+    },
+    configureServer(server) {
+      server.watcher.add(FOOTER_PARTIAL);
+      server.watcher.on('change', (file) => {
+        if (file === FOOTER_PARTIAL) server.ws.send({ type: 'full-reload' });
+      });
+    },
+  };
+}
+
 export default defineConfig({
   appType: 'mpa',
-  plugins: [cleanUrls(), sharedCssFirst()],
+  plugins: [cleanUrls(), siteFooter(), sharedCssFirst()],
   build: {
     rollupOptions: {
       input: Object.fromEntries(
