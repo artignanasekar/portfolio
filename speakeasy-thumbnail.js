@@ -18,8 +18,9 @@ const config = {
   speed: 1.12, // playback rate for the whole loop (1.12 -> ~6.7s real time)
   emptyBeat: 0.15, // empty white frame after the cards leave, before the restart
 
-  // lockup: SPEAKEASY + taglines, fitted to this height and centred
-  lockupHeight: 240,
+  // lockup: SPEAKEASY + mic + taglines, centred in the frame
+  lockupScale: 0.49, // Figma px -> thumbnail units (0.49 ~ 213 of 296 units tall)
+  taglineScale: 0.8, // taglines relative to Figma; they keep their edges on the cord and their baseline
 
   micDrop: { start: 0, duration: 0.7, ease: 'back.out(1.4)', swing: 0.8, swingEase: 'elastic.out(1, 0.45)' },
 
@@ -78,7 +79,10 @@ if (root) init(root);
 function init(root) {
   const FRAME_W = 521, FRAME_H = 296;
   // lockup bounds in local (Figma vector) units: taglines top to EASY bottom
-  const LOCKUP = { x: 0, y: 414, w: 629, h: 454 };
+  const TAGS = { // Figma geometry; each scales toward the cord and its bottom edge
+    left: { right: 261.868, bottom: 516.13, w: 193.886, h: 102.13 },
+    right: { left: 338.013, bottom: 516.186, w: 221.058, h: 101.19 }
+  };
   const MIC = { cx: 307, cy: 629.5, left: 259, right: 355, cordTop: 0 };
 
   const stage = root.querySelector('.se-stage');
@@ -91,7 +95,21 @@ function init(root) {
   const cards = gsap.utils.toArray(root.querySelectorAll('.se-card'));
   const flips = cards.map((c) => c.querySelector('.se-card-flip'));
 
-  const S = config.lockupHeight / LOCKUP.h;
+  const ts = config.taglineScale;
+  const tagL = TAGS.left, tagR = TAGS.right;
+  tagLeft.setAttribute('x', tagL.right - tagL.w * ts);
+  tagLeft.setAttribute('y', tagL.bottom - tagL.h * ts);
+  tagLeft.setAttribute('width', tagL.w * ts);
+  tagLeft.setAttribute('height', tagL.h * ts);
+  tagRight.setAttribute('x', tagR.left);
+  tagRight.setAttribute('y', tagR.bottom - tagR.h * ts);
+  tagRight.setAttribute('width', tagR.w * ts);
+  tagRight.setAttribute('height', tagR.h * ts);
+  // lockup bounds in local units: tagline tops to the bottom of EASY
+  const top = Math.min(tagL.bottom - tagL.h * ts, tagR.bottom - tagR.h * ts);
+  const LOCKUP = { x: 0, y: top, w: 629, h: 868 - top };
+
+  const S = config.lockupScale;
   const TX = (FRAME_W - LOCKUP.w * S) / 2 - LOCKUP.x * S;
   const TY = (FRAME_H - LOCKUP.h * S) / 2 - LOCKUP.y * S;
   const toLocal = (v) => v / S;
