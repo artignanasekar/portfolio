@@ -1,9 +1,9 @@
 /* IBM animated thumbnail: on IBM blue, two partitions split the card into
    thirds, dotted guides slide in and the eye, bee and M are drawn as white
    blueprint outlines. The pieces pop in colour in a scattered order, the card
-   drops to black and the eye and M snap in beside the bee to form the
-   Eye-Bee-M. During the hold the bee's wings flutter and the pupil follows the
-   cursor. One GSAP timeline drives every beat; tweak the config below.
+   drops to black and the eye and M slide in and snap into place beside the
+   bee to form the Eye-Bee-M. One GSAP timeline drives every beat; tweak the
+   config below.
 
    Units: everything is in the SVG's viewBox units, i.e. the Figma frame
    (571 wide), so it scales with the card. Guide positions are local to each
@@ -22,7 +22,7 @@ const config = {
   line: '#ffffff',
 
   // 1. two solid lines split the card into thirds, top to bottom
-  partitions: { start: 0, duration: 0.5, stagger: 0.1, ease: 'power2.inOut', width: 2 },
+  partitions: { start: 0, duration: 0.5, stagger: 0.1, ease: 'power2.inOut', width: 1 },
 
   // 2. blueprint: dotted guides wipe in from their `from` edge (a sliding
   // clip, so the dots never stretch), then each piece's outline draws
@@ -79,25 +79,23 @@ const config = {
   },
   guidesOut: { start: 2.3, duration: 0.2 },
   partitionsOut: { start: 2.3, duration: 0.45, stagger: 0.05, ease: 'power2.in' },
-  // starts once both wings are filled; right wing trails by `offset`
-  flutter: { scaleY: 0.72, duration: 0.06, offset: 0.03, ease: 'sine.inOut' },
 
   // 4. background blue -> black
   background: { start: 2.9, duration: 0.15, ease: 'none' },
 
   // 5. eye and M slide in beside the bee (they start centred in their thirds):
-  // a slow ease into place, running `overshoot` units past, then settling back
-  snap: { start: 3.1, duration: 0.85, ease: 'power2.in', overshoot: 3, settle: 0.15, settleEase: 'power2.out' },
-
-  // 6. hold: the pupil follows the cursor between start and end, then eases home
-  track: {
-    start: 4.1,
-    end: 5.6,
-    reach: 120, // cursor distance from the eye at which the pupil touches the iris edge
-    margin: 1.5, // gap kept between pupil and iris edge
-    duration: 0.3, // quickTo follow (also the ease back to centre)
-    ease: 'power3.out'
+  // they accelerate in, hit `overshoot` units past their spot, then the
+  // elastic settle clicks them into place
+  snap: {
+    start: 3.1,
+    duration: 0.7,
+    ease: 'power3.in',
+    overshoot: 5,
+    settle: 0.35,
+    settleEase: 'elastic.out(1.2, 0.35)'
   },
+
+  // 6. hold on the finished logo until the reset (~4.15-6.0s)
 
   // 7. reset: the art fades and the black crossfades back to blue
   reset: { start: 6.0, fade: 0.3, fadeEase: 'power1.in', bgDuration: 0.5, bgEase: 'power1.inOut' }
@@ -150,8 +148,6 @@ function init(root) {
   const pieceName = (el) => el.getAttribute('class').replace('ibm-', '');
   const pieces = elements.flatMap((e) => e.pieces);
   const piece = Object.fromEntries(pieces.map((p) => [pieceName(p), p]));
-  const wings = [piece['wing-l'], piece['wing-r']];
-  const pupil = piece.pupil;
 
   // ---- layers: guides under partitions, both under the art ------------------
 
@@ -227,53 +223,8 @@ function init(root) {
     }));
   });
 
-  // ---- transform origins (set once, while nothing is transformed) -----------
-
+  // fill pops scale from each piece's centre (set once, while nothing is transformed)
   gsap.set(pieces, { transformOrigin: '50% 50%' });
-  // wings pivot where they meet the body
-  gsap.set(piece['wing-l'], { svgOrigin: '66.98 38.87' });
-  gsap.set(piece['wing-r'], { svgOrigin: '114.04 38.87' });
-
-  // ---- wing flutter (its own repeating tweens, owned by the loop) -----------
-
-  let flutters = [];
-  const f = config.flutter;
-  const startFlutter = () => {
-    flutters = wings.map((w, i) => gsap.to(w, {
-      scaleY: f.scaleY, duration: f.duration, ease: f.ease, yoyo: true, repeat: -1, delay: i * f.offset
-    }));
-  };
-  const stopFlutter = () => {
-    flutters.forEach((t) => t.kill());
-    flutters = [];
-  };
-
-  // ---- pupil tracking --------------------------------------------------------
-
-  const tr = config.track;
-  const iris = piece.iris;
-  const cx = +iris.getAttribute('cx'), cy = +iris.getAttribute('cy');
-  const maxR = +iris.getAttribute('r') - +pupil.getAttribute('r') - tr.margin;
-  const xTo = gsap.quickTo(pupil, 'x', { duration: tr.duration, ease: tr.ease });
-  const yTo = gsap.quickTo(pupil, 'y', { duration: tr.duration, ease: tr.ease });
-  let tracking = false, pointer = null;
-
-  const aim = () => {
-    if (!tracking || !pointer) return;
-    // cursor in the eye's own units, so the offset is independent of card size
-    const p = new DOMPoint(pointer.x, pointer.y).matrixTransform(byName.eye.group.getScreenCTM().inverse());
-    const dx = p.x - cx, dy = p.y - cy, dist = Math.hypot(dx, dy);
-    const r = maxR * Math.min(1, dist / tr.reach);
-    xTo(dist ? (dx / dist) * r : 0);
-    yTo(dist ? (dy / dist) * r : 0);
-  };
-  root.addEventListener('pointermove', (e) => { pointer = { x: e.clientX, y: e.clientY }; aim(); });
-  root.addEventListener('pointerleave', () => {
-    pointer = null;
-    if (tracking) { xTo(0); yTo(0); }
-  });
-  const startTracking = () => { tracking = true; aim(); };
-  const stopTracking = () => { tracking = false; xTo(0); yTo(0); };
 
   // ---- timeline --------------------------------------------------------------
 
@@ -281,8 +232,6 @@ function init(root) {
 
   // start state (re-applied at every loop restart)
   const reset = () => {
-    stopFlutter();
-    tracking = false;
     gsap.set(bg, { fill: config.blue });
     gsap.set(partitions, { drawSVG: '0% 0%', y: 0 });
     gsap.set(guideLayer, { opacity: g.opacity });
@@ -290,7 +239,6 @@ function init(root) {
     gsap.set(art, { opacity: 1 });
     elements.forEach((e) => gsap.set(e.slide, { x: e.offset }));
     gsap.set(pieces, { opacity: 0, scale: config.fill.fromScale });
-    gsap.set(pupil, { x: 0, y: 0 });
     outlineStarts.forEach(({ o }) => gsap.set(o, { drawSVG: '0% 0%', opacity: 1 }));
   };
   reset();
@@ -309,13 +257,11 @@ function init(root) {
 
   // 3. colour fill, guides out, partitions drop out the bottom
   const fi = config.fill;
-  let wingsFilled = 0;
   fi.order.forEach((name, n) => {
     const p = piece[name];
     const t = fi.start + n * fi.stagger;
     tl.to(p, { opacity: 1, scale: 1, duration: fi.duration, ease: fi.ease }, t)
       .to(outlines.get(p), { opacity: 0, duration: fi.duration, ease: 'none' }, t);
-    if (wings.includes(p) && ++wingsFilled === wings.length) tl.call(startFlutter, null, t + fi.duration);
   });
   tl.to(guideLayer, { opacity: 0, duration: config.guidesOut.duration, ease: 'none' }, config.guidesOut.start);
   const po = config.partitionsOut;
@@ -325,16 +271,13 @@ function init(root) {
   const bgc = config.background;
   tl.to(bg, { fill: config.black, duration: bgc.duration, ease: bgc.ease }, bgc.start);
 
-  // 5. eye and M snap in beside the bee
+  // 5. eye and M slide in beside the bee and snap into place
   const sn = config.snap;
   [byName.eye, byName.m].forEach((e) => {
     const past = -Math.sign(e.offset) * sn.overshoot;
     tl.to(e.slide, { x: past, duration: sn.duration, ease: sn.ease }, sn.start)
       .to(e.slide, { x: 0, duration: sn.settle, ease: sn.settleEase }, sn.start + sn.duration);
   });
-
-  // 6. hold: pupil tracking window
-  tl.call(startTracking, null, tr.start).call(stopTracking, null, tr.end);
 
   // 7. reset: fade the art, black back to blue
   const re = config.reset;
@@ -343,8 +286,5 @@ function init(root) {
 
   tl.set({}, {}, config.loop);
 
-  watchThumb(root, {
-    play: () => { tl.play(); flutters.forEach((t) => t.resume()); },
-    pause: () => { tl.pause(); flutters.forEach((t) => t.pause()); }
-  });
+  watchThumb(root, { play: () => tl.play(), pause: () => tl.pause() });
 }
