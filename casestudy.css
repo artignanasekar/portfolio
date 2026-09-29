@@ -396,26 +396,33 @@ body {
 
   /* app-icon strip: lose the wide side padding, let the four icons share
      the row and shrink, and let long labels ("FOCUS KEEPER") wrap
-     instead of spilling past the card */
-  .cs-app-icons {
-    gap: 12px;
-    padding: 18px 16px;
+     instead of spilling past the card. The body prefix is needed: the base
+     .cs-app-icon* rules come later in this file and would otherwise win. */
+  body .cs-app-icons {
+    gap: 8px;
+    padding: 18px 12px;
   }
 
-  .cs-app-icon {
+  body .cs-app-icon {
     width: auto;
     flex: 1 1 0;
     min-width: 0;
     max-width: 81px;
+    gap: 10px;
   }
 
-  .cs-app-icon img {
-    width: 100%;
-    height: auto;
-    aspect-ratio: 1;
+  /* explicit, equal width + height that scales with the viewport, so all
+     four always fit side by side and stay square */
+  body .cs-app-icon img {
+    --icon: clamp(44px, 13.5vw, 64px);
+    width: var(--icon);
+    height: var(--icon);
+    flex: none;
+    border-radius: 30%;
   }
 
-  .cs-app-icon span {
+  body .cs-app-icon span {
+    font-size: 10px;
     white-space: normal;
     text-align: center;
   }
@@ -874,6 +881,14 @@ body {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+/* the Wavelength recording has a ~2px light band baked into its top and
+   bottom rows (the capture's own edge), which showed as a white sliver
+   under the bezel's top curve. Zoom that one video ~1.5% inside its
+   clipped slot so the band falls outside it — the slot and bezel stay put. */
+.cs-screen-video-slot video.cs-video-trim-edges {
+  transform: scale(1.015);
 }
 
 .cs-screen-bezel {

@@ -293,4 +293,36 @@ body {
     align-items: flex-start;
     gap: 12px;
   }
+
+  /* the note is wider than a phone screen on one line — let it wrap
+     inside the same 30px gutter as the nav bar instead of running off
+     the right edge */
+  .site-footer-note {
+    white-space: normal;
+    max-width: 100%;
+    line-height: 1.5;
+  }
+}
+
+/* phone widths: PP Editorial Old's "normal" line height is ~1.5x, which
+   reads as an awkward gap once a serif heading wraps onto several lines on
+   a narrow screen. Tighten every multi-line serif heading sitewide (the
+   IBM Plex Sans / CommitMono text keeps its spacing). The body prefix lifts
+   specificity over each page stylesheet's own line-height: normal, since
+   shared.css loads first. The home hero title already sits at 1.1. */
+@media (max-width: 900px) {
+  body :is(
+    .cs-heading,
+    .cs-hmw,
+    .cs-compare-title,
+    .cs-adaptation-title,
+    .cs-insight-title,
+    .cs-persona-name,
+    .work-title,
+    .bio-heading,
+    .section-heading,
+    .info-card-title
+  ) {
+    line-height: 1.25;
+  }
 }

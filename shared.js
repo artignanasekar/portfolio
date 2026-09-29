@@ -74,8 +74,10 @@ function animateScrollTo(targetY, duration) {
 function scrollToWorkSection(startFraction, duration) {
   const work = document.getElementById('work');
   if (!work) return false;
-  const navHeight = 45;
-  const targetY = work.getBoundingClientRect().top + window.scrollY - navHeight;
+  // the home page's horizontal work row (work-scroll.js) publishes where
+  // #work should sit so the row is pinned with its slide at the start
+  const offset = Number(work.dataset.anchorOffset ?? 45);
+  const targetY = Math.max(0, work.getBoundingClientRect().top + window.scrollY - offset);
   if (startFraction) {
     window.scrollTo(0, targetY * startFraction);
   }

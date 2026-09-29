@@ -40,23 +40,61 @@ body {
 
 .work-section {
   position: relative;
-  max-width: 1360px;
-  margin: 0 auto;
-  padding: 60px 30px 120px;
-  box-sizing: border-box;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 30px;
+  padding: 60px 0 120px;
   scroll-margin-top: 45px; /* offset for the fixed nav bar when jumped to via #work */
 }
 
-/* 30px matches the case-study pages' own side gutter (see casestudy.css),
-   so the margin doesn't visibly jump when you click into a case study.
-   Held at every width — not just below 900px — so the centered box never
-   touches the viewport edges on its own between 900px and ~1420px. */
+/* horizontal row: the three case studies sit side by side in one row that
+   runs full-bleed to the window edges. work-scroll.js turns the page's
+   normal vertical scroll into a sideways slide of the row — .work-scroller
+   is given the extra height the slide needs, .work-stage sticks in view
+   while it plays, and the page carries on down to the footer once the
+   last card reaches the right-hand gutter. Without JS (or before it runs)
+   the stage is a plain native horizontal scroller instead. */
+.work-stage {
+  container-type: inline-size;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+
+.work-stage::-webkit-scrollbar {
+  display: none;
+}
+
+/* the first card lines up with the hero text (same 1360px centred box,
+   30px inside it) and the last card stops 30px before the window's right
+   edge — the site's standard gutter. */
+.work-track {
+  --gutter: max(30px, calc((100cqw - 1360px) / 2 + 30px));
+  --card: calc((min(100cqw, 1360px) - 90px) / 2);
+  display: flex;
+  gap: 30px;
+  width: max-content;
+  padding: 0 var(--gutter);
+}
+
+.work-section.is-scrubbed .work-stage {
+  position: sticky;
+  overflow: hidden;
+}
+
+.work-section.is-scrubbed .work-track {
+  will-change: transform;
+  touch-action: pan-y; /* vertical swipes scroll the page; horizontal drags are ours */
+}
+
+/* same card size as the old two-column grid: two cards on screen, the
+   third slides in. On narrower screens one card fills most of the width
+   with the next peeking in from the right, so it's obvious there's more. */
+.work-track > .work-card {
+  flex: none;
+  width: var(--card);
+}
+
 @media (max-width: 900px) {
-  .work-section {
-    grid-template-columns: 1fr;
+  .work-track {
+    --card: calc(100cqw - 96px);
   }
 }
 
@@ -398,3 +436,11 @@ img.se-card-icon { width: 33.04%; height: 83.7%; }
 .se-card-count > span { line-height: normal; }
 .se-card--contact .se-card-count,
 .se-card--brainteaser .se-card-count { left: 94.74%; }
+
+/* the subtitle is a single nowrap line; on the narrowest phones let it
+   wrap rather than run past the 30px gutter */
+@media (max-width: 380px) {
+  .home-hero-subtitle {
+    white-space: normal;
+  }
+}
