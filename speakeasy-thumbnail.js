@@ -15,36 +15,37 @@ import { watchThumb, prefersReducedMotion } from './thumbnail-player.js';
 gsap.registerPlugin(MorphSVGPlugin);
 
 const config = {
-  loop: 6.3, // seconds, including the empty white beat before the restart
+  loop: 9.8, // seconds, including the empty white beat before the restart
 
   // lockup: SPEAKEASY + taglines, fitted to this height and centred
   lockupHeight: 240,
 
-  micDrop: { start: 0, duration: 0.7, ease: 'back.out(1.4)', swing: 1.2, swingEase: 'elastic.out(1, 0.45)' },
+  micDrop: { start: 0, duration: 0.7, ease: 'back.out(1.4)', swing: 0.8, swingEase: 'elastic.out(1, 0.45)' },
 
+  // straight slide, no overshoot, so nothing crosses the mic or the cord
   lockIn: {
     start: 0.5,
     duration: 0.65,
     stagger: 0.05,
     distance: 360, // how far off-frame the letters and taglines start
-    ease: 'back.out(1.6)'
+    ease: 'power3.out'
   },
   // lockup holds from the end of lockIn (~1.3s) to morph.start
 
   taglineOut: { start: 1.9, duration: 0.4, ease: 'back.in(1.4)' },
 
-  // waveform: 4 columns | mic | 4 columns, centred on the mic
-  columnWidth: 34,
-  columnGap: 10,
-  columnMicGap: 12,
+  // waveform: 4 columns | mic | 4 columns, centred on the mic, with the same
+  // gap between neighbouring columns and between the mic and its neighbours
+  columnWidth: 22,
+  columnGap: 11,
   columnHeight: 64, // resting height
-  columnRadius: 12, // corners of the columns and of the red card fronts
+  columnRadius: 6, // keep below columnWidth / 2 or the columns turn into pills
   morph: { start: 1.95, duration: 0.6, stagger: 0.03, ease: 'back.out(1.5)' },
 
   meter: {
     start: 2.55,
-    end: 3.5, // every column is back at columnHeight by here
-    beats: 4, // height changes per column before settling
+    end: 3.9, // every column is back at columnHeight by here
+    beats: 5, // height changes per column before settling
     offset: 0.04, // per-column delay so they don't move in lockstep
     min: 28,
     max: 150,
@@ -52,16 +53,20 @@ const config = {
     ease: 'back.out(2)'
   },
 
-  // columns -> cards
-  cardLayout: 'stack', // 'stack' (4 full-width rows) or 'grid' (2 x 2)
-  cardPadding: 30, // distance from every thumbnail edge
-  cardGap: null, // gap between cards; null = same as cardPadding
-  leftExit: { start: 3.5, duration: 0.35, ease: 'power2.in' },
-  toCards: { start: 3.5, duration: 0.6, stagger: 0.04, ease: 'back.out(1.3)' },
-  flip: { start: 4.2, duration: 0.5, stagger: 0.1, angle: 180, ease: 'back.out(1.2)' },
-  // cards hold ~0.8s after the last flip lands, until exit.start
+  // columns -> cards: a vertical feed of Figma cards at their true 342:135
+  // proportions. The first card sits near the top with the next one peeking
+  // (red, unflipped) below; the feed scrolls up one card at a time and each
+  // card flips over while it scrolls into place.
+  cardWidth: 400, // card height follows from the Figma aspect ratio
+  cardTop: 44, // top of the first card
+  cardGap: 12,
+  leftExit: { start: 3.9, duration: 0.35, ease: 'power2.in' },
+  toCards: { start: 3.9, duration: 0.6, stagger: 0.04, ease: 'back.out(1.3)' },
+  flip: { start: 4.6, duration: 0.55, angle: 180, ease: 'back.out(1.2)' }, // first card
+  scroll: { start: 5.6, duration: 0.6, hold: 0.45, ease: 'back.out(1.1)' }, // cards 2-4 flip as they scroll
+  // the last card holds ~0.8s after it lands, until exit.start
 
-  exit: { start: 5.7, duration: 0.35, stagger: 0.04, ease: 'power4.in' }
+  exit: { start: 9.1, duration: 0.35, stagger: 0.04, ease: 'power4.in' }
 };
 
 const root = document.querySelector('.speakeasy-thumb');
@@ -108,31 +113,26 @@ function init(root) {
 
   const colW = toLocal(config.columnWidth);
   const colGap = toLocal(config.columnGap);
-  const micGap = toLocal(config.columnMicGap);
   const radius = toLocal(config.columnRadius);
   // column centres, left block right-aligned to the mic, right block mirrored
   const colX = (side, i) => side === 'left'
-    ? MIC.left - micGap - colW / 2 - (3 - i) * (colW + colGap)
-    : MIC.right + micGap + colW / 2 + i * (colW + colGap);
+    ? MIC.left - colGap - colW / 2 - (3 - i) * (colW + colGap)
+    : MIC.right + colGap + colW / 2 + i * (colW + colGap);
   const column = (side, i, h) => rectPath(colX(side, i), MIC.cy, colW, toLocal(h), radius);
 
-  // card slots in thumbnail units, top-to-bottom / reading order
-  const pad = config.cardPadding;
-  const gap = config.cardGap == null ? pad : config.cardGap;
-  const slots = config.cardLayout === 'grid'
-    ? [0, 1, 2, 3].map((i) => {
-        const w = (FRAME_W - 2 * pad - gap) / 2, h = (FRAME_H - 2 * pad - gap) / 2;
-        return { x: pad + (i % 2) * (w + gap), y: pad + Math.floor(i / 2) * (h + gap), w, h };
-      })
-    : [0, 1, 2, 3].map((i) => {
-        const w = FRAME_W - 2 * pad, h = (FRAME_H - 2 * pad - 3 * gap) / 4;
-        return { x: pad, y: pad + i * (h + gap), w, h };
-      });
+  // card feed in thumbnail units: Figma's 342 x 135 card scaled uniformly by
+  // k, centred, stacked top to bottom (cards 3 and 4 start below the frame)
+  const k = config.cardWidth / 342;
+  const cardH = 135 * k;
+  const step = cardH + config.cardGap; // one scroll of the feed
+  const slots = [0, 1, 2, 3].map((i) => ({
+    x: (FRAME_W - config.cardWidth) / 2, y: config.cardTop + i * step, w: config.cardWidth, h: cardH
+  }));
+  const cardRadius = 15 * k; // Figma card corner, so front and back match
 
-  // place the HTML cards; the Figma card body (342 x 135) scales to fit
-  const k = Math.min(...slots.map((s) => Math.min(s.w / 342, s.h / 135)));
+  // place the HTML cards
   layer.style.setProperty('--k', k.toFixed(4));
-  layer.style.setProperty('--radius', config.columnRadius);
+  layer.style.setProperty('--radius', cardRadius.toFixed(2));
   cards.forEach((card, i) => {
     const s = slots[i];
     Object.assign(card.style, {
@@ -200,12 +200,12 @@ function init(root) {
   [...left, ...right].forEach((el, n) => {
     const side = n < 4 ? 'left' : 'right', i = n % 4;
     const t0 = me.start + n * me.offset;
-    const step = (me.end - t0) / (me.beats + 1);
+    const beat = (me.end - t0) / (me.beats + 1);
     [...meterHeights[n], config.columnHeight].forEach((h, b) => {
       tl.to(el, {
         morphSVG: { shape: column(side, i, h), shapeIndex: 0 },
-        duration: step, ease: me.ease
-      }, t0 + b * step);
+        duration: beat, ease: me.ease
+      }, t0 + b * beat);
     });
   });
 
@@ -222,7 +222,7 @@ function init(root) {
     tl.set(el, { svgOrigin: `${cx} ${cy}` }, tc.start)
       .to(el, {
         // upright rect of the card's size turned a quarter CCW = the card
-        morphSVG: { shape: rectPath(cx, cy, toLocal(s.h), toLocal(s.w), radius), shapeIndex: 0 },
+        morphSVG: { shape: rectPath(cx, cy, toLocal(s.h), toLocal(s.w), toLocal(cardRadius)), shapeIndex: 0 },
         rotation: -90,
         x: cardCx - cx,
         y: cardCy - cy,
@@ -234,13 +234,25 @@ function init(root) {
   const handoff = tc.start + 3 * tc.stagger + tc.duration;
   tl.set(cards, { opacity: 1 }, handoff).set(right, { opacity: 0 }, handoff);
 
+  // first card flips in place
   const fl = config.flip;
-  tl.to(flips, { rotationX: fl.angle, duration: fl.duration, ease: fl.ease, stagger: fl.stagger }, Math.max(fl.start, handoff));
+  tl.to(flips[0], { rotationX: fl.angle, duration: fl.duration, ease: fl.ease }, Math.max(fl.start, handoff));
+
+  // the feed scrolls up one card at a time; each incoming card flips while
+  // it moves, so it arrives already revealed
+  const sc = config.scroll;
+  const feedY = (n) => (-n * step / cardH) * 100; // yPercent after n scrolls
+  for (let n = 1; n < cards.length; n++) {
+    const t = sc.start + (n - 1) * (sc.duration + sc.hold);
+    tl.to(cards, { yPercent: feedY(n), duration: sc.duration, ease: sc.ease }, t)
+      .to(flips[n], { rotationX: fl.angle, duration: sc.duration, ease: fl.ease }, t);
+  }
 
   // 5. snap out the top
   const ex = config.exit;
+  const last = cards.length - 1;
   tl.to(cards, {
-    yPercent: (i) => -((slots[i].y + slots[i].h) / slots[i].h) * 100 - 10,
+    yPercent: feedY(last) - ((config.cardTop + cardH) / cardH) * 100 - 10,
     duration: ex.duration, ease: ex.ease, stagger: ex.stagger
   }, ex.start);
 
