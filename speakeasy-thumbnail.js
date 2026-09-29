@@ -15,7 +15,8 @@ import { watchThumb, prefersReducedMotion } from './thumbnail-player.js';
 gsap.registerPlugin(MorphSVGPlugin);
 
 const config = {
-  loop: 9.8, // seconds, including the empty white beat before the restart
+  loop: 8.25, // timeline seconds, including the empty white beat before the restart
+  speed: 1.12, // playback rate for the whole loop (1.12 -> ~7.4s real time)
 
   // lockup: SPEAKEASY + taglines, fitted to this height and centred
   lockupHeight: 240,
@@ -62,11 +63,13 @@ const config = {
   cardGap: 12,
   leftExit: { start: 3.9, duration: 0.35, ease: 'power2.in' },
   toCards: { start: 3.9, duration: 0.6, stagger: 0.04, ease: 'back.out(1.3)' },
-  flip: { start: 4.6, duration: 0.55, angle: 180, ease: 'back.out(1.2)' }, // first card
-  scroll: { start: 5.6, duration: 0.6, hold: 0.45, ease: 'back.out(1.1)' }, // cards 2-4 flip as they scroll
-  // the last card holds ~0.8s after it lands, until exit.start
+  flip: { start: 4.6, duration: 0.5, angle: 180, ease: 'back.out(1.2)' }, // first card
+  // one continuous scroll through cards 2-4 (no stops); each card's flip
+  // finishes exactly as it reaches the top slot
+  scroll: { start: 4.9, duration: 2.1, ease: 'sine.inOut', flipDuration: 0.55, flipEase: 'power2.inOut' },
+  // the last card holds ~0.6s after it lands, until exit.start
 
-  exit: { start: 9.1, duration: 0.35, stagger: 0.04, ease: 'power4.in' }
+  exit: { start: 7.6, duration: 0.35, stagger: 0.04, ease: 'power4.in' }
 };
 
 const root = document.querySelector('.speakeasy-thumb');
@@ -242,15 +245,22 @@ function init(root) {
   // it moves, so it arrives already revealed
   const sc = config.scroll;
   const feedY = (n) => (-n * step / cardH) * 100; // yPercent after n scrolls
-  for (let n = 1; n < cards.length; n++) {
-    const t = sc.start + (n - 1) * (sc.duration + sc.hold);
-    tl.to(cards, { yPercent: feedY(n), duration: sc.duration, ease: sc.ease }, t)
-      .to(flips[n], { rotationX: fl.angle, duration: sc.duration, ease: fl.ease }, t);
+  const last = cards.length - 1;
+  tl.to(cards, { yPercent: feedY(last), duration: sc.duration, ease: sc.ease }, sc.start);
+  // when does the eased scroll reach card n? invert the ease numerically
+  const ease = gsap.parseEase(sc.ease);
+  const reach = (p) => {
+    let lo = 0, hi = 1;
+    for (let j = 0; j < 30; j++) { const mid = (lo + hi) / 2; if (ease(mid) < p) lo = mid; else hi = mid; }
+    return sc.start + lo * sc.duration;
+  };
+  for (let n = 1; n <= last; n++) {
+    const arrive = reach(n / last);
+    tl.to(flips[n], { rotationX: fl.angle, duration: sc.flipDuration, ease: sc.flipEase }, arrive - sc.flipDuration);
   }
 
   // 5. snap out the top
   const ex = config.exit;
-  const last = cards.length - 1;
   tl.to(cards, {
     yPercent: feedY(last) - ((config.cardTop + cardH) / cardH) * 100 - 10,
     duration: ex.duration, ease: ex.ease, stagger: ex.stagger
@@ -258,5 +268,6 @@ function init(root) {
 
   tl.set({}, {}, config.loop);
 
+  tl.timeScale(config.speed);
   watchThumb(root, { play: () => tl.play(), pause: () => tl.pause() });
 }
