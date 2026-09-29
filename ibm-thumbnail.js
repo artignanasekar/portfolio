@@ -16,6 +16,7 @@ import { watchThumb, prefersReducedMotion } from './thumbnail-player.js';
 gsap.registerPlugin(DrawSVGPlugin);
 
 const config = {
+  speed: 1.12, // playback rate for the whole loop (1.12 -> ~5.8s real time); times below are at 1x
   loop: 6.5, // seconds; the reset below must end by here
   blue: '#0F62FE', // IBM Blue 60
   black: '#000000',
@@ -33,26 +34,38 @@ const config = {
     opacity: 0.85,
     start: 0.6,
     thirdStagger: 0.15, // eye, then bee, then M
-    stagger: 0.06, // between guides of one element
+    stagger: 0.04, // between guides of one element (listed order)
     duration: 0.4,
     ease: 'power2.out',
     // axis h = horizontal line at y, v = vertical line at x (element-local)
     eye: [
       { axis: 'h', at: 0, from: 'left' }, // top of the brow
       { axis: 'v', at: 59.44, from: 'top' }, // through the pupil
+      { axis: 'h', at: 42.86, from: 'right' }, // underside of the brow (its ends)
+      { axis: 'h', at: 74, from: 'left' }, // through the eye corners
+      { axis: 'v', at: 25.72, from: 'bottom' }, // left edge of the iris
       { axis: 'h', at: 33.15, from: 'right' }, // top of the eye
+      { axis: 'v', at: 93.16, from: 'top' }, // right edge of the iris
       { axis: 'h', at: 114.85, from: 'left' } // bottom of the eye
     ],
     bee: [
       { axis: 'h', at: 0, from: 'right' }, // top of the antennae
       { axis: 'v', at: 90.51, from: 'bottom' }, // centre line
-      { axis: 'h', at: 27.43, from: 'left' }, // top of the body
-      { axis: 'h', at: 114.88, from: 'right' } // tip of the body
+      { axis: 'h', at: 22.86, from: 'left' }, // underside of the antennae
+      { axis: 'v', at: 66.3, from: 'top' }, // left side of the body
+      { axis: 'h', at: 27.43, from: 'right' }, // top of the body
+      { axis: 'v', at: 114.88, from: 'bottom' }, // right side of the body
+      { axis: 'h', at: 114.88, from: 'left' } // tip of the body
     ],
     m: [
       { axis: 'h', at: 0, from: 'right' }, // top edge
       { axis: 'v', at: 0, from: 'top' }, // left edge
+      { axis: 'v', at: 61.44, from: 'bottom' }, // centre, through the point of the V
       { axis: 'v', at: 122.88, from: 'bottom' }, // right edge
+      { axis: 'v', at: 14.86, from: 'top' }, // inner edges of the stems
+      { axis: 'v', at: 38.58, from: 'bottom' },
+      { axis: 'v', at: 84.02, from: 'top' },
+      { axis: 'v', at: 107.74, from: 'bottom' },
       { axis: 'h', at: 110.02, from: 'left' } // bottom edge
     ]
   },
@@ -290,6 +303,7 @@ function init(root) {
     .to(bg, { fill: config.blue, duration: re.bgDuration, ease: re.bgEase }, re.start);
 
   tl.set({}, {}, config.loop);
+  tl.timeScale(config.speed);
 
   watchThumb(root, { play: () => tl.play(), pause: () => tl.pause() });
 }
