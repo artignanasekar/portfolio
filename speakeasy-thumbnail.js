@@ -20,7 +20,7 @@ const config = {
 
   // lockup: SPEAKEASY + mic + taglines, centred in the frame
   lockupScale: 0.49, // Figma px -> thumbnail units (0.49 ~ 213 of 296 units tall)
-  taglineScale: 0.8, // taglines relative to Figma; they keep their edges on the cord and their baseline
+  taglineScale: 0.65, // taglines relative to Figma; they keep their edges on the cord and their baseline
 
   micDrop: { start: 0, duration: 0.7, ease: 'back.out(1.4)', swing: 0.8, swingEase: 'elastic.out(1, 0.45)' },
 
@@ -71,7 +71,7 @@ const config = {
   flip: { start: 4.6, duration: 0.5, angle: 180, ease: 'back.out(1.2)' }, // first card
   // one continuous scroll through cards 2-4 (no stops); each card's flip
   // finishes exactly as it reaches the top slot
-  scroll: { start: 4.9, duration: 1.6, ease: 'sine.inOut', flipDuration: 0.45, flipEase: 'power2.inOut' },
+  scroll: { start: 4.9, duration: 1.25, ease: 'sine.inOut', flipDuration: 0.45, flipEase: 'power2.inOut' },
 
   // leaves `delay` seconds after the last card finishes flipping
   exit: { delay: 0.1, duration: 0.35, stagger: 0.04, ease: 'power4.in' }
@@ -217,9 +217,15 @@ function init(root) {
   const tl = gsap.timeline({ paused: true, repeat: -1 });
   const slide = toLocal(config.lockIn.distance);
 
+  // rotation pivots are set once, while nothing is rotated. Setting svgOrigin
+  // on a rotated element makes GSAP add a compensating offset that never goes
+  // away (it was shifting the mic ~4 units left of the meter).
+  gsap.set(mic, { svgOrigin: `${MIC.cx} ${MIC.cordTop}` });
+  right.forEach((el, i) => gsap.set(pair(i), { svgOrigin: `${colX('right', i)} ${MIC.cy}` }));
+
   // start state (re-applied at every loop restart)
   const reset = () => {
-    gsap.set(mic, { y: -toLocal(FRAME_H) * 1.1, x: 0, rotation: config.micDrop.swing, svgOrigin: `${MIC.cx} ${MIC.cordTop}` });
+    gsap.set(mic, { y: -toLocal(FRAME_H) * 1.1, x: 0, rotation: config.micDrop.swing });
     gsap.set([...left, tagLeft], { x: -slide, y: 0, opacity: 1 });
     gsap.set([...right, tagRight], { x: slide, y: 0, opacity: 1, rotation: 0 });
     gsap.set(twins, { x: slide, y: 0, opacity: 0, rotation: 0 });
@@ -286,8 +292,7 @@ function init(root) {
     const tx = toLocal(TX), ty = toLocal(TY);
     const cardCx = toLocal(s.x + s.w / 2) - tx, cardCy = toLocal(s.y + s.h / 2) - ty;
     const at = tc.start + i * tc.stagger;
-    tl.set(pair(i), { svgOrigin: `${cx} ${cy}` }, tc.start)
-      .to(pair(i), {
+    tl.to(pair(i), {
         // upright rect of the card's size turned a quarter CCW = the card
         morphSVG: { shape: withHole(el, rectPath(cx, cy, toLocal(s.h), toLocal(s.w), toLocal(cardRadius)), cx, cy), shapeIndex: 0 },
         rotation: -90,
