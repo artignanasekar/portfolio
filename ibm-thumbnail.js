@@ -1,9 +1,9 @@
 /* IBM animated thumbnail: on IBM blue, two partitions split the card into
    thirds, dotted guides slide in and the eye, bee and M are drawn as white
-   blueprint outlines. The pieces pop in colour in a scattered order, the card
-   drops to black and the eye and M slide in and snap into place beside the
-   bee to form the Eye-Bee-M. One GSAP timeline drives every beat; tweak the
-   config below.
+   blueprint outlines. The partitions drop away and the colour snaps in behind
+   them top to bottom, the card drops to black and the eye and M slide in and
+   snap into place beside the bee to form the Eye-Bee-M. One GSAP timeline
+   drives every beat; tweak the config below.
 
    Units: everything is in the SVG's viewBox units, i.e. the Figma frame
    (571 wide), so it scales with the card. Guide positions are local to each
@@ -65,20 +65,17 @@ const config = {
   },
   // hold the finished blueprint until the fill starts (~0.3s)
 
-  // 3. colour fill: a fixed, scattered order so every loop looks the same
+  // 3. partitions drop out the bottom and the colour snaps in behind them:
+  // each piece switches on (no fade) the moment the partitions' top edge
+  // passes its centre, with a quick scale pop, so the fill sweeps top to bottom
+  partitionsOut: { start: 2.3, duration: 0.45, stagger: 0.05, ease: 'power2.in' },
   fill: {
-    start: 2.3,
-    duration: 0.08,
-    stagger: 0.025,
+    lag: 0, // seconds after the partitions pass before a piece snaps in
+    duration: 0.18, // scale pop
     fromScale: 0.85,
-    ease: 'back.out(2)',
-    order: [
-      'stripe-3', 'stripe-7', 'brow', 'body-2', 'stripe-1', 'iris', 'wing-l', 'stripe-5', 'antenna-r', 'white',
-      'stripe-8', 'body-4', 'pupil', 'stripe-2', 'wing-r', 'body-1', 'stripe-6', 'antenna-l', 'body-3', 'stripe-4'
-    ]
+    ease: 'back.out(3)'
   },
   guidesOut: { start: 2.3, duration: 0.2 },
-  partitionsOut: { start: 2.3, duration: 0.45, stagger: 0.05, ease: 'power2.in' },
 
   // 4. background blue -> black
   background: { start: 2.9, duration: 0.15, ease: 'none' },
@@ -145,9 +142,7 @@ function init(root) {
     };
   });
   const byName = Object.fromEntries(elements.map((e) => [e.name, e]));
-  const pieceName = (el) => el.getAttribute('class').replace('ibm-', '');
   const pieces = elements.flatMap((e) => e.pieces);
-  const piece = Object.fromEntries(pieces.map((p) => [pieceName(p), p]));
 
   // ---- layers: guides under partitions, both under the art ------------------
 
@@ -255,17 +250,27 @@ function init(root) {
     tl.fromTo(o, { drawSVG: `${pct}% ${pct}%` }, { drawSVG: '0% 100%', duration: ol.duration, ease: ol.ease }, t);
   });
 
-  // 3. colour fill, guides out, partitions drop out the bottom
-  const fi = config.fill;
-  fi.order.forEach((name, n) => {
-    const p = piece[name];
-    const t = fi.start + n * fi.stagger;
-    tl.to(p, { opacity: 1, scale: 1, duration: fi.duration, ease: fi.ease }, t)
-      .to(outlines.get(p), { opacity: 0, duration: fi.duration, ease: 'none' }, t);
-  });
-  tl.to(guideLayer, { opacity: 0, duration: config.guidesOut.duration, ease: 'none' }, config.guidesOut.start);
+  // 3. partitions drop out the bottom, guides fade, colour snaps in behind
   const po = config.partitionsOut;
   tl.to(partitions, { y: vb.height, duration: po.duration, ease: po.ease, stagger: po.stagger }, po.start);
+  tl.to(guideLayer, { opacity: 0, duration: config.guidesOut.duration, ease: 'none' }, config.guidesOut.start);
+
+  // when does the (eased) top edge of the first partition reach frame y?
+  const drop = gsap.parseEase(po.ease);
+  const passes = (y) => {
+    const target = (y - vb.y) / vb.height;
+    let lo = 0, hi = 1;
+    for (let j = 0; j < 30; j++) { const mid = (lo + hi) / 2; if (drop(mid) < target) lo = mid; else hi = mid; }
+    return po.start + lo * po.duration;
+  };
+  const fi = config.fill;
+  elements.forEach((e) => e.pieces.forEach((p) => {
+    const b = p.getBBox();
+    const t = passes(e.oy + b.y + b.height / 2) + fi.lag;
+    tl.set(p, { opacity: 1 }, t)
+      .to(p, { scale: 1, duration: fi.duration, ease: fi.ease }, t)
+      .set(outlines.get(p), { opacity: 0 }, t);
+  }));
 
   // 4. blue -> black
   const bgc = config.background;
