@@ -14,6 +14,7 @@
   :root {
     --paper: #fcfcfc;
     --ink: #7b7b7b;
+    --orange: #ff7800;
   }
 
   html, body {
@@ -37,206 +38,282 @@
     gap: 16px;
   }
 
-  /* the canvas is a tiny buffer blown up with hard pixel edges — that's
-     where the dithered look comes from */
+  /* the buffer is half the CSS size, blown up with hard edges: every
+     dither dot is a crisp 2px square */
   #hand-portal {
     width: min(92vw, 720px);
-    aspect-ratio: 240 / 132;
+    aspect-ratio: 720 / 396;
     image-rendering: pixelated;
     cursor: pointer;
+  }
+
+  .poses {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 4px 14px;
+    max-width: min(92vw, 720px);
+  }
+
+  .poses button {
+    font: inherit;
+    color: inherit;
+    background: none;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+  }
+
+  .poses button:hover,
+  .poses button[aria-pressed="true"] {
+    color: var(--orange);
   }
 </style>
 </head>
 <body>
   <div class="stage">
-    <canvas id="hand-portal" width="240" height="132"></canvas>
+    <canvas id="hand-portal" width="360" height="198"></canvas>
     <span>click to replay</span>
+    <div class="poses" id="poses"></div>
   </div>
 
-<script>
+<script type="module">
   const canvas = document.getElementById('hand-portal');
   const ctx = canvas.getContext('2d');
   const W = canvas.width;
   const H = canvas.height;
+  const DOT = 2;                  // CSS px per buffer px; sprites are in CSS px
   const img = ctx.createImageData(W, H);
   const px = img.data;
 
-  // palette
+  // ---- palette ----
   const PAPER = [252, 252, 252];
   const ORANGE = [255, 120, 0];
-  const EMBER = [150, 52, 0];     // the deep inside of the portal
-  const INK = [34, 30, 28];
-  const SKIN = [255, 244, 232];   // placeholder until the real hand photo
+  const EMBER = [176, 62, 0];
+  const DEEP = [92, 30, 4];
 
-  // 4x4 Bayer matrix, normalised to 0..1 thresholds
-  const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5].map((v) => (v + 0.5) / 16);
-  const bayer = (x, y) => BAYER[(y & 3) * 4 + (x & 3)];
+  // the hand and sleeve are dithered into these, so the photo reads warm
+  const WARM = [
+    [252, 238, 222],  // cream highlight
+    [228, 170, 124],  // peach
+    [204, 138, 96],   // light skin
+    [176, 106, 70],   // skin
+    [146, 84, 54],    // deep skin
+    [118, 62, 40],    // brown
+    [58, 26, 22],     // warm ink (the navy stripes land here)
+    [214, 56, 34],    // red
+    [142, 30, 22],    // deep red
+    [255, 120, 0],    // site orange, for the odd warm fleck
+  ];
 
-  // ---- geometry helpers (signed distance: < 0 inside) ----
+  // nearest-warm-colour lookup on a 32³ grid
+  const LUT = new Uint8Array(32 * 32 * 32);
+  for (let r = 0; r < 32; r++) for (let g = 0; g < 32; g++) for (let b = 0; b < 32; b++) {
+    const R = r * 8 + 4, G = g * 8 + 4, B = b * 8 + 4;
+    let best = 0, bestD = Infinity;
+    WARM.forEach(([pr, pg, pb], i) => {
+      const d = 2 * (R - pr) ** 2 + 4 * (G - pg) ** 2 + 3 * (B - pb) ** 2;
+      if (d < bestD) { bestD = d; best = i; }
+    });
+    LUT[(r << 10) | (g << 5) | b] = best;
+  }
+  const SPREAD = 46;              // how far the noise nudges a colour before snapping
+  const q = (v) => (v < 0 ? 0 : v > 255 ? 31 : v >> 3);
+
+  // ---- assets ----
+  const loadImage = (src) => new Promise((res, rej) => {
+    const im = new Image();
+    im.onload = () => res(im);
+    im.onerror = rej;
+    im.src = src;
+  });
+
+  function pixelsOf(im, w, h) {
+    const c = document.createElement('canvas');
+    c.width = w; c.height = h;
+    const cx = c.getContext('2d');
+    cx.imageSmoothingQuality = 'high';
+    cx.drawImage(im, 0, 0, w, h);
+    return cx.getImageData(0, 0, w, h).data;
+  }
+
+  const meta = await (await fetch('assets/hand/poses.json')).json();
+  const noise = pixelsOf(await loadImage('assets/hand/bluenoise.png'), 64, 64);
+  const NOISE = new Float32Array(64 * 64);
+  for (let i = 0; i < NOISE.length; i++) NOISE[i] = (noise[i * 4] + 0.5) / 256;
+  const blue = (x, y) => NOISE[((y & 63) << 6) | (x & 63)];
+
+  // each pose, resampled to buffer resolution; (ax, ay) is the cuff centre
+  const POSES = {};
+  await Promise.all(Object.entries(meta).map(async ([name, m]) => {
+    const im = await loadImage(`assets/hand/${name}.png`);
+    const w = Math.round(m.w / DOT), h = Math.round(m.h / DOT);
+    POSES[name] = { w, h, ax: m.cuffX / DOT, ay: m.cuffY / DOT, data: pixelsOf(im, w, h) };
+  }));
+
+  // bilinear sample, weighted by alpha so the cutout edge doesn't pick up black
+  const sample = [0, 0, 0, 0];
+  function samplePose(p, x, y) {
+    x -= 0.5; y -= 0.5;
+    const x0 = Math.floor(x), y0 = Math.floor(y);
+    const fx = x - x0, fy = y - y0;
+    sample[0] = sample[1] = sample[2] = sample[3] = 0;
+    for (let j = 0; j < 2; j++) for (let i = 0; i < 2; i++) {
+      const sx = x0 + i, sy = y0 + j;
+      if (sx < 0 || sy < 0 || sx >= p.w || sy >= p.h) continue;
+      const k = (sy * p.w + sx) * 4;
+      const a = p.data[k + 3] * (i ? fx : 1 - fx) * (j ? fy : 1 - fy);
+      sample[0] += p.data[k] * a;
+      sample[1] += p.data[k + 1] * a;
+      sample[2] += p.data[k + 2] * a;
+      sample[3] += a;
+    }
+    if (sample[3] > 0) {
+      sample[0] /= sample[3]; sample[1] /= sample[3]; sample[2] /= sample[3];
+    }
+    return sample;
+  }
+
+  // ---- motion helpers ----
   const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
   const lerp = (a, b, t) => a + (b - a) * t;
-
-  function sdCapsule(x, y, ax, ay, bx, by, r) {
-    const pax = x - ax, pay = y - ay, bax = bx - ax, bay = by - ay;
-    const h = clamp((pax * bax + pay * bay) / (bax * bax + bay * bay), 0, 1);
-    return Math.hypot(pax - bax * h, pay - bay * h) - r;
-  }
-
-  function sdRoundBox(x, y, cx, cy, hw, hh, r) {
-    const qx = Math.abs(x - cx) - hw + r;
-    const qy = Math.abs(y - cy) - hh + r;
-    return Math.hypot(Math.max(qx, 0), Math.max(qy, 0)) + Math.min(Math.max(qx, qy), 0) - r;
-  }
-
-  // ---- the portal ----
-  const PORTAL = { cx: 180, cy: 66 };
-  const OPEN = { rx: 13, ry: 50 };
-
-  // damped spring for the snap: overshoots, wobbles, settles
-  function spring(t, freq = 16, damp = 7) {
-    if (t <= 0) return 0;
-    return 1 - Math.exp(-damp * t) * Math.cos(freq * t);
-  }
-
   const easeInOut = (t) => t * t * (3 - 2 * t);
   const easeOutBack = (t) => {
-    const c = 1.9;
+    const c = 1.5;
     return 1 + (c + 1) * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2);
   };
+  // damped spring: 0 → 1 with overshoot and a wobble
+  const spring = (t, freq = 17, damp = 7.5) =>
+    (t <= 0 ? 0 : 1 - Math.exp(-damp * t) * Math.cos(freq * t));
+
+  // ---- scene (buffer px) ----
+  const PORTAL = { cx: 270, cy: 99 };
+  const OPEN = { rx: 19.5, ry: 75 };
+  const CUFF = { x: 200, y: 99 };         // where the cuff rests once out
+  const ELBOW = { x: 340, y: 99 };        // the swing pivot, hidden behind the portal
+  const OUT_BY = 150;                     // how far back the arm starts
 
   // timeline, in seconds
-  const T_APPEAR = 0.25;   // a dot shows up
-  const T_SQUEEZE = 2.3;   // slow growth ends, it gathers itself
-  const T_SNAP = 2.6;      // snaps open
-  const T_HAND = 2.72;     // hand comes out right after
-  const HAND_DUR = 0.75;
+  const T_APPEAR = 0.15;   // a dot shows up
+  const T_SQUEEZE = 1.45;  // slow growth ends, it gathers itself
+  const T_SNAP = 1.68;     // snaps open
+  const T_HAND = 1.78;     // hand comes out right after
+  const HAND_DUR = 0.7;
+  const T_IDLE = T_HAND + HAND_DUR;
 
   function portalShape(t) {
     if (t < T_APPEAR) return null;
     if (t < T_SQUEEZE) {
-      // slow, slightly lumpy growth — little circle to a small oval
+      // slow, slightly lumpy growth — a little circle to a small oval
       const k = easeInOut((t - T_APPEAR) / (T_SQUEEZE - T_APPEAR));
-      const breathe = Math.sin(t * 7) * 0.35 * k;
-      return { rx: lerp(1.2, 5.5, k) + breathe * 0.5, ry: lerp(1.2, 13, k) + breathe };
+      const breathe = Math.sin(t * 8) * 0.5 * k;
+      return { rx: lerp(1.5, 8, k) + breathe * 0.5, ry: lerp(1.5, 19, k) + breathe };
     }
     if (t < T_SNAP) {
       // a beat of tension: it pinches in before popping
       const k = easeInOut((t - T_SQUEEZE) / (T_SNAP - T_SQUEEZE));
-      const jitter = Math.sin(t * 90) * 0.3 * k;
-      return { rx: lerp(5.5, 4, k) + jitter, ry: lerp(13, 10.5, k) };
+      return { rx: lerp(8, 6, k) + Math.sin(t * 90) * 0.4 * k, ry: lerp(19, 15.5, k) };
     }
     const s = spring(t - T_SNAP);
-    return { rx: lerp(4, OPEN.rx, s), ry: lerp(10.5, OPEN.ry, s) };
+    return { rx: lerp(6, OPEN.rx, s), ry: lerp(15.5, OPEN.ry, s) };
   }
 
-  // ---- the hand (points left, thumb up) ----
-  // all coordinates are relative to the wrist; x grows toward the portal
-  const FINGERS = [
-    // [base y, length, splay] top to bottom: index, middle, ring, pinky
-    [-7.2, 13, -0.10],
-    [-2.4, 15, -0.03],
-    [2.4, 14, 0.04],
-    [7.0, 11, 0.12],
-  ];
-  const FINGER_R = 2.4;
-  const HAND_SCALE = 1.45;   // hand size in buffer pixels per shape unit
+  // ---- state ----
+  let start = performance.now();
+  let pinned = null;           // a pose picked from the list below
+  let kickAt = -Infinity;      // time of the last pose change, for a little bounce
 
-  function handShape(x, y) {
-    // returns { d, part } for the frontmost part under (x, y), or null
-    let hit = null;
-    const take = (d, part) => { if (d < 0) hit = { d, part }; };
+  const WAVE_EVERY = 4.5;
+  const WAVE_LEN = 1.5;
 
-    // sleeve runs from just behind the wrist back into the portal
-    take(sdRoundBox(x, y, 30, 0, 30.5, 11.8, 1.5), 'sleeve');
-    // palm
-    take(sdRoundBox(x, y, -9, 0.4, 9.5, 10.2, 4.5), 'skin');
-    // thumb, up and out
-    take(sdCapsule(x, y, -6, -7, -15.5, -16.5, 2.6), 'skin');
-    // fingers — drawn last so the lines between them read
-    for (const [by, len, splay] of FINGERS) {
-      const ax = -14;
-      take(sdCapsule(x, y, ax, by, ax - len * Math.cos(splay), by + len * Math.sin(splay), FINGER_R), 'skin');
+  function armPose(t) {
+    // → { pose, slide (0 = fully out), angle (radians, + swings the hand up) }
+    const e = t < T_HAND ? 0 : easeOutBack(clamp((t - T_HAND) / HAND_DUR, 0, 1));
+    let angle = 0;
+
+    // follow-through from the elbow as the arm arrives
+    if (t > T_HAND) {
+      const since = t - T_HAND;
+      angle += 0.09 * Math.exp(-4 * since) * Math.cos(9 * since);
     }
-    return hit;
+
+    let pose = pinned || 'open';
+    if (t > T_IDLE) {
+      const idle = t - T_IDLE;
+      angle += Math.sin(idle * 1.7) * 0.012;   // resting sway
+      const cycle = idle % WAVE_EVERY;
+      if (!pinned && cycle > WAVE_EVERY - WAVE_LEN) {
+        // an excited little wave, swinging from the elbow
+        const w = (cycle - (WAVE_EVERY - WAVE_LEN)) / WAVE_LEN;
+        const env = Math.sin(w * Math.PI);
+        pose = 'raised';
+        angle += Math.sin(w * Math.PI * 6) * 0.075 * env + 0.03 * env;
+      }
+    }
+
+    const kick = t - kickAt;
+    if (kick > 0 && kick < 1) angle += 0.05 * Math.exp(-6 * kick) * Math.sin(20 * kick);
+
+    return { pose: POSES[pose], slide: (1 - e) * OUT_BY, angle };
   }
 
   // ---- render ----
-  let start = performance.now();
-
   function frame(now) {
     const t = (now - start) / 1000;
     const shape = portalShape(t);
-
-    // hand placement: slides out of the portal, then idles with a wave
-    const e = t < T_HAND ? 0 : easeOutBack(clamp((t - T_HAND) / HAND_DUR, 0, 1));
-    const wristX = lerp(PORTAL.cx + 34 * HAND_SCALE, PORTAL.cx - 30 * HAND_SCALE, e);
-    const idle = t - (T_HAND + HAND_DUR);
-    let bob = 0, angle = 0;
-    if (idle > 0) {
-      bob = Math.sin(idle * 2.2) * 0.8;
-      // every 4s, an excited little wave
-      const cycle = idle % 4;
-      if (cycle > 2.6) {
-        const w = (cycle - 2.6) / 1.4;
-        angle = Math.sin(w * Math.PI * 4) * 0.28 * Math.sin(w * Math.PI);
-      }
-    }
-    const wristY = PORTAL.cy + bob;
-    const cosA = Math.cos(angle), sinA = Math.sin(angle);
-
-    const shimmer = Math.floor(t * 10);
+    const arm = armPose(t);
+    const p = arm.pose;
+    const cosA = Math.cos(arm.angle), sinA = Math.sin(arm.angle);
+    const drift = Math.floor(t * 12);  // slow crawl through the portal's noise
+    const handOn = t > T_HAND;
+    const ramp = [ORANGE, EMBER, DEEP];
 
     for (let y = 0; y < H; y++) {
       for (let x = 0; x < W; x++) {
-        let col = PAPER;
-        const th = bayer(x, y);
+        let r = PAPER[0], g = PAPER[1], b = PAPER[2];
+        const n = blue(x, y);
 
         // portal
         if (shape) {
           const nx = (x + 0.5 - PORTAL.cx) / shape.rx;
           const ny = (y + 0.5 - PORTAL.cy) / shape.ry;
-          const r = Math.hypot(nx, ny);
-          const d = (r - 1) * Math.min(shape.rx, shape.ry);
+          const rad = Math.hypot(nx, ny);
+          const d = (rad - 1) * Math.min(shape.rx, shape.ry);
+          let col = null;
           if (d < 0) {
-            if (d > -1.3) col = ORANGE;
-            else {
-              // deeper toward the centre, with a slow crawl through the dither
-              const depth = clamp(1 - r, 0, 1) * 0.9;
-              const crawl = BAYER[((y + shimmer) & 3) * 4 + ((x + (shimmer >> 1)) & 3)];
-              col = crawl < depth ? EMBER : ORANGE;
-            }
-          } else if (d < 4 && shape.rx > 5) {
+            // orange at the lip, falling through ember to deep in the middle
+            const depth = d > -1.5 ? 0 : clamp((1 - rad) * 1.9, 0, 1.999);
+            const lo = Math.floor(depth);
+            col = blue(x + drift, y + drift * 2) < depth - lo ? ramp[lo + 1] : ramp[lo];
+          } else if (shape.rx > 7) {
             // dithered glow fading out around the rim
-            if (th < 0.28 * (1 - d / 4)) col = ORANGE;
+            const fall = 1 - d / 9;
+            if (fall > 0 && n < 0.42 * fall * fall) col = ORANGE;
           }
+          if (col) { r = col[0]; g = col[1]; b = col[2]; }
         }
 
-        // hand — only in front of the portal plane
-        if (x < PORTAL.cx && e > 0) {
-          // into wrist space, undoing the wave rotation
-          const lx0 = x + 0.5 - wristX, ly0 = y + 0.5 - wristY;
-          const lx = (lx0 * cosA + ly0 * sinA) / HAND_SCALE;
-          const ly = (-lx0 * sinA + ly0 * cosA) / HAND_SCALE;
-          const hit = handShape(lx, ly);
-          if (hit) {
-            if (hit.d * HAND_SCALE > -1.1) col = INK;
-            else if (hit.part === 'sleeve') {
-              // cream sleeve with hatched stripes, shaded as it nears the portal
-              const band = ((lx % 13) + 13) % 13;
-              const stripe = band > 4 && band < 9.5;
-              const hatch = (x + y) % 3 === 0;
-              const shadow = clamp((x - (PORTAL.cx - 12)) / 12, 0, 1);
-              if (stripe && hatch) col = INK;
-              else if (th < shadow * 0.8) col = INK;
-              else col = SKIN;
-            } else {
-              col = SKIN;
+        // the arm — only in front of the portal plane
+        if (handOn && x < PORTAL.cx) {
+          // undo the elbow swing, then the slide, to land in sprite space
+          const wx = x + 0.5 - ELBOW.x, wy = y + 0.5 - ELBOW.y;
+          const sx = wx * cosA + wy * sinA + ELBOW.x - arm.slide - CUFF.x + p.ax;
+          const sy = -wx * sinA + wy * cosA + ELBOW.y - CUFF.y + p.ay;
+          if (sx > -1 && sy > -1 && sx < p.w + 1 && sy < p.h + 1) {
+            const s = samplePose(p, sx, sy);
+            // a thin dithered band at the cutout edge, crisp enough for fingers
+            if (s[3] > 255 * (0.3 + 0.4 * blue(x + 17, y + 29))) {
+              // darken the sleeve as it disappears into the portal
+              const lit = 1 - clamp((x - (PORTAL.cx - 14)) / 14, 0, 1) * 0.6;
+              const nudge = (n - 0.5) * SPREAD;
+              const k = LUT[(q(s[0] * lit + nudge) << 10) | (q(s[1] * lit + nudge) << 5) | q(s[2] * lit + nudge)];
+              r = WARM[k][0]; g = WARM[k][1]; b = WARM[k][2];
             }
           }
         }
 
         const i = (y * W + x) * 4;
-        px[i] = col[0]; px[i + 1] = col[1]; px[i + 2] = col[2]; px[i + 3] = 255;
+        px[i] = r; px[i + 1] = g; px[i + 2] = b; px[i + 3] = 255;
       }
     }
 
@@ -245,6 +322,21 @@
   }
 
   canvas.addEventListener('click', () => { start = performance.now(); });
+
+  // pose picker, for trying the cutouts
+  const list = document.getElementById('poses');
+  for (const name of ['open', ...Object.keys(POSES).filter((n) => n !== 'open')]) {
+    const btn = document.createElement('button');
+    btn.textContent = name;
+    btn.setAttribute('aria-pressed', 'false');
+    btn.addEventListener('click', () => {
+      pinned = pinned === name ? null : name;
+      kickAt = (performance.now() - start) / 1000;
+      for (const other of list.children) other.setAttribute('aria-pressed', String(other.textContent === pinned));
+    });
+    list.append(btn);
+  }
+
   requestAnimationFrame(frame);
 </script>
 </body>

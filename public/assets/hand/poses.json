@@ -1,0 +1,79 @@
+{
+  "fistbump": {
+    "w": 403,
+    "h": 158,
+    "cuffX": 106,
+    "cuffY": 69.0,
+    "leveled": 1.66
+  },
+  "jelly1": {
+    "w": 431,
+    "h": 231,
+    "cuffX": 114,
+    "cuffY": 147.0,
+    "leveled": 5.37
+  },
+  "jelly2": {
+    "w": 455,
+    "h": 211,
+    "cuffX": 135,
+    "cuffY": 126.5,
+    "leveled": 5.74
+  },
+  "jelly3": {
+    "w": 460,
+    "h": 180,
+    "cuffX": 140,
+    "cuffY": 96.5,
+    "leveled": 5.44
+  },
+  "jelly4": {
+    "w": 441,
+    "h": 187,
+    "cuffX": 123,
+    "cuffY": 102.0,
+    "leveled": 5.29
+  },
+  "open": {
+    "w": 428,
+    "h": 188,
+    "cuffX": 141,
+    "cuffY": 108.0,
+    "leveled": 9.48
+  },
+  "paper": {
+    "w": 482,
+    "h": 196,
+    "cuffX": 157,
+    "cuffY": 114.5,
+    "leveled": 3.7
+  },
+  "raised": {
+    "w": 461,
+    "h": 219,
+    "cuffX": 153,
+    "cuffY": 138.5,
+    "leveled": -3.29
+  },
+  "rock": {
+    "w": 427,
+    "h": 161,
+    "cuffX": 103,
+    "cuffY": 80.5,
+    "leveled": 4.34
+  },
+  "scissors": {
+    "w": 482,
+    "h": 151,
+    "cuffX": 155,
+    "cuffY": 70.0,
+    "leveled": 3.17
+  },
+  "spread": {
+    "w": 452,
+    "h": 187,
+    "cuffX": 160,
+    "cuffY": 104.0,
+    "leveled": 3.61
+  }
+}
