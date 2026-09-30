@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Hand Portal</title>
+<style>
+  @font-face {
+    font-family: 'CommitMono';
+    src: url('fonts/CommitMono-VF.woff2') format('woff2');
+    font-weight: 100 900;
+  }
+
+  :root {
+    --paper: #fcfcfc;
+    --ink: #7b7b7b;
+  }
+
+  html, body {
+    margin: 0;
+    height: 100%;
+    background: var(--paper);
+  }
+
+  body {
+    display: grid;
+    place-items: center;
+    font-family: 'CommitMono', monospace;
+    font-size: 12px;
+    color: var(--ink);
+  }
+
+  .stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+
+  /* the canvas is a tiny buffer blown up with hard pixel edges — that's
+     where the dithered look comes from */
+  #hand-portal {
+    width: min(92vw, 720px);
+    aspect-ratio: 240 / 132;
+    image-rendering: pixelated;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+  <div class="stage">
+    <canvas id="hand-portal" width="240" height="132"></canvas>
+    <span>click to replay</span>
+  </div>
+
+<script>
+  const canvas = document.getElementById('hand-portal');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width;
+  const H = canvas.height;
+  const img = ctx.createImageData(W, H);
+  const px = img.data;
+
+  // palette
+  const PAPER = [252, 252, 252];
+  const ORANGE = [255, 120, 0];
+  const EMBER = [150, 52, 0];     // the deep inside of the portal
+  const INK = [34, 30, 28];
+  const SKIN = [255, 244, 232];   // placeholder until the real hand photo
+
+  // 4x4 Bayer matrix, normalised to 0..1 thresholds
+  const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5].map((v) => (v + 0.5) / 16);
+  const bayer = (x, y) => BAYER[(y & 3) * 4 + (x & 3)];
+
+  // ---- geometry helpers (signed distance: < 0 inside) ----
+  const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+  const lerp = (a, b, t) => a + (b - a) * t;
+
+  function sdCapsule(x, y, ax, ay, bx, by, r) {
+    const pax = x - ax, pay = y - ay, bax = bx - ax, bay = by - ay;
+    const h = clamp((pax * bax + pay * bay) / (bax * bax + bay * bay), 0, 1);
+    return Math.hypot(pax - bax * h, pay - bay * h) - r;
+  }
+
+  function sdRoundBox(x, y, cx, cy, hw, hh, r) {
+    const qx = Math.abs(x - cx) - hw + r;
+    const qy = Math.abs(y - cy) - hh + r;
+    return Math.hypot(Math.max(qx, 0), Math.max(qy, 0)) + Math.min(Math.max(qx, qy), 0) - r;
+  }
+
+  // ---- the portal ----
+  const PORTAL = { cx: 180, cy: 66 };
+  const OPEN = { rx: 13, ry: 50 };
+
+  // damped spring for the snap: overshoots, wobbles, settles
+  function spring(t, freq = 16, damp = 7) {
+    if (t <= 0) return 0;
+    return 1 - Math.exp(-damp * t) * Math.cos(freq * t);
+  }
+
+  const easeInOut = (t) => t * t * (3 - 2 * t);
+  const easeOutBack = (t) => {
+    const c = 1.9;
+    return 1 + (c + 1) * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2);
+  };
+
+  // timeline, in seconds
+  const T_APPEAR = 0.25;   // a dot shows up
+  const T_SQUEEZE = 2.3;   // slow growth ends, it gathers itself
+  const T_SNAP = 2.6;      // snaps open
+  const T_HAND = 2.72;     // hand comes out right after
+  const HAND_DUR = 0.75;
+
+  function portalShape(t) {
+    if (t < T_APPEAR) return null;
+    if (t < T_SQUEEZE) {
+      // slow, slightly lumpy growth — little circle to a small oval
+      const k = easeInOut((t - T_APPEAR) / (T_SQUEEZE - T_APPEAR));
+      const breathe = Math.sin(t * 7) * 0.35 * k;
+      return { rx: lerp(1.2, 5.5, k) + breathe * 0.5, ry: lerp(1.2, 13, k) + breathe };
+    }
+    if (t < T_SNAP) {
+      // a beat of tension: it pinches in before popping
+      const k = easeInOut((t - T_SQUEEZE) / (T_SNAP - T_SQUEEZE));
+      const jitter = Math.sin(t * 90) * 0.3 * k;
+      return { rx: lerp(5.5, 4, k) + jitter, ry: lerp(13, 10.5, k) };
+    }
+    const s = spring(t - T_SNAP);
+    return { rx: lerp(4, OPEN.rx, s), ry: lerp(10.5, OPEN.ry, s) };
+  }
+
+  // ---- the hand (points left, thumb up) ----
+  // all coordinates are relative to the wrist; x grows toward the portal
+  const FINGERS = [
+    // [base y, length, splay] top to bottom: index, middle, ring, pinky
+    [-7.2, 13, -0.10],
+    [-2.4, 15, -0.03],
+    [2.4, 14, 0.04],
+    [7.0, 11, 0.12],
+  ];
+  const FINGER_R = 2.4;
+  const HAND_SCALE = 1.45;   // hand size in buffer pixels per shape unit
+
+  function handShape(x, y) {
+    // returns { d, part } for the frontmost part under (x, y), or null
+    let hit = null;
+    const take = (d, part) => { if (d < 0) hit = { d, part }; };
+
+    // sleeve runs from just behind the wrist back into the portal
+    take(sdRoundBox(x, y, 30, 0, 30.5, 11.8, 1.5), 'sleeve');
+    // palm
+    take(sdRoundBox(x, y, -9, 0.4, 9.5, 10.2, 4.5), 'skin');
+    // thumb, up and out
+    take(sdCapsule(x, y, -6, -7, -15.5, -16.5, 2.6), 'skin');
+    // fingers — drawn last so the lines between them read
+    for (const [by, len, splay] of FINGERS) {
+      const ax = -14;
+      take(sdCapsule(x, y, ax, by, ax - len * Math.cos(splay), by + len * Math.sin(splay), FINGER_R), 'skin');
+    }
+    return hit;
+  }
+
+  // ---- render ----
+  let start = performance.now();
+
+  function frame(now) {
+    const t = (now - start) / 1000;
+    const shape = portalShape(t);
+
+    // hand placement: slides out of the portal, then idles with a wave
+    const e = t < T_HAND ? 0 : easeOutBack(clamp((t - T_HAND) / HAND_DUR, 0, 1));
+    const wristX = lerp(PORTAL.cx + 34 * HAND_SCALE, PORTAL.cx - 30 * HAND_SCALE, e);
+    const idle = t - (T_HAND + HAND_DUR);
+    let bob = 0, angle = 0;
+    if (idle > 0) {
+      bob = Math.sin(idle * 2.2) * 0.8;
+      // every 4s, an excited little wave
+      const cycle = idle % 4;
+      if (cycle > 2.6) {
+        const w = (cycle - 2.6) / 1.4;
+        angle = Math.sin(w * Math.PI * 4) * 0.28 * Math.sin(w * Math.PI);
+      }
+    }
+    const wristY = PORTAL.cy + bob;
+    const cosA = Math.cos(angle), sinA = Math.sin(angle);
+
+    const shimmer = Math.floor(t * 10);
+
+    for (let y = 0; y < H; y++) {
+      for (let x = 0; x < W; x++) {
+        let col = PAPER;
+        const th = bayer(x, y);
+
+        // portal
+        if (shape) {
+          const nx = (x + 0.5 - PORTAL.cx) / shape.rx;
+          const ny = (y + 0.5 - PORTAL.cy) / shape.ry;
+          const r = Math.hypot(nx, ny);
+          const d = (r - 1) * Math.min(shape.rx, shape.ry);
+          if (d < 0) {
+            if (d > -1.3) col = ORANGE;
+            else {
+              // deeper toward the centre, with a slow crawl through the dither
+              const depth = clamp(1 - r, 0, 1) * 0.9;
+              const crawl = BAYER[((y + shimmer) & 3) * 4 + ((x + (shimmer >> 1)) & 3)];
+              col = crawl < depth ? EMBER : ORANGE;
+            }
+          } else if (d < 4 && shape.rx > 5) {
+            // dithered glow fading out around the rim
+            if (th < 0.28 * (1 - d / 4)) col = ORANGE;
+          }
+        }
+
+        // hand — only in front of the portal plane
+        if (x < PORTAL.cx && e > 0) {
+          // into wrist space, undoing the wave rotation
+          const lx0 = x + 0.5 - wristX, ly0 = y + 0.5 - wristY;
+          const lx = (lx0 * cosA + ly0 * sinA) / HAND_SCALE;
+          const ly = (-lx0 * sinA + ly0 * cosA) / HAND_SCALE;
+          const hit = handShape(lx, ly);
+          if (hit) {
+            if (hit.d * HAND_SCALE > -1.1) col = INK;
+            else if (hit.part === 'sleeve') {
+              // cream sleeve with hatched stripes, shaded as it nears the portal
+              const band = ((lx % 13) + 13) % 13;
+              const stripe = band > 4 && band < 9.5;
+              const hatch = (x + y) % 3 === 0;
+              const shadow = clamp((x - (PORTAL.cx - 12)) / 12, 0, 1);
+              if (stripe && hatch) col = INK;
+              else if (th < shadow * 0.8) col = INK;
+              else col = SKIN;
+            } else {
+              col = SKIN;
+            }
+          }
+        }
+
+        const i = (y * W + x) * 4;
+        px[i] = col[0]; px[i + 1] = col[1]; px[i + 2] = col[2]; px[i + 3] = 255;
+      }
+    }
+
+    ctx.putImageData(img, 0, 0);
+    requestAnimationFrame(frame);
+  }
+
+  canvas.addEventListener('click', () => { start = performance.now(); });
+  requestAnimationFrame(frame);
+</script>
+</body>
+</html>
