@@ -14,6 +14,8 @@
   :root {
     --paper: #fcfcfc;
     --ink: #7b7b7b;
+    --faint: #c4c4c4;
+    --dark: #2a2a2a;
     --orange: #ff7800;
   }
 
@@ -35,27 +37,160 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 16px;
+    gap: 14px;
+  }
+
+  .frame {
+    position: relative;
+    width: min(92vw, 720px);
+    aspect-ratio: 720 / 396;
   }
 
   /* the buffer is half the CSS size, blown up with hard edges: every
      dither dot is a crisp 2px square */
   #hand-portal {
-    width: min(92vw, 720px);
-    aspect-ratio: 720 / 396;
+    display: block;
+    width: 100%;
+    height: 100%;
     image-rendering: pixelated;
-    cursor: pointer;
   }
 
-  .poses {
+  #hand-portal.fist-cursor {
+    cursor: none;
+  }
+
+  /* ---- rock, paper, scissors overlay ---- */
+  .score,
+  .call {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    text-align: center;
+    pointer-events: none;
+  }
+
+  .score {
+    top: 2%;
+    font-size: 14px;
+    color: var(--dark);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .score small {
+    display: block;
+    margin-top: 2px;
+    font-size: 10px;
+    color: var(--faint);
+  }
+
+  .call {
+    top: 13%;
+    font-size: 22px;
+    color: var(--dark);
+  }
+
+  .call.pop {
+    animation: pop 0.35s cubic-bezier(0.34, 1.8, 0.64, 1);
+  }
+
+  .call.shoot {
+    color: var(--orange);
+  }
+
+  .call button {
+    font: inherit;
+    font-size: 12px;
+    color: var(--orange);
+    background: none;
+    border: 0;
+    padding: 0;
+    margin-top: 6px;
+    cursor: pointer;
+    pointer-events: auto;
+  }
+
+  .choices {
+    position: absolute;
+    left: 7%;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .choices button {
+    position: relative;
+    font-size: 34px;
+    line-height: 1;
+    width: 64px;
+    height: 56px;
+    background: none;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+    transform: scale(0);
+    opacity: 0;
+    transition: transform 0.35s cubic-bezier(0.34, 1.8, 0.64, 1), opacity 0.2s, filter 0.2s;
+  }
+
+  .choices.shown button {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  .choices.shown button:nth-child(2) { transition-delay: 0.07s; }
+  .choices.shown button:nth-child(3) { transition-delay: 0.14s; }
+
+  .choices.shown button:hover {
+    transform: scale(1.12);
+    transition-delay: 0s;
+  }
+
+  /* the pick gets orange brackets, like the score */
+  .choices button::before,
+  .choices button::after {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    font-family: 'CommitMono', monospace;
+    font-size: 30px;
+    color: var(--orange);
+    opacity: 0;
+  }
+
+  .choices button::before { content: '['; left: -8px; }
+  .choices button::after { content: ']'; right: -8px; }
+
+  .choices button[aria-pressed="true"]::before,
+  .choices button[aria-pressed="true"]::after {
+    opacity: 1;
+  }
+
+  .choices.locked button {
+    cursor: default;
+  }
+
+  .choices.locked button[aria-pressed="false"] {
+    filter: grayscale(1);
+    opacity: 0.3;
+  }
+
+  /* ---- modes ---- */
+  .status {
+    min-height: 1em;
+  }
+
+  .modes {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 4px 14px;
-    max-width: min(92vw, 720px);
+    gap: 6px 22px;
   }
 
-  .poses button {
+  .modes button {
     font: inherit;
     color: inherit;
     background: none;
@@ -64,17 +199,41 @@
     cursor: pointer;
   }
 
-  .poses button:hover,
-  .poses button[aria-pressed="true"] {
+  .modes button:hover,
+  .modes button[aria-pressed="true"] {
     color: var(--orange);
+  }
+
+  .modes button:disabled {
+    color: var(--faint);
+    cursor: not-allowed;
+  }
+
+  @keyframes pop {
+    from { transform: translateX(-50%) scale(0.4); }
+    to { transform: translateX(-50%) scale(1); }
   }
 </style>
 </head>
 <body>
   <div class="stage">
-    <canvas id="hand-portal" width="360" height="198"></canvas>
-    <span>click to replay</span>
-    <div class="poses" id="poses"></div>
+    <div class="frame">
+      <canvas id="hand-portal" width="360" height="198"></canvas>
+      <div class="score" id="score">[0/0]<small>you / arti</small></div>
+      <div class="call" id="call"></div>
+      <div class="choices" id="choices">
+        <button data-pick="rock" aria-pressed="false" aria-label="rock">🪨</button>
+        <button data-pick="paper" aria-pressed="false" aria-label="paper">🗒️</button>
+        <button data-pick="scissors" aria-pressed="false" aria-label="scissors">✂️</button>
+      </div>
+    </div>
+    <span class="status" id="status"></span>
+    <div class="modes" id="modes">
+      <button data-mode="highfive" disabled title="coming soon">high five</button>
+      <button data-mode="fist" aria-pressed="false">fist bump</button>
+      <button data-mode="rps" aria-pressed="false">rock, paper, scissors</button>
+      <button data-mode="thumbwar" disabled title="coming soon">thumbwar</button>
+    </div>
   </div>
 
 <script type="module">
@@ -88,6 +247,7 @@
 
   // ---- palette ----
   const PAPER = [252, 252, 252];
+  const WHITE = [255, 255, 255];
   const ORANGE = [255, 120, 0];
   const EMBER = [176, 62, 0];
   const DEEP = [92, 30, 4];
@@ -128,12 +288,12 @@
     im.src = src;
   });
 
-  function pixelsOf(im, w, h) {
+  function pixelsOf(im, w, h, draw) {
     const c = document.createElement('canvas');
     c.width = w; c.height = h;
     const cx = c.getContext('2d');
     cx.imageSmoothingQuality = 'high';
-    cx.drawImage(im, 0, 0, w, h);
+    if (draw) draw(cx); else cx.drawImage(im, 0, 0, w, h);
     return cx.getImageData(0, 0, w, h).data;
   }
 
@@ -143,12 +303,22 @@
   for (let i = 0; i < NOISE.length; i++) NOISE[i] = (noise[i * 4] + 0.5) / 256;
   const blue = (x, y) => NOISE[((y & 63) << 6) | (x & 63)];
 
-  // each pose, resampled to buffer resolution; (ax, ay) is the cuff centre
+  // each pose, resampled to buffer resolution; (ax, ay) is the cuff centre and
+  // `left` holds, per row, the frontmost pixel of the hand (for the fist bump)
+  const IMAGES = {};
   const POSES = {};
   await Promise.all(Object.entries(meta).map(async ([name, m]) => {
-    const im = await loadImage(`assets/hand/${name}.png`);
+    const im = IMAGES[name] = await loadImage(`assets/hand/${name}.png`);
     const w = Math.round(m.w / DOT), h = Math.round(m.h / DOT);
-    POSES[name] = { w, h, ax: m.cuffX / DOT, ay: m.cuffY / DOT, data: pixelsOf(im, w, h) };
+    const data = pixelsOf(im, w, h);
+    const ax = m.cuffX / DOT, ay = m.cuffY / DOT;
+    const left = new Float32Array(h).fill(Infinity);
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < ax - 2; x++) {
+        if (data[(y * w + x) * 4 + 3] >= 128) { left[y] = x; break; }
+      }
+    }
+    POSES[name] = { w, h, ax, ay, data, left };
   }));
 
   // bilinear sample, weighted by alpha so the cutout edge doesn't pick up black
@@ -174,32 +344,97 @@
     return sample;
   }
 
+  // the visitor's cursor in fist bump mode: my fist photo turned around to
+  // face mine, as a little orange-and-white pixel fist
+  const CURSOR = (() => {
+    const m = meta.fistbump;
+    const cropW = m.cuffX - 4;          // just the fist, no sleeve
+    const s = 0.72 / DOT;
+    const w = Math.round(cropW * s), h = Math.round(m.h * s);
+    const data = pixelsOf(IMAGES.fistbump, w, h, (cx) => {
+      cx.translate(w, 0);
+      cx.scale(-1, 1);                   // flip back so it points right
+      cx.drawImage(IMAGES.fistbump, 0, 0, cropW, m.h, 0, 0, w, h);
+    });
+    const solid = (x, y) => x >= 0 && y >= 0 && x < w && y < h && data[(y * w + x) * 4 + 3] > 128;
+    let lo = 255, hi = 0, front = 0, y0 = h, y1 = 0;
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      if (!solid(x, y)) continue;
+      const k = (y * w + x) * 4;
+      const lum = data[k] * 0.3 + data[k + 1] * 0.59 + data[k + 2] * 0.11;
+      lo = Math.min(lo, lum); hi = Math.max(hi, lum);
+      front = Math.max(front, x);
+      y0 = Math.min(y0, y); y1 = Math.max(y1, y);
+    }
+    // 0 = clear, 1 = orange, 2 = white, 3 = ember outline
+    const idx = new Uint8Array(w * h);
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      if (!solid(x, y)) continue;
+      // the cut wrist dissolves instead of ending in a hard line
+      if (x < w * 0.3 && blue(x + 7, y + 3) > x / (w * 0.3)) continue;
+      const edge = !solid(x - 1, y) || !solid(x + 1, y) || !solid(x, y - 1) || !solid(x, y + 1);
+      const k = (y * w + x) * 4;
+      const t = ((data[k] * 0.3 + data[k + 1] * 0.59 + data[k + 2] * 0.11) - lo) / (hi - lo);
+      idx[y * w + x] = edge ? 3 : blue(x, y) > (t - 0.4) * 1.7 ? 1 : 2;   // mostly orange, white highlights
+    }
+    // per row, the rightmost pixel: where it meets my knuckles
+    const right = new Float32Array(h).fill(-Infinity);
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (idx[y * w + x]) right[y] = x;
+    return { w, h, idx, right, fx: front, fy: (y0 + y1) / 2 };
+  })();
+
   // ---- motion helpers ----
   const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
   const lerp = (a, b, t) => a + (b - a) * t;
   const easeInOut = (t) => t * t * (3 - 2 * t);
-  const easeOutBack = (t) => {
-    const c = 1.5;
-    return 1 + (c + 1) * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2);
-  };
+  const easeIn = (t) => t * t * t;
+  const linear = (t) => t;
+  const back = (c) => (t) => 1 + (c + 1) * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2);
+  const easeOutBack = back(1.5);
+  const snapBack = back(2.6);
   // damped spring: 0 → 1 with overshoot and a wobble
   const spring = (t, freq = 17, damp = 7.5) =>
     (t <= 0 ? 0 : 1 - Math.exp(-damp * t) * Math.cos(freq * t));
+
+  const now = () => performance.now() / 1000;
+
+  // a value that eases from wherever it is to a target
+  function tween(v) {
+    return { from: v, to: v, t0: 0, dur: 0, ease: linear };
+  }
+  function valueOf(tw, t) {
+    if (t >= tw.t0 + tw.dur) return tw.to;
+    if (t <= tw.t0) return tw.from;
+    return lerp(tw.from, tw.to, tw.ease((t - tw.t0) / tw.dur));
+  }
+  function go(tw, to, dur, ease = easeInOut) {
+    const t = now();
+    tw.from = valueOf(tw, t);
+    tw.to = to; tw.t0 = t; tw.dur = dur; tw.ease = ease;
+  }
+  const settled = (tw, t) => t >= tw.t0 + tw.dur;
+
+  // steps that belong to a mode; switching modes cancels whatever's pending
+  let token = 0;
+  function after(sec, fn) {
+    const mine = token;
+    setTimeout(() => { if (mine === token) fn(); }, sec * 1000);
+  }
 
   // ---- scene (buffer px) ----
   const PORTAL = { cx: 270, cy: 99 };
   const OPEN = { rx: 19.5, ry: 75 };
   const CUFF = { x: 200, y: 99 };         // where the cuff rests once out
   const ELBOW = { x: 340, y: 99 };        // the swing pivot, hidden behind the portal
-  const OUT_BY = 150;                     // how far back the arm starts
+  const OUT_BY = 150;                     // how far back the arm sits when hidden
+  const RPS_SHIFT = 38;                   // scene slides right to make room for the picks
 
-  // timeline, in seconds
+  // intro timeline, in seconds
   const T_APPEAR = 0.15;   // a dot shows up
   const T_SQUEEZE = 1.45;  // slow growth ends, it gathers itself
   const T_SNAP = 1.68;     // snaps open
   const T_HAND = 1.78;     // hand comes out right after
   const HAND_DUR = 0.7;
-  const T_IDLE = T_HAND + HAND_DUR;
 
   function portalShape(t) {
     if (t < T_APPEAR) return null;
@@ -219,54 +454,105 @@
   }
 
   // ---- state ----
-  let start = performance.now();
-  let pinned = null;           // a pose picked from the list below
-  let kickAt = -Infinity;      // time of the last pose change, for a little bounce
+  let mode = 'idle';            // idle | fist | rps
+  let introAt = now();
+  let idleSince = introAt + T_HAND + HAND_DUR;
+  const ext = tween(0);         // 0 = hidden in the portal, 1 = all the way out
+  const shift = tween(0);
+  let pose = 'open';
+  let jellyAt = null;           // set while the jellyfish loop plays
+  const kicks = [];             // angle impulses from the elbow
+  const gulps = [];             // portal wobbles
+  let spark = null;
 
-  const WAVE_EVERY = 4.5;
-  const WAVE_LEN = 1.5;
+  const kick = (amp) => kicks.push({ t0: now(), amp });
+  const gulp = (amp) => gulps.push({ t0: now(), amp });
 
-  function armPose(t) {
-    // → { pose, slide (0 = fully out), angle (radians, + swings the hand up) }
-    const e = t < T_HAND ? 0 : easeOutBack(clamp((t - T_HAND) / HAND_DUR, 0, 1));
-    let angle = 0;
-
-    // follow-through from the elbow as the arm arrives
-    if (t > T_HAND) {
-      const since = t - T_HAND;
-      angle += 0.09 * Math.exp(-4 * since) * Math.cos(9 * since);
-    }
-
-    let pose = pinned || 'open';
-    if (t > T_IDLE) {
-      const idle = t - T_IDLE;
-      angle += Math.sin(idle * 1.7) * 0.012;   // resting sway
-      const cycle = idle % WAVE_EVERY;
-      if (!pinned && cycle > WAVE_EVERY - WAVE_LEN) {
-        // an excited little wave, swinging from the elbow
-        const w = (cycle - (WAVE_EVERY - WAVE_LEN)) / WAVE_LEN;
-        const env = Math.sin(w * Math.PI);
-        pose = 'raised';
-        angle += Math.sin(w * Math.PI * 6) * 0.075 * env + 0.03 * env;
-      }
-    }
-
-    const kick = t - kickAt;
-    if (kick > 0 && kick < 1) angle += 0.05 * Math.exp(-6 * kick) * Math.sin(20 * kick);
-
-    return { pose: POSES[pose], slide: (1 - e) * OUT_BY, angle };
+  function wave(t) {
+    // every few seconds while idle: a stop-motion wave. Time is held on 12fps
+    // steps, and the photo follows the swing: open → spread → raised.
+    const WAVE_EVERY = 4.5, WAVE_LEN = 1.6;
+    const cycle = (t - idleSince) % WAVE_EVERY;
+    if (t < idleSince || cycle < WAVE_EVERY - WAVE_LEN) return null;
+    const w = Math.floor(((cycle - (WAVE_EVERY - WAVE_LEN)) / WAVE_LEN) * WAVE_LEN * 12) / (WAVE_LEN * 12);
+    const lift = Math.sin(w * Math.PI) * (0.5 + 0.5 * Math.sin(w * Math.PI * 6 - Math.PI / 2));
+    return {
+      pose: lift > 0.62 ? 'raised' : lift > 0.22 ? 'spread' : 'open',
+      angle: lift * 0.13 - 0.01,
+    };
   }
 
+  const JELLY = ['jelly1', 'jelly2', 'jelly3', 'jelly4', 'jelly3', 'jelly2'];
+
+  function armState(t) {
+    let angle = 0;
+    let name = pose;
+
+    for (const k of kicks) {
+      const s = t - k.t0;
+      if (s > 0 && s < 2) angle += k.amp * Math.exp(-4 * s) * Math.cos(9 * s);
+    }
+
+    if (jellyAt !== null) {
+      // the jellyfish: fingers open and close on a loop, with a little bob
+      const s = t - jellyAt;
+      name = JELLY[Math.floor(s * 11) % JELLY.length];
+      angle += Math.sin(s * 11 * Math.PI / 3) * 0.03;
+    } else if (settled(ext, t) && ext.to === 1) {
+      angle += Math.sin(t * 1.7) * 0.012;   // resting sway
+      const wv = mode === 'idle' ? wave(t) : null;
+      if (wv) { name = wv.pose; angle += wv.angle; }
+    }
+
+    const e = valueOf(ext, t);
+    return { pose: POSES[name], slide: (1 - e) * OUT_BY, angle, e };
+  }
+
+  // ---- pointer (buffer px), for the fist bump ----
+  const pointer = { x: 0, y: 0, vx: 0, in: false, lastT: 0, recoilAt: -Infinity };
+  canvas.addEventListener('pointermove', (ev) => {
+    const r = canvas.getBoundingClientRect();
+    const x = (ev.clientX - r.left) * W / r.width;
+    const y = (ev.clientY - r.top) * H / r.height;
+    const t = now();
+    const dt = Math.max(t - pointer.lastT, 1 / 240);
+    const prevX = pointer.in ? pointer.x : x, prevY = pointer.in ? pointer.y : y;
+    // a mouse that paused before this move starts from rest
+    const vx = t - pointer.lastT > 0.1 ? 0 : pointer.vx;
+    pointer.vx = pointer.in ? lerp(vx, (x - pointer.x) / dt, 0.6) : 0;
+    Object.assign(pointer, { x, y, in: true, lastT: t });
+    checkBump(prevX, prevY);
+  });
+  canvas.addEventListener('pointerleave', () => { pointer.in = false; pointer.vx = 0; });
+
   // ---- render ----
-  function frame(now) {
-    const t = (now - start) / 1000;
-    const shape = portalShape(t);
-    const arm = armPose(t);
+  const ramp = [ORANGE, EMBER, DEEP];
+
+  function put(x, y, c) {
+    if (x < 0 || y < 0 || x >= W || y >= H) return;
+    const i = (y * W + x) * 4;
+    px[i] = c[0]; px[i + 1] = c[1]; px[i + 2] = c[2];
+  }
+
+  function frame() {
+    const t = now();
+    let shape = portalShape(t - introAt);
+    const arm = armState(t);
     const p = arm.pose;
+    const sx0 = valueOf(shift, t);
+    const pcx = PORTAL.cx + sx0, elbowX = ELBOW.x + sx0, cuffX = CUFF.x + sx0;
     const cosA = Math.cos(arm.angle), sinA = Math.sin(arm.angle);
     const drift = Math.floor(t * 12);  // slow crawl through the portal's noise
-    const handOn = t > T_HAND;
-    const ramp = [ORANGE, EMBER, DEEP];
+    const handOn = arm.e > 0.002;
+
+    if (shape) {
+      let g = 0;
+      for (const k of gulps) {
+        const s = t - k.t0;
+        if (s > 0 && s < 1.5) g += k.amp * Math.exp(-6 * s) * Math.sin(18 * s);
+      }
+      shape = { rx: shape.rx * (1 + g), ry: shape.ry * (1 + g * 0.35) };
+    }
 
     for (let y = 0; y < H; y++) {
       for (let x = 0; x < W; x++) {
@@ -275,7 +561,7 @@
 
         // portal
         if (shape) {
-          const nx = (x + 0.5 - PORTAL.cx) / shape.rx;
+          const nx = (x + 0.5 - pcx) / shape.rx;
           const ny = (y + 0.5 - PORTAL.cy) / shape.ry;
           const rad = Math.hypot(nx, ny);
           const d = (rad - 1) * Math.min(shape.rx, shape.ry);
@@ -294,17 +580,17 @@
         }
 
         // the arm — only in front of the portal plane
-        if (handOn && x < PORTAL.cx) {
+        if (handOn && x < pcx) {
           // undo the elbow swing, then the slide, to land in sprite space
-          const wx = x + 0.5 - ELBOW.x, wy = y + 0.5 - ELBOW.y;
-          const sx = wx * cosA + wy * sinA + ELBOW.x - arm.slide - CUFF.x + p.ax;
+          const wx = x + 0.5 - elbowX, wy = y + 0.5 - ELBOW.y;
+          const sx = wx * cosA + wy * sinA + elbowX - arm.slide - cuffX + p.ax;
           const sy = -wx * sinA + wy * cosA + ELBOW.y - CUFF.y + p.ay;
           if (sx > -1 && sy > -1 && sx < p.w + 1 && sy < p.h + 1) {
             const s = samplePose(p, sx, sy);
             // a thin dithered band at the cutout edge, crisp enough for fingers
             if (s[3] > 255 * (0.3 + 0.4 * blue(x + 17, y + 29))) {
               // darken the sleeve as it disappears into the portal
-              const lit = 1 - clamp((x - (PORTAL.cx - 14)) / 14, 0, 1) * 0.6;
+              const lit = 1 - clamp((x - (pcx - 14)) / 14, 0, 1) * 0.6;
               const nudge = (n - 0.5) * SPREAD;
               const k = LUT[(q(s[0] * lit + nudge) << 10) | (q(s[1] * lit + nudge) << 5) | q(s[2] * lit + nudge)];
               r = WARM[k][0]; g = WARM[k][1]; b = WARM[k][2];
@@ -317,26 +603,268 @@
       }
     }
 
+    if (mode === 'fist') drawCursorFist(t);
+
+    // a burst of orange where two fists meet
+    if (spark && t - spark.t0 < 0.45) {
+      const s = (t - spark.t0) / 0.45;
+      const R = 3 + 22 * Math.sqrt(s);
+      for (let y = Math.floor(spark.y - R - 2); y <= spark.y + R + 2; y++) {
+        for (let x = Math.floor(spark.x - R - 2); x <= spark.x + R + 2; x++) {
+          const d = Math.hypot(x - spark.x, y - spark.y);
+          if (Math.abs(d - R) < 2.2 && blue(x, y) < 0.7 * (1 - s)) put(x, y, ORANGE);
+        }
+      }
+    }
+
     ctx.putImageData(img, 0, 0);
     requestAnimationFrame(frame);
   }
 
-  canvas.addEventListener('click', () => { start = performance.now(); });
+  // ---- fist bump ----
+  let bumpReady = false;
 
-  // pose picker, for trying the cutouts
-  const list = document.getElementById('poses');
-  for (const name of ['open', ...Object.keys(POSES).filter((n) => n !== 'open')]) {
-    const btn = document.createElement('button');
-    btn.textContent = name;
-    btn.setAttribute('aria-pressed', 'false');
-    btn.addEventListener('click', () => {
-      pinned = pinned === name ? null : name;
-      kickAt = (performance.now() - start) / 1000;
-      for (const other of list.children) other.setAttribute('aria-pressed', String(other.textContent === pinned));
-    });
-    list.append(btn);
+  // how far the cursor fist (at pointer x, y) is from my knuckles, checked
+  // row by row; negative means it's been pushed into them
+  function knuckleGap(x, y, t) {
+    const arm = armState(t);
+    if (arm.e < 0.5) return Infinity;
+    const p = arm.pose;
+    const ox = Math.round(x - CURSOR.fx), oy = Math.round(y - CURSOR.fy);
+    const top = Math.round(CUFF.y - p.ay);
+    const cuffX = CUFF.x + valueOf(shift, t);
+    let gap = Infinity;
+    for (let row = 0; row < CURSOR.h; row++) {
+      const edge = CURSOR.right[row];
+      const mine = p.left[oy + row - top];
+      if (edge === -Infinity || mine === undefined || mine === Infinity) continue;
+      gap = Math.min(gap, mine + cuffX + arm.slide - p.ax - (ox + edge));
+    }
+    return gap;
   }
 
+  // a bump is the cursor fist arriving at my knuckles while moving right —
+  // checked on every mouse move, so a quick swipe can't skip past between
+  // frames. Easing up to my fist slowly and resting there isn't a bump.
+  function checkBump(prevX, prevY) {
+    const t = now();
+    if (mode !== 'fist' || !bumpReady || !settled(ext, t) || ext.to !== 1) return;
+    if (pointer.vx < 45) return;
+    const before = knuckleGap(prevX, prevY, t);
+    const gap = knuckleGap(pointer.x, pointer.y, t);
+    if (gap < 1 && (before >= 1 || gap < before - 2) && gap > -60) {
+      bump(Math.round(pointer.x - CURSOR.fx) + Math.floor(gap) + CURSOR.fx, pointer.y);
+    }
+  }
+
+  function drawCursorFist(t) {
+    if (!pointer.in) return;
+    let ox = Math.round(pointer.x - CURSOR.fx);
+    const oy = Math.round(pointer.y - CURSOR.fy);
+    // it stops at my knuckles rather than passing through
+    const gap = knuckleGap(pointer.x, pointer.y, t);
+    if (gap < 1) ox += Math.floor(gap) - 1;
+    const r = t - pointer.recoilAt;
+    if (r > 0 && r < 0.6) ox -= Math.round(7 * Math.exp(-7 * r) * Math.sin(Math.PI * Math.min(r * 5, 1)));
+
+    for (let y = 0; y < CURSOR.h; y++) for (let x = 0; x < CURSOR.w; x++) {
+      const c = CURSOR.idx[y * CURSOR.w + x];
+      if (c) put(ox + x, oy + y, c === 1 ? ORANGE : c === 2 ? WHITE : EMBER);
+    }
+  }
+
+  function bump(x, y) {
+    bumpReady = false;
+    spark = { t0: now(), x, y };
+    pointer.recoilAt = now();
+    kick(-0.07);
+    go(ext, 0.9, 0.12, linear);           // knocked back a touch
+    after(0.2, () => {
+      // then the jellyfish trick, drifting back into the portal
+      jellyAt = now();
+      go(ext, 0, 1.9, easeInOut);
+    });
+    after(2.15, () => { jellyAt = null; gulp(0.12); });
+    after(3.0, () => {
+      pose = 'fistbump';
+      go(ext, 1, 0.5, easeOutBack);
+      kick(0.06);
+    });
+    after(3.55, () => { bumpReady = true; });
+  }
+
+  // ---- modes ----
+  const $ = (id) => document.getElementById(id);
+  const statusEl = $('status');
+  const callEl = $('call');
+  const scoreEl = $('score');
+  const choicesEl = $('choices');
+
+  function hideArm(then, dur = 0.24) {
+    jellyAt = null;
+    if (valueOf(ext, now()) < 0.01) { then(); return; }
+    go(ext, 0, dur, easeIn);
+    after(dur + 0.04, () => { gulp(0.1); then(); });
+  }
+
+  function showArm(name, dur = 0.5, ease = easeOutBack) {
+    pose = name;
+    go(ext, 1, dur, ease);
+    kick(0.07);
+  }
+
+  function setMode(next) {
+    token++;
+    if (mode === 'rps' && next !== 'rps') leaveRps();
+    mode = next;
+    bumpReady = false;
+    canvas.classList.toggle('fist-cursor', next === 'fist');
+    for (const b of $('modes').children) {
+      b.setAttribute('aria-pressed', String(b.dataset.mode === next));
+    }
+
+    if (next === 'idle') {
+      statusEl.textContent = '';
+      hideArm(() => {
+        showArm('open');
+        idleSince = now() + 1.5;
+      });
+    } else if (next === 'fist') {
+      statusEl.textContent = 'bump my fist from the side';
+      hideArm(() => {
+        showArm('fistbump', 0.45);
+        after(0.5, () => { bumpReady = true; });
+      }, 0.18);
+    } else if (next === 'rps') {
+      enterRps();
+    }
+  }
+
+  $('modes').addEventListener('click', (ev) => {
+    const b = ev.target.closest('button');
+    if (!b || b.disabled) return;
+    setMode(mode === b.dataset.mode ? 'idle' : b.dataset.mode);
+  });
+
+  // click the canvas while idle to watch the portal open again
+  canvas.addEventListener('click', () => {
+    if (mode !== 'idle') return;
+    token++;
+    introAt = now();
+    ext.from = ext.to = 0; ext.dur = 0;
+    idleSince = introAt + T_HAND + HAND_DUR;
+    after(T_HAND, () => showArm('open', HAND_DUR));
+  });
+
+  // ---- rock, paper, scissors ----
+  const BEATS = { rock: 'scissors', paper: 'rock', scissors: 'paper' };
+  const PICKS = Object.keys(BEATS);
+  let score = { you: 0, me: 0 };
+  let pick = null;
+  let locked = true;
+
+  function setScore() {
+    scoreEl.firstChild.textContent = `[${score.you}/${score.me}]`;
+  }
+
+  function say(text, cls) {
+    callEl.className = 'call';
+    void callEl.offsetWidth;             // restart the pop animation
+    callEl.className = `call pop ${cls || ''}`;
+    callEl.textContent = text;
+  }
+
+  function choose(name) {
+    if (locked) return;
+    pick = name;
+    for (const b of choicesEl.children) b.setAttribute('aria-pressed', String(b.dataset.pick === name));
+  }
+
+  choicesEl.addEventListener('click', (ev) => {
+    const b = ev.target.closest('button');
+    if (b) choose(b.dataset.pick);
+  });
+
+  addEventListener('keydown', (ev) => {
+    if (mode !== 'rps') return;
+    const name = { r: 'rock', p: 'paper', s: 'scissors', 1: 'rock', 2: 'paper', 3: 'scissors' }[ev.key];
+    if (name) choose(name);
+  });
+
+  function enterRps() {
+    statusEl.textContent = 'pick one before shoot!';
+    score = { you: 0, me: 0 };
+    setScore();
+    scoreEl.style.opacity = 1;
+    callEl.textContent = '';
+    hideArm(() => {
+      go(shift, RPS_SHIFT, 0.6);
+      choicesEl.classList.add('shown');
+      after(0.8, round);
+    }, 0.2);
+  }
+
+  function leaveRps() {
+    locked = true;
+    pick = null;
+    choicesEl.classList.remove('shown', 'locked');
+    for (const b of choicesEl.children) b.setAttribute('aria-pressed', 'false');
+    scoreEl.style.opacity = 0;
+    callEl.textContent = '';
+    go(shift, 0, 0.6);
+  }
+
+  function round() {
+    locked = false;
+    choicesEl.classList.remove('locked');
+    callEl.textContent = '';
+    // ready fist, then in it goes for the count
+    showArm('rock', 0.4);
+    after(0.8, () => { say('3'); go(ext, 0, 0.8, easeIn); });
+    after(1.62, () => gulp(0.1));
+    after(1.8, () => say('2'));
+    after(2.8, () => say('1'));
+    after(3.8, shoot);
+  }
+
+  function shoot() {
+    locked = true;
+    choicesEl.classList.add('locked');
+    const mine = PICKS[Math.floor(Math.random() * 3)];
+    say('shoot!', 'shoot');
+    // out with a snap
+    showArm(mine, 0.16, snapBack);
+    gulp(0.18);
+    kick(0.1);
+
+    after(0.75, () => {
+      let line;
+      if (!pick) line = 'too slow!';
+      else if (pick === mine) line = 'tie! again';
+      else if (BEATS[pick] === mine) { score.you++; line = 'you got me'; }
+      else { score.me++; line = 'i win this one'; }
+      setScore();
+      say(line);
+
+      const done = score.you === 2 || score.me === 2;
+      after(1.7, () => {
+        pick = null;
+        for (const b of choicesEl.children) b.setAttribute('aria-pressed', 'false');
+        if (!done) { hideArm(round, 0.2); return; }
+        callEl.className = 'call pop';
+        callEl.innerHTML = `${score.you === 2 ? 'you win best of three!' : 'i win best of three!'}<br><button type="button">[play again]</button>`;
+        callEl.querySelector('button').addEventListener('click', () => {
+          token++;
+          score = { you: 0, me: 0 };
+          setScore();
+          hideArm(round, 0.2);
+        });
+      });
+    });
+  }
+
+  // ---- go ----
+  after(T_HAND, () => showArm('open', HAND_DUR));
   requestAnimationFrame(frame);
 </script>
 </body>
