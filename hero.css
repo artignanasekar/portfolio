@@ -1,197 +1,308 @@
-/* Home page — from Figma "home page" (node 1592:4864). This replaces an
-   earlier looping photo-collage hero (node 966:2501) with a plain
-   headline + subtitle; the work section below is unchanged in structure,
-   just widened to match the new frame's larger card size. */
+/* Home page — from Figma "home page" (node 1801:311): an orange mono
+   tagline and a short intro paragraph, then the case studies stacked one
+   per line in a single centred column. The page scrolls normally. */
 
-/* Two layouts, split by FIXED_LAYOUT in work-scroll.js (keep in sync):
+/* type sizes on this page are fixed: IBM Plex Mono and IBM Plex Sans at
+   15px, Lora at 25px, and the case-study label line at 12px */
 
-   - Larger screens: the page itself never scrolls. Nav, hero, the case-study
-     row and the fixed footer all fit in the window, and every scroll
-     gesture — wheel, trackpad, keys, touch — moves only the row, sideways.
-     The cards shrink if the window is too short to fit them at full size.
-   - Phones: the page scrolls normally and the case studies stack, one
-     per line.
-   - Wider windows under 700px tall (too short to fit the hero, the cards
-     and the footer at a readable size): the page scrolls normally and the
-     row is a native swipe row. */
+body {
+  overflow-y: auto;
+  overflow-x: hidden;
+}
 
+/* ---------- loading screen (home-loader.js) ---------- */
+
+/* UNHOOKED for now — index.html doesn't include the loader. To bring it
+   back: add class="is-loading" to <html>, put this as the first thing in
+   <body>, and load home-loader.js after shared.js:
+     <div class="home-loader" id="home-loader" aria-hidden="true">
+       <p class="home-hero-tagline home-loader-text">I SPY WITH MY LITTLE EYE</p>
+     </div>
+   With none of that on the page, these rules do nothing. */
+
+/* covers everything — nav and footer included — until the page is ready.
+   The page can't scroll underneath it, so the tagline stays put under the
+   loading line. */
+html.is-loading body {
+  overflow: hidden;
+  animation: home-loader-unlock 0s 8s forwards; /* same failsafe as below */
+}
+
+@keyframes home-loader-unlock {
+  to {
+    overflow-y: auto;
+  }
+}
+
+.home-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 100; /* above the nav and footer (10); the cursor (9999) stays on top */
+  background: #fcfcfc;
+  transition: opacity 0.5s ease; /* SCREEN_FADE_MS */
+  /* failsafe: if home-loader.js never runs, clear the screen anyway */
+  animation: home-loader-failsafe 0s 8s forwards;
+}
+
+/* left/top are set by home-loader.js to the real tagline's spot */
+.home-loader-text {
+  position: absolute;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.3s ease; /* TEXT_FADE_MS */
+}
+
+.home-loader.is-ready .home-loader-text {
+  opacity: 1;
+}
+
+.home-loader.is-leaving .home-loader-text {
+  opacity: 0;
+}
+
+.home-loader.is-gone {
+  opacity: 0;
+  pointer-events: none;
+}
+
+@keyframes home-loader-failsafe {
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+/* everything in the hero is centred on the page. Spacing is Figma's
+   (node 1801:311): the eye's top 269px down, 40px from the eye to the
+   first orange line, 10px between the two lines, 28px down to the intro;
+   type stays at the site's sizes (15px) rather than Figma's 18px.
+   The hero is as wide as its widest line — "A DESIGNER WHO FINDS…" —
+   and the intro paragraph wraps to that same width (it doesn't widen the
+   hero itself), so the block reads as one even column. */
 .home-hero {
-  max-width: 1360px;
+  width: fit-content;
+  max-width: calc(100% - 60px);
   margin: 0 auto;
-  padding: 145px 30px 0;
-  box-sizing: border-box;
+  padding-top: 269px;
+  text-align: center;
 }
 
-.home-hero-title {
-  font-family: 'PP Editorial Old', serif;
-  font-weight: 400;
-  font-size: 50px;
-  color: #ff7800;
-  margin: 0;
-}
-
-.home-hero-subtitle {
-  margin: 20px 0 0;
-  font-family: 'CommitMono', monospace;
+.home-hero-tagline {
+  margin-top: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-family: 'IBM Plex Mono', monospace;
   font-weight: 400;
   font-size: 15px;
-  color: #7b7b7b;
-  white-space: nowrap;
+  line-height: 1.2;
+  color: #ff5400;
 }
 
-/* ---------- work section: the horizontal row of case-study cards ---------- */
+.home-hero-intro {
+  contain: inline-size; /* takes the hero's width rather than setting it */
+  text-wrap: pretty; /* no lonely last word */
+  margin-top: 28px;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-weight: 400;
+  font-size: 15px;
+  line-height: 1.5;
+  color: #7b7b7b;
+}
+
+/* ---------- the eye (home-eye.js) ---------- */
+
+.home-eye-wrap {
+  position: relative;
+  width: 126px;
+  height: 68px;
+  margin: 0 auto;
+}
+
+/* the button is the eye itself: no chrome, same box as the artwork */
+.home-eye {
+  position: relative;
+  display: block;
+  width: 126px;
+  height: 68px;
+  padding: 0;
+  border: 0;
+  background: none;
+  transform-origin: 50% 50%;
+}
+
+/* the dithered almond, with the star cut out of it by a mask. The star's
+   spot in the mask (--pupil-x/--pupil-y) is moved by home-eye.js to look
+   toward the cursor; 34px/5px is dead centre, the Figma position. */
+.home-eye-body {
+  --pupil-x: 34px;
+  --pupil-y: 5px;
+  position: absolute;
+  inset: 0;
+  background: url('/assets/eye/eye-body.png') 0 0 / 126px 68px no-repeat;
+  -webkit-mask-image: url('/assets/eye/eye-hole.png'), linear-gradient(#000, #000);
+  mask-image: url('/assets/eye/eye-hole.png'), linear-gradient(#000, #000);
+  -webkit-mask-size: 58px 57.5px, 100% 100%;
+  mask-size: 58px 57.5px, 100% 100%;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: var(--pupil-x) var(--pupil-y), 0 0;
+  mask-position: var(--pupil-x) var(--pupil-y), 0 0;
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+
+/* the closed lid (Figma "eye blinking!", node 1886:312), across the middle */
+.home-eye-blink {
+  position: absolute;
+  left: 0;
+  top: 25px;
+  width: 126px;
+  height: 18px;
+  opacity: 0;
+}
+
+.home-eye.is-closed .home-eye-body {
+  opacity: 0;
+}
+
+.home-eye.is-closed .home-eye-blink {
+  opacity: 1;
+}
+
+/* message pill (the Figma popups): centred over the eye, 20px above it —
+   half the eye's 40px gap down to the first orange line, so the pill reads
+   as the eye's (closer to it than the text is) without crowding it */
+.home-eye-pop {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 20px);
+  padding: 5px 14px;
+  border-radius: 999px;
+  background: #ff5400;
+  color: #fff;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  line-height: 1.2;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translate(-50%, 6px) scale(0.85);
+  transform-origin: 50% 100%;
+  transition: opacity 0.18s ease, transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+  pointer-events: none;
+}
+
+.home-eye-pop.is-up {
+  opacity: 1;
+  transform: translate(-50%, 0) scale(1);
+}
+
+.home-eye-pop a {
+  color: inherit;
+  text-decoration: none;
+  pointer-events: auto;
+}
+
+/* ---------- work section: the case studies, one per line ---------- */
 
 .work-section {
-  position: relative;
-  padding: 60px 0;
-  scroll-margin-top: 45px; /* offset for the fixed nav bar when jumped to via #work */
-}
-
-/* the row runs full-bleed to the window edges and scrolls sideways; its
-   scrollbar is hidden (the cards peeking off the edge show there's more) */
-.work-stage {
-  container-type: inline-size;
-  overflow-x: auto;
-  overflow-y: hidden;
-  overscroll-behavior-x: contain; /* a sideways swipe never turns into browser back/forward */
-  scrollbar-width: none;
-}
-
-.work-stage::-webkit-scrollbar {
-  display: none;
-}
-
-/* the first card lines up with the hero text (same 1360px centred box,
-   30px inside it) and the last card stops the same distance before the
-   window's right edge. Two cards on screen at a time, the third slides in. */
-.work-track {
-  --gutter: max(30px, calc((100cqw - 1360px) / 2 + 30px));
-  --card: calc((min(100cqw, 1360px) - 90px) / 2);
+  width: min(720px, 100% - 60px);
+  margin: 0 auto;
+  padding: 203px 0 120px; /* Figma: 203px from the intro to the first case study */
   display: flex;
-  align-items: flex-start;
-  gap: 30px;
-  width: max-content;
-  padding: 0 var(--gutter);
-}
-
-.work-track > .work-card {
-  flex: none;
-  width: var(--card);
-}
-
-/* narrower screens: one card fills most of the width, the next peeks in */
-@media (max-width: 900px) {
-  .work-track {
-    --card: calc(100cqw - 96px);
-  }
-}
-
-/* larger screens: everything fits in one window-sized column. The row
-   takes whatever height is left under the hero, and the cards are capped
-   so the cover + caption (--caption-h, measured by work-scroll.js) fit it. */
-@media (min-width: 561px) and (min-height: 700px) {
-  body {
-    overflow: hidden;
-  }
-
-  .page {
-    height: 100vh;
-    height: 100dvh;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .home-hero {
-    flex: none;
-    width: 100%;
-    padding-top: clamp(75px, 13vh, 145px);
-  }
-
-  .work-section {
-    flex: 1;
-    min-height: 0;
-    display: flex;
-    padding: clamp(20px, 4vh, 60px) 0 clamp(16px, 3vh, 30px);
-  }
-
-  .work-stage {
-    flex: 1;
-    min-width: 0;
-    container-type: size;
-  }
-
-  .work-track {
-    --card-fit: calc((100cqh - var(--caption-h, 130px) - 14px) * 521 / 296);
-    /* 280px floor: the caption wraps taller as the card narrows, so
-       without one a short window could squeeze the cards away entirely */
-    --card: max(280px, min(calc((min(100cqw, 1360px) - 90px) / 2), var(--card-fit)));
-  }
-}
-
-@media (min-width: 561px) and (min-height: 700px) and (max-width: 900px) {
-  .work-track {
-    --card: max(280px, min(calc(100cqw - 96px), var(--card-fit)));
-  }
-}
-
-/* phones and short windows: the page scrolls normally */
-@media (max-width: 560px), (max-height: 699px) {
-  body {
-    overflow-y: auto;
-    overflow-x: hidden;
-  }
-}
-
-/* short-but-wide windows keep the row, as a swipe row that snaps card by card */
-@media (min-width: 561px) and (max-height: 699px) {
-  .work-stage {
-    scroll-snap-type: x mandatory;
-    scroll-padding-inline: 30px;
-  }
-
-  .work-track > .work-card {
-    scroll-snap-align: start;
-  }
-}
-
-/* phones: no row at all — the case studies stack one per line, full
-   width inside the 30px gutters, 30px apart (the original phone layout) */
-@media (max-width: 560px) {
-  .work-section {
-    padding: 60px 30px 120px;
-  }
-
-  .work-stage {
-    overflow: visible;
-    container-type: normal;
-  }
-
-  .work-track {
-    flex-direction: column;
-    align-items: stretch;
-    width: auto;
-    padding: 0;
-  }
-
-  .work-track > .work-card {
-    width: 100%;
-  }
+  flex-direction: column;
+  gap: 60px;
+  scroll-margin-top: 45px; /* offset for the fixed nav bar when jumped to via #work */
 }
 
 .work-card {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 30px;
   text-decoration: none;
 }
 
-/* the meta/title/desc trio reads as one tight caption block in Figma
-   (~6px between lines) — much closer than the 14px gap between the
-   cover image and the caption block above it. */
+/* caption: 8px from the mono meta line down to the title, 5px from the
+   title down to the description */
 .work-caption {
   display: flex;
   flex-direction: column;
+  gap: 8px;
+}
+
+.work-caption-text {
+  display: flex;
+  flex-direction: column;
   gap: 5px;
+}
+
+/* ---------- star stamps (home-stars.js) ---------- */
+
+/* the stars' layer sits behind everything in .page (z-index -1 inside the
+   page's own stacking context), so text and case-study covers paint on
+   top of any star stamped near them */
+.page {
+  position: relative;
+  isolation: isolate;
+}
+
+.home-stars {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* .home-star is the moving body: placed on the click point, then
+   home-stars.js drives its fall, bounces and squash through its
+   transform. The image inside carries the random --turn plus the spin
+   from rolling (--spin), and snaps in with the same overshoot as the
+   about page's sparkles. */
+.home-star {
+  position: absolute;
+  width: 64px;
+  height: 64px;
+  margin: -32px 0 0 -32px; /* centred on its point */
+  will-change: transform;
+}
+
+.home-star img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  transform: rotate(calc(var(--turn) + var(--spin, 0deg)));
+  animation: home-star-snap 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes home-star-snap {
+  from {
+    transform: rotate(calc(var(--turn) - 25deg)) scale(0.2);
+  }
+}
+
+/* the burst: a canvas home-stars.js drops where a star hits the footer
+   and draws the star's flying pixels into */
+.home-star-burst {
+  position: absolute;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-star img {
+    animation: none;
+  }
+}
+
+/* phones: the hero sits lower than the nav bar but nowhere near the
+   desktop's 319px drop, and the column gaps tighten */
+@media (max-width: 560px) {
+  .home-hero {
+    padding-top: 120px;
+  }
+
+  .work-section {
+    padding: 90px 0 60px;
+  }
 }
 
 /* direct-child only — a plain descendant selector here also matches the
@@ -216,7 +327,7 @@
   aspect-ratio: 521 / 296;
   background: #000;
   border: 1px solid #d9d9d9;
-  border-radius: 8px;
+  border-radius: 10px;
   box-sizing: border-box;
   overflow: hidden;
   container-type: inline-size;
@@ -231,7 +342,7 @@
 }
 
 .work-meta {
-  font-family: 'CommitMono', monospace;
+  font-family: 'IBM Plex Mono', monospace;
   font-weight: 400;
   font-size: 12px;
   letter-spacing: 0.5px;
@@ -240,8 +351,8 @@
 }
 
 .work-title {
-  font-family: 'PP Editorial Old', serif;
-  font-weight: 400;
+  font-family: 'Lora', serif;
+  font-weight: 500;
   font-size: 25px;
   color: #5e5e5e;
 }
@@ -250,8 +361,8 @@
   font-family: 'IBM Plex Sans', sans-serif;
   font-weight: 400;
   font-size: 15px;
-  line-height: 1.1;
-  color: #787878;
+  line-height: 1.5;
+  color: #5e5e5e;
 }
 
 /* Pearl cover: live animated thumbnail (pearl-thumb.js drives the waves,
@@ -263,7 +374,7 @@
   aspect-ratio: 521 / 296;
   background: #fff;
   border: 1px solid #d9d9d9;
-  border-radius: 8px;
+  border-radius: 10px;
   box-sizing: border-box;
   overflow: hidden;
   container-type: inline-size;
@@ -347,7 +458,7 @@
   aspect-ratio: 521 / 296;
   background: #fff;
   border: 1px solid #d9d9d9;
-  border-radius: 8px;
+  border-radius: 10px;
   box-sizing: border-box;
   overflow: hidden;
   container-type: inline-size;
@@ -516,11 +627,3 @@ img.se-card-icon { width: 33.04%; height: 83.7%; }
 .se-card-count > span { line-height: normal; }
 .se-card--contact .se-card-count,
 .se-card--brainteaser .se-card-count { left: 94.74%; }
-
-/* the subtitle is a single nowrap line; on the narrowest phones let it
-   wrap rather than run past the 30px gutter */
-@media (max-width: 380px) {
-  .home-hero-subtitle {
-    white-space: normal;
-  }
-}

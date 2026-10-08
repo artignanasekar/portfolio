@@ -65,7 +65,7 @@
 }
 
 .bio-heading {
-  font-family: 'PP Editorial Old', serif;
+  font-family: 'Lora', serif;
   font-weight: 400;
   font-size: 20px;
   color: #5e5e5e;
@@ -87,7 +87,7 @@
 }
 
 .section-heading {
-  font-family: 'PP Editorial Old', serif;
+  font-family: 'Lora', serif;
   font-weight: 400;
   font-size: 20px;
   color: #5e5e5e;
@@ -249,9 +249,9 @@
   height: 30px;
   border: none;
   border-radius: 50%;
-  background: #ff7800;
+  background: #ff5400;
   color: #fcfcfc;
-  font-family: 'CommitMono', monospace;
+  font-family: 'IBM Plex Mono', monospace;
   font-size: 16px;
   display: flex;
   align-items: center;
@@ -267,7 +267,7 @@
   width: 333px;
   padding: 8px 10px;
   border-radius: 5px;
-  background: #ff7800;
+  background: #ff5400;
   color: #fcfcfc;
   font-family: 'IBM Plex Sans', sans-serif;
   font-weight: 400;
@@ -319,7 +319,7 @@
   padding: 8px 10px;
   border-radius: 5px;
   background: #fcfcfc;
-  color: #ff7800;
+  color: #ff5400;
   font-family: 'IBM Plex Sans', sans-serif;
   font-weight: 400;
   font-size: 12px;
@@ -373,7 +373,7 @@
 }
 
 .info-card-title {
-  font-family: 'PP Editorial Old', serif;
+  font-family: 'Lora', serif;
   font-weight: 400;
   font-size: 20px;
   color: #5e5e5e;
@@ -533,7 +533,7 @@
   padding: 8px 10px;
   border-radius: 5px;
   background: #5e5e5e;
-  font-family: 'CommitMono', monospace;
+  font-family: 'IBM Plex Mono', monospace;
   font-weight: 400;
   font-size: 12px;
   color: #fcfcfc;
@@ -542,7 +542,7 @@
 }
 
 .tag.found {
-  background: #ff7800;
+  background: #ff5400;
 }
 
 /* scanner cursor: replaces the dot while a hint is active. Rotated (via JS,
@@ -766,7 +766,7 @@
     flex: 0 0 auto;
     margin: 0;
     padding: 14px 16px;
-    background: #ff7800;
+    background: #ff5400;
     font-family: 'IBM Plex Sans', sans-serif;
     font-weight: 400;
     font-size: 12px;
@@ -865,9 +865,9 @@
     justify-content: center;
     padding: 6px 14px;
     border-radius: 999px;
-    background: #ff7800;
+    background: #ff5400;
     color: #fcfcfc;
-    font-family: 'CommitMono', monospace;
+    font-family: 'IBM Plex Mono', monospace;
     font-weight: 400;
     font-size: 11px;
     white-space: nowrap;

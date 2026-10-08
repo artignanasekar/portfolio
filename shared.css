@@ -1,7 +1,28 @@
 @font-face {
-  font-family: 'CommitMono';
-  src: url('fonts/CommitMono-VF.woff2') format('woff2');
-  font-weight: 100 900;
+  font-family: 'IBM Plex Mono';
+  src: url('fonts/IBMPlexMono-400.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'IBM Plex Mono';
+  src: url('fonts/IBMPlexMono-400-Italic.woff2') format('woff2');
+  font-weight: 400;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'IBM Plex Mono';
+  src: url('fonts/IBMPlexMono-500.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'IBM Plex Mono';
+  src: url('fonts/IBMPlexMono-700.woff2') format('woff2');
+  font-weight: 700;
   font-style: normal;
 }
 
@@ -13,44 +34,16 @@
 }
 
 @font-face {
-  font-family: 'PP Editorial Old';
-  src: url('fonts/PPEditorialOld-Regular.otf') format('opentype');
-  font-weight: 400;
+  font-family: 'Lora';
+  src: url('fonts/Lora-VF.woff2') format('woff2');
+  font-weight: 400 700;
   font-style: normal;
 }
 
 @font-face {
-  font-family: 'PP Editorial Old';
-  src: url('fonts/PPEditorialOld-Italic.otf') format('opentype');
-  font-weight: 400;
-  font-style: italic;
-}
-
-@font-face {
-  font-family: 'PP Editorial Old';
-  src: url('fonts/PPEditorialOld-Ultralight.otf') format('opentype');
-  font-weight: 200;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: 'PP Editorial Old';
-  src: url('fonts/PPEditorialOld-UltralightItalic.otf') format('opentype');
-  font-weight: 200;
-  font-style: italic;
-}
-
-@font-face {
-  font-family: 'PP Editorial Old';
-  src: url('fonts/PPEditorialOld-Ultrabold.otf') format('opentype');
-  font-weight: 800;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: 'PP Editorial Old';
-  src: url('fonts/PPEditorialOld-UltraboldItalic.otf') format('opentype');
-  font-weight: 800;
+  font-family: 'Lora';
+  src: url('fonts/Lora-VF-Italic.woff2') format('woff2');
+  font-weight: 400 700;
   font-style: italic;
 }
 
@@ -73,6 +66,16 @@
   margin: 0;
   padding: 0;
   cursor: none;
+}
+
+/* no orphans: the browser rebalances a paragraph's last lines so it never
+   ends on a single lonely word, at whatever width it wraps */
+p,
+li,
+h1,
+h2,
+h3 {
+  text-wrap: pretty;
 }
 
 /* color-scheme:light + an explicit html background stop the browser from
@@ -121,12 +124,43 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: 'CommitMono', monospace;
+  font-family: 'IBM Plex Mono', monospace;
   font-weight: 400;
   font-size: 12px;
   color: #7b7b7b;
   text-decoration: none;
   white-space: nowrap;
+}
+
+/* ABOUT flips to I SPY on hover: the two labels sit stacked in a one-line
+   window and the stack scrolls up to show the second; leaving scrolls it
+   back down. Both are 5 mono characters, so the link never changes width. */
+.nav-flip {
+  display: block;
+  height: 1.3em;
+  line-height: 1.3em;
+  overflow: hidden;
+}
+
+.nav-flip-track {
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.nav-link:hover .nav-flip-track,
+.nav-link.is-ispy .nav-flip-track { /* .is-ispy: the magnified copy in the cursor lens */
+  transform: translateY(-50%);
+}
+
+.nav-flip-track > :last-child {
+  color: #ff5400;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-flip-track {
+    transition: none;
+  }
 }
 
 /* opt-in modifier: pushes the nav-links cluster to the right and leaves
@@ -137,7 +171,7 @@ body {
 }
 
 .nav-brand {
-  font-family: 'CommitMono', monospace;
+  font-family: 'IBM Plex Mono', monospace;
   font-weight: 400;
   font-size: 12px;
   color: #7b7b7b;
@@ -179,6 +213,74 @@ body {
   #custom-cursor {
     display: none;
   }
+}
+
+/* magnifying glass (shared.js): replaces the dot while hovering ABOUT.
+   Just the lens of a magnifying glass — a #5e5e5e metal rim whose sheen
+   (--sheen, turned by shared.js) shifts as it moves, around a glass face
+   holding a 1.6x copy of the nav bar, with a soft highlight and a little
+   depth on top so it reads as glass. Hotspot is the lens centre. */
+.cursor-lens {
+  --sheen: 0deg;
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 28px; /* just bigger than the 21px dot: LENS_VIEW (22) + a 3px rim either side */
+  height: 28px;
+  margin: -14px 0 0 -14px;
+  padding: 3px;
+  box-sizing: border-box;
+  border-radius: 50%;
+  background: conic-gradient(
+    from var(--sheen),
+    #5e5e5e, #7d7d7d 10%, #d4d4d4 17%, #6a6a6a 27%, #474747 40%,
+    #5e5e5e 52%, #9a9a9a 63%, #e2e2e2 69%, #6e6e6e 78%, #4a4a4a 90%, #5e5e5e
+  );
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.22), inset 0 0 0 0.5px rgba(0, 0, 0, 0.2);
+  opacity: 0;
+  transform: scale(0.5);
+  transition: opacity 0.15s ease, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+#custom-cursor.is-lens .cursor-lens {
+  opacity: 1;
+  transform: scale(1);
+}
+
+#custom-cursor.is-lens .cursor-dot {
+  opacity: 0 !important; /* beats the inline opacity shared.js sets on every move */
+  transform: translate(-50%, -50%) scale(0.3);
+}
+
+.cursor-lens-view {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #fcfcfc;
+}
+
+/* the magnified copy of the nav bar */
+.cursor-lens-view > .nav-bar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform-origin: 0 0;
+}
+
+/* the glass: a faint cool tint, a soft window highlight up top, a smaller
+   bounce of light lower down, and a little inner shadow at the edge */
+.cursor-lens-view::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 30% 24%, rgba(255, 255, 255, 0.55) 0, rgba(255, 255, 255, 0.18) 16%, rgba(255, 255, 255, 0) 36%),
+    radial-gradient(circle at 72% 80%, rgba(255, 255, 255, 0.22) 0, rgba(255, 255, 255, 0) 26%),
+    rgba(185, 210, 230, 0.1);
+  box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.18), inset 0 -1px 2px rgba(255, 255, 255, 0.35);
 }
 
 /* IBM eye-bee-M rebus icons (Figma "ibm" frame) — percentage-based so the
@@ -242,7 +344,7 @@ body {
 
 .site-footer-note,
 .site-footer-link {
-  font-family: 'CommitMono', monospace;
+  font-family: 'IBM Plex Mono', monospace;
   font-weight: 400;
   font-size: 12px; /* matches the nav bar's .nav-link */
   color: #7b7b7b; /* matches the nav bar's .nav-link */
@@ -260,7 +362,7 @@ body {
 }
 
 .site-footer-link:hover {
-  color: #ff7800;
+  color: #ff5400;
 }
 
 /* scrolling pages: leave the footer's height clear below the last content
@@ -301,16 +403,15 @@ body {
   }
 }
 
-/* PP Editorial Old's built-in "normal" line height is 1.5x (its hhea
-   metrics), which leaves an awkward gap between the lines of any serif
-   heading that wraps. Every PP Editorial heading on the site uses 1.25 at
+/* The serif's built-in "normal" line height (PP Editorial Old's was 1.5x,
+   from its hhea metrics) leaves an awkward gap between the lines of any
+   serif heading that wraps. Every Lora heading on the site uses 1.25 at
    every width instead — the spacing the Pearl case study had on phone. The
    body prefix lifts specificity over each page stylesheet's own
-   line-height (shared.css loads first). CommitMono / IBM Plex Sans text
+   line-height (shared.css loads first). IBM Plex Mono / IBM Plex Sans text
    keeps its own spacing; the intro animation's single-line words are
    positioned by hand and left alone. */
 body :is(
-  .home-hero-title,
   .work-title,
   .cs-heading,
   .cs-hmw,

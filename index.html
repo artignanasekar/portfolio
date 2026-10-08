@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Home — Portfolio</title>
+<title>home — portfolio</title>
 
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
 <link rel="icon" href="assets/favicon-32.png" sizes="32x32" type="image/png" />
@@ -21,9 +21,15 @@
 
 <link rel="stylesheet" href="shared.css" />
 <link rel="stylesheet" href="hero.css" />
-<link rel="stylesheet" href="intro.css" />
 </head>
 <body>
+  <!-- the "I SPY" intro animation — HIDDEN for now, not deleted. Its markup
+       is parked in this <template>, which the browser never renders, and
+       intro.css / intro.js aren't loaded. To turn it back on: move the
+       contents of the template out to here (and delete the template), add
+       <link rel="stylesheet" href="intro.css" /> to the <head>, and
+       <script type="module" src="intro.js"></script> after shared.js. -->
+  <template id="intro-overlay-hidden">
   <div id="intro-overlay" class="intro-overlay" data-name="home page animation">
     <div class="intro-stage">
       <div class="intro-bar-top"></div>
@@ -76,6 +82,7 @@
       <p id="intro-cycle-experiences" class="intro-cycle-word">experiences</p>
     </div>
   </div>
+  </template>
 
   <div class="page" data-name="home page">
 
@@ -83,19 +90,29 @@
       <a href="/" class="nav-brand">ARTI G.</a>
       <div class="nav-links">
         <a href="/#work" class="nav-link">WORK</a>
-        <a href="about" class="nav-link">ABOUT</a>
+        <a href="about" class="nav-link"><span class="nav-flip"><span class="nav-flip-track"><span>ABOUT</span><span aria-hidden="true">I SPY</span></span></span></a>
         <a href="https://drive.google.com/file/d/111vidwaICF3pyrerJC__ybmi6Y8UYV2D/view?usp=sharing" class="nav-link" target="_blank" rel="noopener noreferrer">RESUME</a>
       </div>
     </nav>
 
     <div class="home-hero" data-name="home page hero">
-      <h1 class="home-hero-title">hi! i&rsquo;m arti,<br />a designer who researches and builds</h1>
-      <p class="home-hero-subtitle">PREV TINKERING @ IBM AND UCSC ITS</p>
+      <!-- the eye (home-eye.js): its star cut-out follows the cursor, it
+           blinks when left alone, and poking it pops up a message -->
+      <div class="home-eye-wrap">
+        <p class="home-eye-pop" aria-live="polite"></p>
+        <button class="home-eye" type="button" aria-label="Poke the eye">
+          <span class="home-eye-body"></span>
+          <img class="home-eye-blink" src="assets/eye/eye-blink.png" alt="" />
+        </button>
+      </div>
+      <h1 class="home-hero-tagline">
+        <span class="home-hero-line">I SPY WITH MY LITTLE EYE...</span>
+        <span class="home-hero-line">A DESIGNER WHO FINDS WHAT&rsquo;S HIDDEN IN PLAIN SIGHT</span>
+      </h1>
+      <p class="home-hero-intro">Hi! I&rsquo;m Arti! Most recently, I was a Product Design &amp; UX Research Intern at IBM, where two of my projects are shipping internally. Before that, I was on the UX team at UC Santa Cruz ITS.</p>
     </div>
 
     <section class="work-section" id="work">
-      <div class="work-stage">
-      <div class="work-track">
       <a class="work-card" href="ibm">
         <div class="ibm-thumb" role="img" aria-label="Animated: white construction lines on IBM blue draw the outlines of an eye, a bee and a striped M, which fill with colour and slide together into the IBM eye-bee-M rebus logo on black">
           <svg class="ibm-thumb-art" viewBox="-2.107 -0.764 571 324.407" aria-hidden="true">
@@ -132,8 +149,10 @@
         </div>
         <div class="work-caption">
           <p class="work-meta">Summer 2026</p>
-          <p class="work-title">IBM - UX Design &amp; Research Intern</p>
-          <p class="work-desc">Developed AI-powered research intelligence and workflow automation solutions for research synthesis, insight discovery, and hypothesis validation.</p>
+          <div class="work-caption-text">
+            <p class="work-title">IBM - UX Design &amp; Research Intern</p>
+            <p class="work-desc">Developed AI-powered research intelligence and workflow automation solutions for research synthesis, insight discovery, and hypothesis validation.</p>
+          </div>
         </div>
       </a>
       <a class="work-card" href="pearl">
@@ -190,8 +209,10 @@
         </div>
         <div class="work-caption">
           <p class="work-meta">Pearl | Grand Prize @ SB Creative&rsquo;s Lab Designathon 2025</p>
-          <p class="work-title">Helping students build healthier digital habits.</p>
-          <p class="work-desc">A digital wellbeing platform that replaces guilt with positive reinforcement.</p>
+          <div class="work-caption-text">
+            <p class="work-title">Helping students build healthier digital habits.</p>
+            <p class="work-desc">A digital wellbeing platform that replaces guilt with positive reinforcement.</p>
+          </div>
         </div>
       </a>
       <a class="work-card" href="speakeasy">
@@ -274,12 +295,12 @@
         </div>
         <div class="work-caption">
           <p class="work-meta">SpeakEasy | Second Place @ UCSC SVC Designathon &ndash; February 2025</p>
-          <p class="work-title">Designing for voices speech technology leaves behind.</p>
-          <p class="work-desc">A gamified speech-practice experience built around confidence, consent, and inclusive AI.</p>
+          <div class="work-caption-text">
+            <p class="work-title">Designing for voices speech technology leaves behind.</p>
+            <p class="work-desc">A gamified speech-practice experience built around confidence, consent, and inclusive AI.</p>
+          </div>
         </div>
       </a>
-      </div>
-      </div>
     </section>
 
     <!-- site-footer -->
@@ -291,10 +312,10 @@
   </div>
 
   <script type="module" src="shared.js"></script>
-  <script type="module" src="intro.js"></script>
   <script type="module" src="pearl-thumb.js"></script>
   <script type="module" src="speakeasy-thumbnail.js"></script>
   <script type="module" src="ibm-thumbnail.js"></script>
-  <script type="module" src="work-scroll.js"></script>
+  <script type="module" src="home-stars.js"></script>
+  <script type="module" src="home-eye.js"></script>
 </body>
 </html>

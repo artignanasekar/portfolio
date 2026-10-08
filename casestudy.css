@@ -23,7 +23,7 @@ body {
   bottom: var(--footer-h); /* ends on top of the fixed footer */
   width: 260px;
   background: #f3f3f3;
-  padding: 65px 0 0 20px;
+  padding: 65px 0 0 30px; /* 30px: lines up with ARTI G. in the nav bar */
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -31,22 +31,45 @@ body {
 }
 
 .outline-item {
-  font-family: 'CommitMono', monospace;
+  position: relative;
+  align-self: flex-start;
+  font-family: 'IBM Plex Mono', monospace;
   font-weight: 400;
-  font-size: 10px;
+  font-size: 12px; /* same as the nav bar and the home page's mono labels */
   color: #7b7b7b;
   text-decoration: none;
   white-space: nowrap;
-  transition: color 0.15s ease;
+  transition: color 0.2s ease, transform 0.2s ease;
 }
 
 .outline-item:hover {
   color: #5e5e5e;
 }
 
+/* the section you're reading (casestudy.js marks it as you scroll): orange,
+   nudged right, with a dash leading in. The indent is exactly the dash
+   plus its gap, so the dash lands where the label used to start. */
+.outline-item::before {
+  content: '-';
+  position: absolute;
+  right: 100%;
+  margin-right: 4px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.outline-item.is-active {
+  color: #ff5400;
+  transform: translateX(calc(1ch + 4px));
+}
+
+.outline-item.is-active::before {
+  opacity: 1;
+}
+
 .case-content {
-  margin-left: 320px;
-  padding-right: 60px;
+  margin-left: 350px; /* 90px clear of the 260px outline rail */
+  padding-right: 90px;
   padding-top: 45px;
   padding-bottom: 60px; /* consistent 60px gap between the last content block and the footer */
   display: flex;
@@ -175,6 +198,39 @@ body {
   flex: 1;
 }
 
+/* the project card's write-up: a column of paragraphs beside the MacBook */
+.cs-project-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ---------- IBM case study: Pearl's building blocks, in IBM blue ---------- */
+
+/* .cs-ibm is on the IBM page's <main>: everywhere Pearl uses its teal
+   (#219ebc) — the big question, the numbered list, card titles — the IBM
+   case study uses IBM blue instead */
+.cs-ibm .cs-hmw,
+.cs-ibm .cs-list-accent,
+.cs-ibm .cs-adaptation-title {
+  color: #0f62fe;
+}
+
+/* a quieter aside after a heading, e.g. what HERD stands for */
+.cs-heading-note {
+  font-size: 0.72em;
+  color: #7b7b7b;
+}
+
+/* HERD's four stages: the adaptation cards, laid out as a grid that drops
+   from four across to two, then one, as the column narrows */
+.cs-steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 30px;
+}
+
 /* ---------- IBM side quest card (award callout) ---------- */
 
 /* the whole callout sits in a bordered card, same treatment as the
@@ -229,7 +285,7 @@ body {
 }
 
 .cs-testimonial-role {
-  font-family: 'CommitMono', monospace;
+  font-family: 'IBM Plex Mono', monospace;
   font-weight: 400;
   font-size: 12px;
   color: #0f62fe;
@@ -266,7 +322,7 @@ body {
 /* ---------- typography ---------- */
 
 .cs-label {
-  font-family: 'CommitMono', monospace;
+  font-family: 'IBM Plex Mono', monospace;
   font-weight: 400;
   font-size: 12px;
   color: #5e5e5e;
@@ -274,7 +330,7 @@ body {
 }
 
 .cs-label-accent {
-  font-family: 'CommitMono', monospace;
+  font-family: 'IBM Plex Mono', monospace;
   font-weight: 400;
   font-size: 12px;
   text-transform: uppercase;
@@ -282,7 +338,7 @@ body {
 }
 
 .cs-heading {
-  font-family: 'PP Editorial Old', serif;
+  font-family: 'Lora', serif;
   font-weight: 400;
   font-size: 25px;
   line-height: normal;
@@ -347,7 +403,7 @@ body {
 
 /* below ~half a desktop width the fixed outline rail costs more room than
    it's worth — drop it and let the content run full width. The meta row
-   gets its breathing room back once the 320px rail is gone. */
+   gets its breathing room back once the outline rail is gone. */
 @media (max-width: 900px) {
   .case-outline {
     display: none;
@@ -518,7 +574,7 @@ body {
 }
 
 .cs-meta-label {
-  font-family: 'CommitMono', monospace;
+  font-family: 'IBM Plex Mono', monospace;
   font-weight: 400;
   font-size: 12px;
   color: #219ebc;
@@ -547,7 +603,7 @@ body {
 /* ---------- HMW callout ---------- */
 
 .cs-hmw {
-  font-family: 'PP Editorial Old', serif;
+  font-family: 'Lora', serif;
   font-weight: 400;
   font-size: 25px;
   line-height: normal;
@@ -608,7 +664,7 @@ body {
 }
 
 .cs-app-icon span {
-  font-family: 'CommitMono', monospace;
+  font-family: 'IBM Plex Mono', monospace;
   font-size: 12px;
   color: #7b7b7b;
   white-space: nowrap;
@@ -634,7 +690,7 @@ body {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-family: 'PP Editorial Old', serif;
+  font-family: 'Lora', serif;
   font-weight: 400;
   font-size: 20px;
   color: #219ebc;
@@ -669,7 +725,7 @@ body {
 }
 
 .cs-adaptation-title {
-  font-family: 'PP Editorial Old', serif;
+  font-family: 'Lora', serif;
   font-weight: 400;
   font-size: 20px;
   color: #219ebc;
@@ -763,7 +819,7 @@ body {
 }
 
 .cs-insight-title {
-  font-family: 'PP Editorial Old', serif;
+  font-family: 'Lora', serif;
   font-weight: 400;
   font-size: 20px;
   line-height: normal;
@@ -910,7 +966,7 @@ body {
   position: absolute;
   left: 29.18%;
   top: 18.42%;
-  font-family: 'CommitMono', monospace;
+  font-family: 'IBM Plex Mono', monospace;
   font-weight: 400;
   font-size: 12px;
   color: #fcfcfc;
@@ -1071,7 +1127,7 @@ body {
 }
 
 .cs-persona-name {
-  font-family: 'PP Editorial Old', serif;
+  font-family: 'Lora', serif;
   font-weight: 400;
   font-size: 25px;
 }
@@ -1088,7 +1144,7 @@ body {
   border: 1px solid #fcfcfc;
   border-radius: 5px;
   padding: 5px 10px;
-  font-family: 'CommitMono', monospace;
+  font-family: 'IBM Plex Mono', monospace;
   font-size: 12px;
 }
 

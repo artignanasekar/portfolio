@@ -1,7 +1,28 @@
 @font-face {
-  font-family: 'CommitMono';
-  src: url('fonts/CommitMono-VF.woff2') format('woff2');
-  font-weight: 100 900;
+  font-family: 'IBM Plex Mono';
+  src: url('fonts/IBMPlexMono-400.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'IBM Plex Mono';
+  src: url('fonts/IBMPlexMono-400-Italic.woff2') format('woff2');
+  font-weight: 400;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'IBM Plex Mono';
+  src: url('fonts/IBMPlexMono-500.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'IBM Plex Mono';
+  src: url('fonts/IBMPlexMono-700.woff2') format('woff2');
+  font-weight: 700;
   font-style: normal;
 }
 
@@ -13,44 +34,16 @@
 }
 
 @font-face {
-  font-family: 'PP Editorial Old';
-  src: url('fonts/PPEditorialOld-Regular.otf') format('opentype');
-  font-weight: 400;
+  font-family: 'Lora';
+  src: url('fonts/Lora-VF.woff2') format('woff2');
+  font-weight: 400 700;
   font-style: normal;
 }
 
 @font-face {
-  font-family: 'PP Editorial Old';
-  src: url('fonts/PPEditorialOld-Italic.otf') format('opentype');
-  font-weight: 400;
-  font-style: italic;
-}
-
-@font-face {
-  font-family: 'PP Editorial Old';
-  src: url('fonts/PPEditorialOld-Ultralight.otf') format('opentype');
-  font-weight: 200;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: 'PP Editorial Old';
-  src: url('fonts/PPEditorialOld-UltralightItalic.otf') format('opentype');
-  font-weight: 200;
-  font-style: italic;
-}
-
-@font-face {
-  font-family: 'PP Editorial Old';
-  src: url('fonts/PPEditorialOld-Ultrabold.otf') format('opentype');
-  font-weight: 800;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: 'PP Editorial Old';
-  src: url('fonts/PPEditorialOld-UltraboldItalic.otf') format('opentype');
-  font-weight: 800;
+  font-family: 'Lora';
+  src: url('fonts/Lora-VF-Italic.woff2') format('woff2');
+  font-weight: 400 700;
   font-style: italic;
 }
 
@@ -128,7 +121,7 @@ body {
 }
 
 .bio-heading {
-  font-family: 'PP Editorial Old', serif;
+  font-family: 'Lora', serif;
   font-weight: 400;
   font-size: 20px;
   color: #5e5e5e;
@@ -150,7 +143,7 @@ body {
 }
 
 .section-heading {
-  font-family: 'PP Editorial Old', serif;
+  font-family: 'Lora', serif;
   font-weight: 400;
   font-size: 20px;
   color: #5e5e5e;
@@ -301,9 +294,9 @@ body {
   height: 30px;
   border: none;
   border-radius: 50%;
-  background: #ff7800;
+  background: #ff5400;
   color: #fcfcfc;
-  font-family: 'CommitMono', monospace;
+  font-family: 'IBM Plex Mono', monospace;
   font-size: 16px;
   display: flex;
   align-items: center;
@@ -319,7 +312,7 @@ body {
   width: 333px;
   padding: 8px 10px;
   border-radius: 5px;
-  background: #ff7800;
+  background: #ff5400;
   color: #fcfcfc;
   font-family: 'IBM Plex Sans', sans-serif;
   font-weight: 400;
@@ -371,7 +364,7 @@ body {
   padding: 8px 10px;
   border-radius: 5px;
   background: #fcfcfc;
-  color: #ff7800;
+  color: #ff5400;
   font-family: 'IBM Plex Sans', sans-serif;
   font-weight: 400;
   font-size: 12px;
@@ -425,7 +418,7 @@ body {
 }
 
 .info-card-title {
-  font-family: 'PP Editorial Old', serif;
+  font-family: 'Lora', serif;
   font-weight: 400;
   font-size: 20px;
   color: #5e5e5e;
@@ -585,7 +578,7 @@ body {
   padding: 8px 10px;
   border-radius: 5px;
   background: #5e5e5e;
-  font-family: 'CommitMono', monospace;
+  font-family: 'IBM Plex Mono', monospace;
   font-weight: 400;
   font-size: 12px;
   color: #fcfcfc;
@@ -594,7 +587,7 @@ body {
 }
 
 .tag.found {
-  background: #ff7800;
+  background: #ff5400;
 }
 
 /* nav bar: spans full window width, fixed 45px height, fixed 30px right padding, fixed 20px gaps */
@@ -624,7 +617,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: 'CommitMono', monospace;
+  font-family: 'IBM Plex Mono', monospace;
   font-weight: 400;
   font-size: 12px;
   color: #7b7b7b;

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>IBM — Case Study</title>
+<title>ibm — case study</title>
 
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
 <link rel="icon" href="assets/favicon-32.png" sizes="32x32" type="image/png" />
@@ -29,7 +29,7 @@
       <a href="/" class="nav-brand">ARTI G.</a>
       <div class="nav-links">
         <a href="/#work" class="nav-link">WORK</a>
-        <a href="about" class="nav-link">ABOUT</a>
+        <a href="about" class="nav-link"><span class="nav-flip"><span class="nav-flip-track"><span>ABOUT</span><span aria-hidden="true">I SPY</span></span></span></a>
         <a href="https://drive.google.com/file/d/111vidwaICF3pyrerJC__ybmi6Y8UYV2D/view?usp=sharing" class="nav-link" target="_blank" rel="noopener noreferrer">RESUME</a>
       </div>
     </nav>
@@ -37,12 +37,15 @@
     <div class="case-shell">
       <aside class="case-outline">
         <a href="#context" class="outline-item">CONTEXT</a>
-        <a href="#projects" class="outline-item">PROJECTS</a>
-        <a href="#sidequest" class="outline-item">SIDE QUEST</a>
-        <a href="#feedback" class="outline-item">FEEDBACK</a>
+        <a href="#problem" class="outline-item">PROBLEM</a>
+        <a href="#process" class="outline-item">PROCESS</a>
+        <a href="#solution" class="outline-item">SOLUTION</a>
+        <a href="#outcome" class="outline-item">OUTCOME</a>
+        <a href="#side-quest" class="outline-item">SIDE QUEST</a>
+        <a href="#kind-words" class="outline-item">KIND WORDS</a>
       </aside>
 
-      <main class="case-content">
+      <main class="case-content cs-ibm">
         <div class="cs-ibm-cover">
           <div class="ibm-icons">
             <img class="ibm-icon-eye" src="assets/work/ibm/eye.svg" alt="" />
@@ -72,50 +75,134 @@
 
         <section id="context" class="cs-block">
           <p class="cs-label">Context</p>
-          <p class="cs-body">Led the creation of AI-powered research and decision-support tools that helped teams find, validate, and act on customer insights more effectively, streamlining the analysis of personas, Jobs-to-be-Done (JTBD), user journeys, and hypothesis evidence to connect customer evidence directly to product decisions. Working across research, design, engineering, and product leadership, I drove projects from problem discovery through design, prototyping, implementation, and executive presentations, making complex research workflows more efficient, accessible, and scalable.</p>
+          <p class="cs-body">At IBM, the research team runs research sprints: focused windows of a few days to a week where we dig into a specific topic and interview employees inside and outside IBM about products, workflows, and everything in between. Each sprint produces a large body of insights, which sits alongside PRDs, spreadsheets, websites, and our own secondary research.</p>
+          <p class="cs-body">Over 12 weeks as a UX Design &amp; Research Intern, I worked on three projects aimed at one question:</p>
         </section>
 
-        <section id="projects" class="cs-block">
-          <p class="cs-label">Projects</p>
+        <p class="cs-hmw">How do we make research actually get used?</p>
 
-          <div class="cs-project-card">
+        <section id="problem" class="cs-block">
+          <p class="cs-label">Problem</p>
+          <p class="cs-heading">Collecting research is the easy part. Keeping it organized is harder, and getting it into the hands of the PMs, engineers, and designers who need it is harder still.</p>
+          <p class="cs-body">Insights end up scattered across transcripts, files, and tools. Teams either:</p>
+          <ol class="cs-list-accent">
+            <li>Don&rsquo;t know the research exists</li>
+            <li>Can&rsquo;t find what they need</li>
+            <li>Have to spend time re-explaining context before they can use it</li>
+          </ol>
+          <p class="cs-body">The result is that valuable research goes underused, and decisions get made without the evidence behind them.</p>
+        </section>
+
+        <section id="process" class="cs-block">
+          <p class="cs-label">Process</p>
+          <p class="cs-body">I designed and built all three tools using IBM Bob, GitHub Copilot, and Figma, moving from problem framing to working prototypes. Each project targeted a different point where research breaks down:</p>
+        </section>
+
+        <section class="cs-adaptations">
+          <div class="cs-adaptation-card">
+            <p class="cs-label">Persona Pulse</p>
+            <p class="cs-adaptation-title">Finding it</p>
+            <p class="cs-body">Surfacing insights when someone needs them.</p>
+          </div>
+          <div class="cs-adaptation-card">
+            <p class="cs-label">Journey Juice</p>
+            <p class="cs-adaptation-title">Applying it</p>
+            <p class="cs-body">Turning research into evaluations of real user journeys.</p>
+          </div>
+          <div class="cs-adaptation-card">
+            <p class="cs-label">HERD</p>
+            <p class="cs-adaptation-title">Testing against it</p>
+            <p class="cs-body">Checking assumptions against existing evidence.</p>
+          </div>
+        </section>
+
+        <section id="solution" class="cs-block">
+          <p class="cs-label">Solution</p>
+          <p class="cs-heading">1. Persona Pulse</p>
+          <p class="cs-body">An AI-powered research platform that turns scattered user research into a searchable source of truth.</p>
+        </section>
+        <div class="cs-project-card">
             <div class="cs-project-shot">
               <div class="cs-project-screen-clip"><img class="cs-project-screen" src="assets/ibm/screen1.png" alt="" /></div>
               <div class="cs-project-frost"></div>
               <img class="cs-project-macbook" src="assets/ibm/macbook.png" alt="" />
             </div>
-            <p class="cs-body">An AI-powered research intelligence platform that transforms fragmented user research into a searchable source of truth, enabling teams to quickly find validated customer insights and make evidence-based decisions. Through MCP integration with AI agents like IBM Bob, it delivers research and persona knowledge directly within existing workflows.</p>
+            <div class="cs-project-text">
+              <p class="cs-body">Teams can ask questions in plain language and get concise, research-grounded answers with full traceability back to the original sources. For example, a PM writing a PRD can ask <span class="accent-ibm">&ldquo;Who typically handles these responsibilities?&rdquo;</span>, then select a persona like Platform Engineer or CloudOps Architect and ask <span class="accent-ibm">&ldquo;What are their typical jobs-to-be-done with this product?&rdquo;</span></p>
+              <p class="cs-body">Through MCP integration with AI agents like IBM Bob, Persona Pulse works both on the web and directly inside the IDE, so users can query research data alongside their own files without having to supply extra context.</p>
+            </div>
           </div>
 
-          <div class="cs-project-card">
+        <section class="cs-block">
+          <p class="cs-heading">2. Journey Juice</p>
+          <p class="cs-body">An AI-powered tool that evaluates user journeys and turns research into prioritized recommendations.</p>
+        </section>
+        <div class="cs-project-card">
             <div class="cs-project-shot">
               <div class="cs-project-screen-clip"><img class="cs-project-screen" src="assets/ibm/screen2.png" alt="" /></div>
               <div class="cs-project-frost"></div>
               <img class="cs-project-macbook" src="assets/ibm/macbook.png" alt="" />
             </div>
-            <p class="cs-body">An AI-powered critical user journey evaluation platform built on IBM Bob that automatically converts UX research into scored journey evaluations, prioritized recommendations, and traceable insights. By linking findings directly to journey steps and supporting evidence, it makes research synthesis faster, scalable, and repeatable.</p>
+            <div class="cs-project-text">
+              <p class="cs-body">Users upload screenshots or a Figma link with labeled frames. The tool extracts the frames in order, evaluates each step of the journey, and returns a confidence score, strengths and weaknesses, and specific recommendations for improving individual screens and workflows.</p>
+              <p class="cs-body">Every finding is linked to the journey step and evidence behind it, making synthesis faster, repeatable, and scalable.</p>
+            </div>
           </div>
 
-          <div class="cs-project-card">
+        <section class="cs-block">
+          <p class="cs-heading">3. HERD <span class="cs-heading-note">(Hypothesis Evidence Review Dashboard)</span></p>
+          <p class="cs-body">A dashboard that tests hypotheses against existing research and generates evidence-based reports. The flow has four stages:</p>
+        </section>
+
+        <section class="cs-steps">
+          <div class="cs-adaptation-card">
+            <p class="cs-label">[1]</p>
+            <p class="cs-adaptation-title">Input</p>
+            <p class="cs-body">Users enter hypotheses, which are automatically categorized as behavioral, empirical, or causal.</p>
+          </div>
+          <div class="cs-adaptation-card">
+            <p class="cs-label">[2]</p>
+            <p class="cs-adaptation-title">Sources</p>
+            <p class="cs-body">Users attach the materials to evaluate against, such as transcripts, PRDs, spreadsheets, files, or folders.</p>
+          </div>
+          <div class="cs-adaptation-card">
+            <p class="cs-label">[3]</p>
+            <p class="cs-adaptation-title">Review</p>
+            <p class="cs-body">Users confirm each hypothesis along with its category and a short summary of the attached sources.</p>
+          </div>
+          <div class="cs-adaptation-card">
+            <p class="cs-label">[4]</p>
+            <p class="cs-adaptation-title">Report</p>
+            <p class="cs-body">Users receive an in-depth report that rates each hypothesis as strong, moderate, or weak, explains the rating, and offers pain points, areas for improvement, and next steps.</p>
+          </div>
+        </section>
+        <div class="cs-project-card">
             <div class="cs-project-shot">
               <div class="cs-project-screen-clip"><img class="cs-project-screen" src="assets/ibm/screen3.png" alt="" /></div>
               <div class="cs-project-frost"></div>
               <img class="cs-project-macbook" src="assets/ibm/macbook.png" alt="" />
             </div>
-            <p class="cs-body">Hypothesis evidence dashboard enables users to evaluate their hypothesis against supporting sources, workflows, and roadmaps, generating a comprehensive report that highlights strengths, provides evidence-based validation, and recommends actionable next step.</p>
+            <div class="cs-project-text">
+              <p class="cs-body">A source breakdown covers what each source contains, who to contact, its timeline, and its unique value, with per-source scores available in a drill-down view.</p>
+              <p class="cs-body">Users can also generate a client-facing version of the report to share findings with stakeholders.</p>
+            </div>
           </div>
+
+        <section id="outcome" class="cs-block">
+          <p class="cs-label">Outcome</p>
+          <p class="cs-body">Persona Pulse and HERD are being shipped internally at IBM, giving teams a direct path from research to decisions within the tools and workflows they already use.</p>
         </section>
 
-        <section id="sidequest" class="cs-block">
+        <section id="side-quest" class="cs-block">
           <p class="cs-label">Side Quest</p>
           <div class="cs-sidequest">
             <img src="assets/ibm/sidequest.png" alt="PersonaPulse — Most Significant Business Impact award slide" />
-            <p class="cs-body">My team and I had the opportunity to submit one of my projects to the WatsonX Challenge, a global internal hackathon with over 140,000 employees participating this year. Our project received the <span class="cs-ibm-accent">Most Significant Business Impact</span> award within the Automation Pillar, which was incredibly exciting and rewarding to see our work recognized at such a large scale.</p>
+            <p class="cs-body">My team and I had the opportunity to submit one of my projects to the WatsonX Challenge, a global internal hackathon with over 140,000 employees participating this year. Our project received the <span class="accent-ibm">Most Significant Business Impact</span> award within the Automation Pillar, which was incredibly exciting and rewarding to see our work recognized at such a large scale.</p>
           </div>
         </section>
 
-        <section id="feedback" class="cs-block">
-          <p class="cs-label">Feedback</p>
+        <section id="kind-words" class="cs-block">
+          <p class="cs-label">Kind Words</p>
           <p class="cs-body">Kind words from some of the incredible people I had the privilege of working with:</p>
         </section>
 
