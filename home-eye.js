@@ -5,8 +5,9 @@
      leaves the window.
    - Left alone, it blinks every few seconds.
    - Poke it and it flinches and says something, in turn: OUCH! -> PSST
-     SCROLL DOWN -> WANT TO PLAY A GAME? GO TO ABOUT (a link). Poke it
-     POKE_LIMIT times in POKE_WINDOW and it gets fed up.
+     SCROLL DOWN -> WANT TO PLAY A GAME? GO TO ABOUT (a link), round and
+     round. Poke it POKE_LIMIT times in POKE_WINDOW and it gets fed up —
+     at most once every FED_UP_COOLDOWN, going back to its lines between.
    - Poke the white star itself and, every so often, it's a SURPRISE!: the
      eye pops wide and shoots a burst of stars out of the pupil, which then
      tumble around with the rest (home-stars.js).
@@ -32,10 +33,12 @@ const MESSAGES = ['OUCH!', 'PSST SCROLL DOWN', 'WANT TO PLAY A GAME? GO TO ABOUT
 const FED_UP = 'BOY STOP POKING ME';
 const POKE_LIMIT = 4;
 const POKE_WINDOW = 3000; // ms
+const FED_UP_COOLDOWN = 5000; // ms before it can be fed up again
 const SURPRISE = 'SURPRISE!';
 const SURPRISE_CHANCE = 0.35; // for a poke right in the star
 const SURPRISE_COOLDOWN = 2500; // ms
 const SHOW_MS = 1600;
+const MIN_READ_MS = 500; // a regular line stays at least this long, so fast pokes can't flash past it
 const SHOW_LINK_MS = 3200; // the about-page link stays up long enough to click
 
 const eye = document.querySelector('.home-eye');
@@ -128,6 +131,7 @@ if (eye && body && pop) {
   // --- the message pill -------------------------------------------------
 
   let hideTimer = 0;
+  let shownAt = -Infinity;
 
   function say(text) {
     const link = text.includes('GO TO ABOUT');
@@ -144,6 +148,7 @@ if (eye && body && pop) {
     pop.classList.remove('is-up');
     void pop.offsetWidth;
     pop.classList.add('is-up');
+    shownAt = performance.now();
     clearTimeout(hideTimer);
     hideTimer = setTimeout(() => pop.classList.remove('is-up'), link ? SHOW_LINK_MS : SHOW_MS);
   }
@@ -153,6 +158,7 @@ if (eye && body && pop) {
   let nextMessage = 0;
   let pokes = [];
   let lastSurprise = -Infinity;
+  let lastFedUp = -Infinity;
 
   function flinch(scale) {
     eye.animate(
@@ -187,11 +193,14 @@ if (eye && body && pop) {
 
     blink();
     flinch('scale(1.06, 0.86)'); // squints
-    if (pokes.length >= POKE_LIMIT) {
+    if (pokes.length >= POKE_LIMIT && now - lastFedUp > FED_UP_COOLDOWN) {
       say(FED_UP);
-    } else {
+      lastFedUp = now;
+      pokes = []; // got it off its chest: it takes another flurry to set it off again
+    } else if (now - shownAt >= MIN_READ_MS) {
       say(MESSAGES[nextMessage]);
       nextMessage = (nextMessage + 1) % MESSAGES.length;
     }
+    // (a poke while the last line is still being read just flinches)
   });
 }
