@@ -212,7 +212,7 @@ html.is-loading body {
   display: flex;
   flex-direction: column;
   gap: 60px;
-  scroll-margin-top: 45px; /* offset for the fixed nav bar when jumped to via #work */
+  scroll-margin-top: -108px; /* native #work jumps: skip the 203px top padding so the first card lands 50px below the 45px nav (matches shared.js) */
 }
 
 .work-card {

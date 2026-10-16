@@ -175,8 +175,13 @@ function animateScrollTo(targetY, duration) {
 function scrollToWorkSection(startFraction, duration) {
   const work = document.getElementById('work');
   if (!work) return false;
+  // aim at the first case study card rather than the section itself —
+  // the section's 203px top padding would otherwise leave the card
+  // sitting low in the viewport with its caption cut off
+  const target = work.querySelector('.work-card') || work;
   const navHeight = 45;
-  const targetY = work.getBoundingClientRect().top + window.scrollY - navHeight;
+  const gapBelowNav = 50;
+  const targetY = target.getBoundingClientRect().top + window.scrollY - navHeight - gapBelowNav;
   if (startFraction) {
     window.scrollTo(0, targetY * startFraction);
   }
