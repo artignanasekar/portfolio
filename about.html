@@ -101,6 +101,8 @@
           <img src="assets/dice.png" alt="" />
         </div>
 
+        <!-- onboarding step 2: pinned above the smiski, pans with the photo -->
+        <button class="spy-pill onboard-pill" id="onboard-pill" type="button" style="left:68.2796%; top:16.8260%;" hidden>CLICK ME!</button>
         <!-- each item pops a handful of small stars in one at a time around it
              when clicked, instead of one big star cycling behind it. -->
         <div class="spy-sparkles" id="item-dice-sparkles" aria-hidden="true">
@@ -200,6 +202,8 @@
       <button class="hint-button" id="hint-button" type="button" aria-label="Need help finding an item?" aria-expanded="false">
         <img src="assets/hint-button.svg" alt="" />
       </button>
+      <!-- "lost in the sauce?": shows beside the hint button after 7s with no find (about.js) -->
+      <button class="spy-pill stuck-pill" id="stuck-pill" type="button" hidden>LOST IN THE SAUCE? CLICK ME!</button>
       <div class="hint-popup" id="hint-popup" role="tooltip">
         Need a hint? Click the gray item name and your cursor will guide you straight to it!
       </div>
@@ -250,6 +254,33 @@
       </div>
 
       <div class="tag-row" data-name="Frame 33">
+        <!-- first-visit onboarding (Figma "onboarding", node 1917:311):
+             three steps crossfading inside one card, centred above the
+             item names — see the onboarding section at the end of about.js -->
+        <p class="spy-pill done-pill" id="done-pill" role="status" hidden>YOU&rsquo;VE GOT THIS! KEEP EXPLORING</p>
+        <div class="onboard" id="onboard" role="dialog" aria-label="How to play" hidden>
+          <div class="onboard-steps">
+          <div class="onboard-step is-active" data-step="1">
+            <div class="onboard-head"><span>I SPY</span><span>[1/3]</span></div>
+            <p class="onboard-title">DRAG OR SCROLL AROUND THIS PHOTO</p>
+            <p class="onboard-text">There are 9 things hidden on this table. Their names are listed below. Let&rsquo;s find the first item.</p>
+          </div>
+          <div class="onboard-step" data-step="2">
+            <div class="onboard-head"><span>I SPY</span><span>[2/3]</span></div>
+            <p class="onboard-title">FOUND ONE! TAP THE SMISKI</p>
+            <p class="onboard-text">Here&rsquo;s a freebie to start you off!</p>
+          </div>
+          <div class="onboard-step" data-step="3">
+            <div class="onboard-head"><span>I SPY</span><span>[3/3]</span></div>
+            <p class="onboard-title">NOW TAP THE NAME!</p>
+            <p class="onboard-text">These items tell my story. Find them to discover a little more about me!</p>
+          </div>
+          </div>
+          <div class="onboard-foot">
+            <button class="onboard-btn onboard-skip" type="button">SKIP</button>
+            <button class="onboard-btn onboard-next" type="button" tabindex="-1">NEXT</button>
+          </div>
+        </div>
         <span class="tag" data-item="smiski">SMISKI</span>
         <span class="tag" data-item="tube">PAINT TUBE</span>
         <span class="tag" data-item="photo">PHOTOBOOTH STRIP</span>

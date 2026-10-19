@@ -874,3 +874,194 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
   }
 }
+
+/* --- first-visit onboarding (Figma "onboarding", node 1917:311) ---
+   One card, centred over the game and parked 20px above the item names.
+   It lives inside .tag-row, so when an info card lifts the names the
+   step card rides up with them on the same 0.45s ease. The three steps
+   share one grid cell and crossfade, so the card itself never jumps. */
+.onboard {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 20px);
+  width: 318px;
+  height: 165px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: #fcfcfc;
+  border-radius: 10px;
+  opacity: 0;
+  transform: translate(-50%, 12px);
+  transition: opacity 0.45s cubic-bezier(0.65, 0, 0.35, 1), transform 0.45s cubic-bezier(0.65, 0, 0.35, 1);
+  z-index: 21;
+}
+
+.onboard[hidden] {
+  display: none;
+}
+
+.onboard.is-in {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.onboard-steps {
+  display: grid;
+}
+
+.onboard-step {
+  grid-area: 1 / 1;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  pointer-events: none;
+}
+
+.onboard-step.is-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: 0.1s;
+}
+
+.onboard-head {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  color: #d9d9d9;
+}
+
+.onboard-title {
+  margin-bottom: 5px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  color: #ff5400;
+}
+
+.onboard-text {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 12px;
+  line-height: normal;
+  color: #7b7b7b;
+}
+
+.onboard-foot {
+  display: flex;
+  justify-content: space-between;
+}
+
+.onboard-btn {
+  padding: 0;
+  border: 0;
+  background: none;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.onboard-skip {
+  color: #7b7b7b;
+  transition: color 0.2s ease;
+}
+
+.onboard-skip:hover {
+  color: #ff5400;
+}
+
+/* NEXT holds its spot but stays hidden until the photo has been moved */
+.onboard-next {
+  color: #ff5400;
+  opacity: 0;
+  transform: translateX(-6px);
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.onboard.can-next .onboard-next {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
+}
+
+/* the orange onboarding pills (Figma "click me", "END STATE", "STUCK"),
+   30px tall to match the round info + hint buttons */
+.spy-pill {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  height: 30px;
+  margin: 0;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 100px;
+  background: #ff5400;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  line-height: 1.1;
+  color: #fcfcfc;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.spy-pill[hidden] {
+  display: none;
+}
+
+button.spy-pill {
+  cursor: pointer;
+}
+
+/* step 2's "CLICK ME!": anchored to the smiski's top-centre inside the
+   pannable layer, sitting 10px above it */
+.onboard-pill {
+  transform: translate(-50%, calc(-100% - 4px));
+  z-index: 2;
+}
+
+.onboard-pill.is-in {
+  opacity: 1;
+  transform: translate(-50%, calc(-100% - 10px));
+}
+
+/* "YOU'VE GOT THIS!": where the step card was, 20px above the names */
+.done-pill {
+  left: 50%;
+  bottom: calc(100% + 20px);
+  transform: translate(-50%, 8px);
+  pointer-events: none;
+  z-index: 21;
+}
+
+.done-pill.is-in {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+/* "LOST IN THE SAUCE?": beside the hint button, centred on it, slides in
+   from it like the hint popup does. Colours inverted to match that button
+   (white, orange glyph, same shadow) so the two read as a pair. */
+.stuck-pill {
+  background: #fff;
+  color: #ff5400;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  left: 68px;
+  top: 150px;
+  transform: translate(-6px, -50%);
+  z-index: 19;
+}
+
+.stuck-pill.is-in {
+  opacity: 1;
+  transform: translate(0, -50%);
+}
+
+@media (max-width: 900px) {
+  .onboard,
+  .spy-pill {
+    display: none !important;
+  }
+}

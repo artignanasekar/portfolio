@@ -169,7 +169,7 @@ function tick() {
 }
 
 viewport.addEventListener('pointerdown', (e) => {
-  if (e.target.closest('.tag, .info-card, .info-button, .info-popup, .hint-button, .hint-popup')) return;
+  if (e.target.closest('.tag, .info-card, .info-button, .info-popup, .hint-button, .hint-popup, .spy-pill')) return;
   isDragging = true;
   hasMomentum = false;
   velX = 0;
@@ -191,6 +191,7 @@ viewport.addEventListener('pointermove', (e) => {
 
   velX = (dx / dt) * 16;
   velY = (dy / dt) * 16;
+  notePan(dx, dy);
 
   lastPointer = { x: e.clientX, y: e.clientY, t: now };
 });
@@ -215,6 +216,7 @@ viewport.addEventListener('wheel', (e) => {
 
   targetX = clampWithResistance(targetX - e.deltaX, bounds.minX, bounds.maxX, DRAG_RESISTANCE);
   targetY = clampWithResistance(targetY - e.deltaY, bounds.minY, bounds.maxY, DRAG_RESISTANCE);
+  notePan(e.deltaX, e.deltaY);
 
   clearTimeout(wheelSettleTimer);
   wheelSettleTimer = setTimeout(() => {
@@ -318,13 +320,17 @@ viewport.addEventListener('click', (e) => {
     return fx >= xMin && fx <= xMax && fy >= yMin && fy <= yMax;
   });
 
-  if (hit) {
-    hit.found = true;
-    if (hit.tagEl) hit.tagEl.classList.add('found');
-    burstSparkles(hit);
-    if (hintTargetId === hit.id) stopHint();
-  }
+  if (hit) findItem(hit);
 });
+
+function findItem(item) {
+  item.found = true;
+  if (item.tagEl) item.tagEl.classList.add('found');
+  burstSparkles(item);
+  if (hintTargetId === item.id) stopHint();
+  onboardFound(item);
+  armStuck(); // a find starts the 7s over
+}
 
 // --- Hint scanner: clicking a still-gray tag turns the cursor into a
 // scanner that continuously points toward that item's current on-screen
@@ -395,12 +401,14 @@ function startHint(id) {
   if (mobileScannerEl) mobileScannerEl.classList.add('active');
   restartScannerRings();
   updateHintDirection();
+  armStuck(); // already being helped: no need to offer more
 }
 
 function stopHint() {
   hintTargetId = null;
   customCursor.classList.remove('hinting');
   if (mobileScannerEl) mobileScannerEl.classList.remove('active');
+  armStuck();
 }
 
 // --- Info cards: once an item's tag has turned orange (found), clicking it
@@ -640,6 +648,8 @@ function closeInfoCard() {
   openItemId = null;
   infoCard.classList.remove('open');
   tagRow.style.bottom = `${TAG_ROW_REST_BOTTOM}px`;
+  onboardClosed();
+  armStuck();
 }
 
 function openInfoCard(id) {
@@ -650,6 +660,7 @@ function openInfoCard(id) {
   infoCardText.textContent = info.text;
   renderMedia(info.media);
   infoCard.classList.add('open');
+  armStuck(); // reading a story isn't being stuck
   // lift the tag row to sit flush above the card instead of overlapping its
   // text — measured fresh each time since card height varies with the text.
   tagRow.style.bottom = `${TAG_ROW_REST_BOTTOM + infoCard.getBoundingClientRect().height}px`;
@@ -671,6 +682,7 @@ SPY_ITEMS.forEach((item) => {
       closeInfoCard();
     } else {
       openInfoCard(item.id);
+      onboardOpened(item);
     }
   });
 });
@@ -727,7 +739,8 @@ setupPopup(hintButton, hintPopup);
 
 // Auto-show the info popup for a few seconds on page load, then tuck it
 // away behind the "i" so first-time visitors get the hint without it lingering.
-infoPopupControls.open(INFO_POPUP_AUTO_SHOW_MS);
+// (Not on a first visit, though: the onboarding at the end of this file
+// does that job then, and opens this itself only if it isn't showing.)
 
 // --- Mobile "scroll for some fun" nudge: visible while the user is still
 // up near the bio (the game not really in view yet), and out of the way
@@ -744,3 +757,213 @@ if (scrollHintBanner && 'IntersectionObserver' in window) {
   );
   scrollHintObserver.observe(viewport);
 }
+
+// --- First-visit onboarding (Figma "onboarding", node 1917:311): a small
+// three-step card above the item names.
+//   1. drag or scroll the photo: NEXT only appears once you have
+//   2. the photo glides over to the smiski, with a CLICK ME! pill above it
+//   3. once it's found (usual sparkles, name turns orange): tap the name
+// Tapping the name opens the smiski's info card and the steps slip away.
+// SKIP slips them away at any point. Shown once per browser; add
+// ?onboard=1 to the URL to see it again. Desktop only — the phone layout
+// keeps its always-visible instructions instead. ---
+
+const ONBOARD_KEY = 'about-onboarded';
+const ONBOARD_PAN_PX = 40; // how far the photo has to move before NEXT shows
+const ONBOARD_LEAVE_MS = 450; // matches the .onboard transition
+const PILL_FADE_MS = 300; // matches the pills' transitions
+
+const onboardEl = document.getElementById('onboard');
+const onboardPill = document.getElementById('onboard-pill');
+const onboardSteps = onboardEl.querySelectorAll('.onboard-step');
+const onboardNext = onboardEl.querySelector('.onboard-next');
+const smiski = SPY_ITEMS.find((item) => item.id === 'smiski');
+let onboardStep = 0; // 0 = not showing
+let onboardPanned = 0;
+const donePill = document.getElementById('done-pill');
+const DONE_SHOW_MS = 3000;
+let donePending = false; // the smiski's card is open from the last step
+let doneTimer = null;
+let stuckOn = false; // the 7s "lost in the sauce" clock (set up at the very end)
+
+function onboardWanted() {
+  if (matchMedia('(max-width: 900px)').matches) return false;
+  if (new URLSearchParams(location.search).has('onboard')) return true;
+  try {
+    return !localStorage.getItem(ONBOARD_KEY);
+  } catch (err) {
+    return true;
+  }
+}
+
+function startOnboarding() {
+  if (!onboardWanted()) return false;
+  onboardEl.hidden = false;
+  void onboardEl.offsetWidth; // commit the hidden-state styles so it fades up
+  onboardEl.classList.add('is-in');
+  showOnboardStep(1);
+  return true;
+}
+
+function showOnboardStep(n) {
+  onboardStep = n;
+  onboardSteps.forEach((el) => el.classList.toggle('is-active', el.dataset.step === String(n)));
+  if (n !== 1) {
+    onboardEl.classList.remove('can-next'); // NEXT fades out with step 1
+    onboardNext.tabIndex = -1;
+  }
+  setOnboardPill(n === 2);
+}
+
+function setOnboardPill(show) {
+  fadePill(onboardPill, show);
+}
+
+// fade a [hidden] pill in or out with its .is-in transition
+function fadePill(el, show) {
+  if (show) {
+    el.hidden = false;
+    void el.offsetWidth; // commit the hidden-state styles so it fades in
+    el.classList.add('is-in');
+  } else if (!el.hidden) {
+    el.classList.remove('is-in');
+    setTimeout(() => {
+      if (!el.classList.contains('is-in')) el.hidden = true;
+    }, PILL_FADE_MS);
+  }
+}
+
+function endOnboarding() {
+  if (!onboardStep) return;
+  onboardStep = 0;
+  stuckOn = true;
+  armStuck();
+  try {
+    localStorage.setItem(ONBOARD_KEY, '1');
+  } catch (err) {}
+  setOnboardPill(false);
+  onboardEl.classList.remove('is-in');
+  setTimeout(() => {
+    if (!onboardStep) onboardEl.hidden = true;
+  }, ONBOARD_LEAVE_MS);
+}
+
+// called from the drag + wheel handlers above with each step of movement
+function notePan(dx, dy) {
+  if (onboardStep !== 1 || onboardEl.classList.contains('can-next')) return;
+  onboardPanned += Math.abs(dx) + Math.abs(dy);
+  if (onboardPanned >= ONBOARD_PAN_PX) {
+    onboardEl.classList.add('can-next');
+    onboardNext.tabIndex = 0;
+  }
+}
+
+// glide the photo so the smiski (and the pill above it) sits centred in the
+// open space above the step card, using the same eased pan as dragging
+function panToSmiski() {
+  const view = viewport.getBoundingClientRect();
+  const openBottom = onboardEl.getBoundingClientRect().top - view.top;
+  const { xMin, xMax, yMin, yMax } = smiski.bounds;
+  const pill = 40; // the pill + its gap, so the pair is centred, not just the figure
+  const cx = ((xMin + xMax) / 2) * canvas.width;
+  const cy = ((yMin + yMax) / 2) * canvas.height - pill / 2;
+  isDragging = false;
+  hasMomentum = false;
+  velX = velY = 0;
+  targetX = Math.min(Math.max(view.width / 2 - cx, bounds.minX), bounds.maxX);
+  targetY = Math.min(Math.max(openBottom / 2 - cy, bounds.minY), bounds.maxY);
+}
+
+// called from findItem()
+function onboardFound(item) {
+  if (item !== smiski || !onboardStep) return;
+  showOnboardStep(3);
+}
+
+// called when an info card opens from a tag
+function onboardOpened(item) {
+  if (item === smiski && onboardStep === 3) {
+    donePending = true;
+    endOnboarding();
+  }
+}
+
+// called when an info card closes: closing the smiski's card at the end of
+// the onboarding sends them off with a quick "you've got this"
+function onboardClosed() {
+  if (!donePending) return;
+  donePending = false;
+  fadePill(donePill, true);
+  clearTimeout(doneTimer);
+  doneTimer = setTimeout(() => fadePill(donePill, false), DONE_SHOW_MS);
+}
+
+onboardNext.addEventListener('click', () => {
+  if (onboardStep !== 1) return;
+  if (smiski.found) {
+    showOnboardStep(3);
+    return;
+  }
+  panToSmiski();
+  showOnboardStep(2);
+});
+
+onboardEl.querySelector('.onboard-skip').addEventListener('click', endOnboarding);
+
+onboardPill.addEventListener('click', (e) => {
+  e.stopPropagation(); // don't also count as a click on the photo underneath
+  if (!smiski.found) findItem(smiski);
+});
+
+// --- "Lost in the sauce?": once the onboarding is out of the way (or
+// straight away for a returning visitor), 7 seconds without finding
+// anything brings up a pill beside the hint button. Clicking it starts the
+// hint scanner toward the unfound item nearest the middle of the view.
+// It leaves on a click or a find, and the 7s start over. The clock is
+// paused while an info card is open or a hint is already running, and
+// stops for good once everything's found. ---
+
+const STUCK_MS = 7000;
+const stuckPill = document.getElementById('stuck-pill');
+let stuckTimer = null;
+
+function armStuck() {
+  clearTimeout(stuckTimer);
+  if (!stuckOn || onboardStep || openItemId || hintTargetId) return fadePill(stuckPill, false);
+  if (SPY_ITEMS.every((item) => item.found)) return fadePill(stuckPill, false);
+  fadePill(stuckPill, false);
+  stuckTimer = setTimeout(() => fadePill(stuckPill, true), STUCK_MS);
+}
+
+// the unfound item whose centre is closest to the middle of the view
+function nearestUnfound() {
+  const view = viewport.getBoundingClientRect();
+  let best = null;
+  let bestDist = Infinity;
+  SPY_ITEMS.forEach((item) => {
+    if (item.found) return;
+    const { xMin, xMax, yMin, yMax } = item.bounds;
+    const x = panX + ((xMin + xMax) / 2) * canvas.width - view.width / 2;
+    const y = panY + ((yMin + yMax) / 2) * canvas.height - view.height / 2;
+    const dist = x * x + y * y;
+    if (dist < bestDist) {
+      bestDist = dist;
+      best = item;
+    }
+  });
+  return best;
+}
+
+stuckPill.addEventListener('click', (e) => {
+  e.stopPropagation();
+  const item = nearestUnfound();
+  if (item) startHint(item.id); // also tucks the pill away
+});
+
+// opening the hint button's own popup would land on top of the pill
+hintButton.addEventListener('click', armStuck);
+
+const onboarding = startOnboarding();
+if (!onboarding) infoPopupControls.open(INFO_POPUP_AUTO_SHOW_MS);
+stuckOn = !onboarding && !matchMedia('(max-width: 900px)').matches;
+armStuck();

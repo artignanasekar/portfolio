@@ -737,10 +737,14 @@ if (page) {
   launchStars = (clientX, clientY) => {
     if (reducedMotion.matches) return;
     const burst = {};
-    const offset = Math.random() * Math.PI * 2;
+    // fire the slots in a shuffled order, like the old random spin of the circle
+    const slots = [...Array(LAUNCH_COUNT).keys()].sort(() => Math.random() - 0.5);
     for (let i = 0; i < LAUNCH_COUNT; i++) {
-      // evenly spread round the circle with a little wobble, leaning upward
-      const angle = offset + (i / LAUNCH_COUNT) * Math.PI * 2 + (Math.random() - 0.5) * 0.5;
+      // evenly spread over the top half of the circle with a little wobble,
+      // never below sideways: anything shot downward would land in the gap
+      // under the eye (narrower than a star) and wedge there on the tagline
+      const spread = (slots[i] + 0.5) / LAUNCH_COUNT + (Math.random() - 0.5) * 0.08;
+      const angle = -Math.PI * Math.min(1, Math.max(0, spread));
       const up = Math.max(0, -Math.sin(angle)); // 1 straight up, 0 sideways or down
       const speed = LAUNCH_SPEED[0] + (LAUNCH_SPEED[1] - LAUNCH_SPEED[0]) * (0.3 * Math.random() + 0.7 * up);
       setTimeout(() => {
