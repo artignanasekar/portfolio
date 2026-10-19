@@ -283,6 +283,25 @@
 .info-popup.open {
   opacity: 1;
   transform: translateX(0);
+  pointer-events: auto; /* so the replay link below can be clicked */
+  cursor: default;
+}
+
+/* "Replay Onboarding": its own line at the end of the info popup, spaced
+   like any other line of the text */
+.info-popup-replay {
+  display: block;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  line-height: inherit;
+  text-align: left;
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
 }
 
 /* hint button + popup: stacked directly below the info button (same left
@@ -293,7 +312,7 @@
 .hint-button {
   position: absolute;
   left: 30px;
-  top: 135px;
+  top: calc(135px + var(--hint-shift, 0px));
   width: 30px;
   height: 30px;
   border: none;
@@ -303,6 +322,9 @@
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
   cursor: pointer;
   z-index: 20;
+  /* --hint-shift (set from about.js) makes room under the info popup while
+     it's open; the hint popup + "lost in the sauce" pill follow along */
+  transition: top 0.2s ease;
 }
 
 .hint-button img {
@@ -314,7 +336,7 @@
 .hint-popup {
   position: absolute;
   left: 68px;
-  top: 135px;
+  top: calc(135px + var(--hint-shift, 0px));
   width: 274px;
   padding: 8px 10px;
   border-radius: 5px;
@@ -329,7 +351,7 @@
   opacity: 0;
   pointer-events: none;
   transform: translateX(-6px);
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition: opacity 0.2s ease, transform 0.2s ease, top 0.2s ease;
 }
 
 .hint-popup.open {
@@ -1049,8 +1071,9 @@ button.spy-pill {
   color: #ff5400;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
   left: 68px;
-  top: 150px;
+  top: calc(150px + var(--hint-shift, 0px));
   transform: translate(-6px, -50%);
+  transition: opacity 0.3s ease, transform 0.3s ease, top 0.2s ease;
   z-index: 19;
 }
 

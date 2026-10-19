@@ -329,7 +329,7 @@ function findItem(item) {
   burstSparkles(item);
   if (hintTargetId === item.id) stopHint();
   onboardFound(item);
-  armStuck(); // a find starts the 7s over
+  armStuck(); // a find starts the 10s over
 }
 
 // --- Hint scanner: clicking a still-gray tag turns the cursor into a
@@ -701,7 +701,7 @@ infoCard.addEventListener('click', (e) => {
 const POPUP_AUTO_CLOSE_MS = 5000;
 const INFO_POPUP_AUTO_SHOW_MS = 3000;
 
-function setupPopup(buttonEl, popupEl) {
+function setupPopup(buttonEl, popupEl, onToggle) {
   let closeTimer = null;
 
   function open(autoCloseMs) {
@@ -709,13 +709,25 @@ function setupPopup(buttonEl, popupEl) {
     buttonEl.setAttribute('aria-expanded', 'true');
     clearTimeout(closeTimer);
     if (autoCloseMs) closeTimer = setTimeout(close, autoCloseMs);
+    if (onToggle) onToggle(true);
   }
 
   function close() {
     clearTimeout(closeTimer);
     popupEl.classList.remove('open');
     buttonEl.setAttribute('aria-expanded', 'false');
+    if (onToggle) onToggle(false);
   }
+
+  // hold it open while the pointer is on it (it may have a link to reach),
+  // then give it the usual few seconds once the pointer leaves
+  popupEl.addEventListener('click', (e) => e.stopPropagation()); // not a click on the photo
+  popupEl.addEventListener('mouseenter', () => clearTimeout(closeTimer));
+  popupEl.addEventListener('mouseleave', () => {
+    if (!popupEl.classList.contains('open')) return;
+    clearTimeout(closeTimer);
+    closeTimer = setTimeout(close, POPUP_AUTO_CLOSE_MS);
+  });
 
   buttonEl.addEventListener('click', (e) => {
     e.stopPropagation();
@@ -731,7 +743,16 @@ function setupPopup(buttonEl, popupEl) {
 
 const infoButton = document.getElementById('info-button');
 const infoPopup = document.getElementById('info-popup');
-const infoPopupControls = setupPopup(infoButton, infoPopup);
+// while the info popup is open, slide the hint button (and what hangs off
+// it, like its own popup) down so the two popups stack 15px apart: the same
+// gap as between the item names in .tag-row
+const HINT_TOP = 135;
+const HINT_GAP = 15;
+const infoPopupControls = setupPopup(infoButton, infoPopup, (isOpen) => {
+  const popupBottom = infoPopup.offsetTop + infoPopup.getBoundingClientRect().height;
+  const shift = isOpen ? Math.max(0, popupBottom + HINT_GAP - HINT_TOP) : 0;
+  viewport.style.setProperty('--hint-shift', `${shift}px`);
+});
 
 const hintButton = document.getElementById('hint-button');
 const hintPopup = document.getElementById('hint-popup');
@@ -784,7 +805,7 @@ const donePill = document.getElementById('done-pill');
 const DONE_SHOW_MS = 3000;
 let donePending = false; // the smiski's card is open from the last step
 let doneTimer = null;
-let stuckOn = false; // the 7s "lost in the sauce" clock (set up at the very end)
+let stuckOn = false; // the 10s "lost in the sauce" clock (set up at the very end)
 
 function onboardWanted() {
   if (matchMedia('(max-width: 900px)').matches) return false;
@@ -796,8 +817,8 @@ function onboardWanted() {
   }
 }
 
-function startOnboarding() {
-  if (!onboardWanted()) return false;
+function startOnboarding(force) {
+  if (!force && !onboardWanted()) return false;
   onboardEl.hidden = false;
   void onboardEl.offsetWidth; // commit the hidden-state styles so it fades up
   onboardEl.classList.add('is-in');
@@ -916,14 +937,14 @@ onboardPill.addEventListener('click', (e) => {
 });
 
 // --- "Lost in the sauce?": once the onboarding is out of the way (or
-// straight away for a returning visitor), 7 seconds without finding
+// straight away for a returning visitor), 10 seconds without finding
 // anything brings up a pill beside the hint button. Clicking it starts the
 // hint scanner toward the unfound item nearest the middle of the view.
-// It leaves on a click or a find, and the 7s start over. The clock is
+// It leaves on a click or a find, and the 10s start over. The clock is
 // paused while an info card is open or a hint is already running, and
 // stops for good once everything's found. ---
 
-const STUCK_MS = 7000;
+const STUCK_MS = 10000;
 const stuckPill = document.getElementById('stuck-pill');
 let stuckTimer = null;
 
@@ -958,6 +979,27 @@ stuckPill.addEventListener('click', (e) => {
   e.stopPropagation();
   const item = nearestUnfound();
   if (item) startHint(item.id); // also tucks the pill away
+});
+
+// "Replay Onboarding" in the info popup: tidy up whatever's on screen and
+// run the steps again from the top. The smiski goes back to unfound so
+// step 2 has something to find.
+document.getElementById('replay-onboarding').addEventListener('click', (e) => {
+  e.stopPropagation();
+  infoPopupControls.close();
+  if (openItemId) closeInfoCard();
+  if (hintTargetId) stopHint();
+  donePending = false;
+  clearTimeout(doneTimer);
+  fadePill(donePill, false);
+  smiski.found = false;
+  smiski.tagEl.classList.remove('found');
+  onboardPanned = 0;
+  onboardEl.classList.remove('can-next');
+  onboardNext.tabIndex = -1;
+  if (!onboardStep) startOnboarding(true);
+  else showOnboardStep(1);
+  armStuck(); // the clock waits for the steps to finish
 });
 
 // opening the hint button's own popup would land on top of the pill
