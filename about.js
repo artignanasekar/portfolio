@@ -479,7 +479,7 @@ const ITEM_INFO = {
     media: {
       type: 'single',
       src: 'assets/photo-info.jpg',
-      width: 222, height: 139,
+      width: 160, height: 100, // same 100px height as the other cards' photos
     },
   },
   lego: {
