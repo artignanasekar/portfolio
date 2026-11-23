@@ -1,4 +1,4 @@
-/* Home page star stamps (experiment — Figma "stars", node 1833:392).
+/* Home page star stamps — snowflakes in winter, see SEASON below (experiment — Figma "stars", node 1833:392).
    Clicking empty space on the home page snaps one of the about page's 15
    stars (5 stars x 3 colourways) onto the page where you clicked, at a
    random rotation. Then it behaves like a medium-heavy rubber ball: it
@@ -23,6 +23,24 @@
    it. Figma dithers at the star's own 291px size; the browser then scales
    that down smoothly to the on-page size, which blends the dots into the
    same subtle texture you see in Figma. */
+
+import { SNOWFLAKES, SNOW_COLORS, snowflakeSVG, ditherSnowflake, ditherSVG } from './snowflakes.js';
+import { TWOTONE_FLAKES, PAIRS, twotoneSVG } from './twotone-snowflakes.js';
+
+// which shapes get stamped:
+//   'twotone' — winter: two-colour line snowflakes (twotone-snowflakes.js)
+//   'snow'    — the earlier single-colour snowflakes (snowflakes.js)
+//   'stars'   — the original stars. Flip back to this after winter.
+// Everything else (physics, bursts, the eye's launch) is shared.
+const SEASON = 'twotone';
+
+// the two-tone flakes in use, and their colours: every pair from the
+// stars' trios, both ways round (either colour can be the line-work),
+// except pale-on-pale, which faded into the page background
+const TWOTONE_PICKS = ['bloom', 'anchor', 'kite', 'lens', 'chevron', 'arrow'];
+const PALE = ['#ffc74c', '#ceeaee', '#f8c9dd'];
+const TWOTONE_PAIRS = PAIRS.flatMap(([a, b]) => [[a, b], [b, a]])
+  .filter(([a, b]) => !(PALE.includes(a) && PALE.includes(b)));
 
 const STARS = [1, 2, 3, 4, 5].flatMap((n) => ['a', 'b', 'c'].map((v) => `assets/star${n}-${v}.png`));
 
@@ -185,12 +203,44 @@ if (page) {
 
   // dithered versions replace the plain PNGs as each one finishes loading;
   // until then a click falls back to the plain star
-  const sources = STARS.map((url) => ({ url, pixels: null }));
-  STARS.forEach((src, i) => {
-    const img = new Image();
-    img.onload = () => { sources[i] = ditherStar(img); };
-    img.src = src;
-  });
+  let sources;
+  let pickSource = () => sources[Math.floor(Math.random() * sources.length)];
+  if (SEASON === 'twotone') {
+    const flakes = TWOTONE_FLAKES.filter((f) => TWOTONE_PICKS.includes(f.name))
+      .flatMap((f) => TWOTONE_PAIRS.map((p) => [f, p]));
+    // pick the line-work colour first, evenly, so each of the 7 colours
+    // leads equally often (some colours have more partners than others)
+    const byLine = new Map();
+    flakes.forEach(([, [line]], i) => byLine.set(line, [...(byLine.get(line) || []), i]));
+    pickSource = () => {
+      const groups = [...byLine.values()];
+      const group = groups[Math.floor(Math.random() * groups.length)];
+      return sources[group[Math.floor(Math.random() * group.length)]];
+    };
+    sources = flakes.map(([f, p]) => ({
+      url: 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(twotoneSVG(f, p, STAR_SIZE)),
+      pixels: null,
+    }));
+    flakes.forEach(([f, p], i) => {
+      ditherSVG((px) => twotoneSVG(f, p, px), STAR_SIZE).then((done) => { sources[i] = done; }, () => {});
+    });
+  } else if (SEASON === 'snow') {
+    const flakes = SNOWFLAKES.flatMap((f) => SNOW_COLORS.map((c) => [f, c]));
+    sources = flakes.map(([f, c]) => ({
+      url: 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(snowflakeSVG(f, c, STAR_SIZE)),
+      pixels: null,
+    }));
+    flakes.forEach(([f, c], i) => {
+      ditherSnowflake(f, c, STAR_SIZE).then((done) => { sources[i] = done; }, () => {});
+    });
+  } else {
+    sources = STARS.map((url) => ({ url, pixels: null }));
+    STARS.forEach((src, i) => {
+      const img = new Image();
+      img.onload = () => { sources[i] = ditherStar(img); };
+      img.src = src;
+    });
+  }
 
   // anything you can read or click isn't "empty space"
   const NOT_EMPTY = 'a, button, p, h1, h2, h3, img, svg, canvas, .nav-bar, .site-footer, .work-card';
@@ -406,9 +456,10 @@ if (page) {
     const bits = [];
     for (let gy = 0; gy < cells; gy++) {
       for (let gx = 0; gx < cells; gx++) {
-        const u = Math.floor(((gx + 0.5) * PIXEL / STAR_SIZE) * RES);
-        const v = Math.floor(((gy + 0.5) * PIXEL / STAR_SIZE) * RES);
-        const i = (v * RES + u) * 4;
+        const res = pixels.width; // 291 for stars; snowflakes bake at a size that fits the screen
+        const u = Math.floor(((gx + 0.5) * PIXEL / STAR_SIZE) * res);
+        const v = Math.floor(((gy + 0.5) * PIXEL / STAR_SIZE) * res);
+        const i = (v * res + u) * 4;
         if (pixels.data[i + 3] < 128) continue;
         const lx = (gx + 0.5) * PIXEL - STAR_SIZE / 2;
         const ly = (gy + 0.5) * PIXEL - STAR_SIZE / 2;
@@ -688,7 +739,7 @@ if (page) {
   // a new star at (x, y) in page coordinates. Dropped stars hang for the
   // snap-in, then let go from rest; launched ones fly off straight away.
   function addStar(x, y, { vx = 0, vy = 0, delay = SNAP_MS, burst = null } = {}) {
-    const { url, pixels } = sources[Math.floor(Math.random() * sources.length)];
+    const { url, pixels } = pickSource();
     const turn = Math.round(Math.random() * 360);
 
     const el = document.createElement('div');
